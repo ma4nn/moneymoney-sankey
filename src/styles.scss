@@ -1,0 +1,51 @@
+body, .highcharts-container {
+    font-family: system-ui
+}
+
+footer, footer a:link, footer a:visited {
+    color: #efefef;
+}
+
+select#categories {
+    resize: vertical;
+}
+
+.highcharts-data-label text,
+text.highcharts-data-label {
+    font-size: 15px;
+    font-weight: 200;
+}
+
+.highcharts-data-label.main-node text {
+    font-size: x-large;
+    text-decoration: underline;
+}
+
+.highcharts-link {
+    cursor: pointer;
+}
+
+.highcharts-color-0 {
+    fill: #3592c6;
+    stroke: #3592c6
+}
+
+.highcharts-color-1 {
+    fill: #44536f;
+    stroke: #44536f
+}
+
+.highcharts-color-2 {
+    fill: #14c57e;
+    stroke: #14c57e
+}
+
+.highcharts-color-6 {
+    fill: #ffd749;
+    stroke: #ffd749
+}
+
+.highcharts-color-8 {
+    fill: #ff6b4a;
+    stroke: #ff6b4a
+}
