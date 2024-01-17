@@ -1,6 +1,6 @@
 # MoneyMoney Extension: Sankey Chart
 
-This is an extension for the great [MoneyMoney software](https://moneymoney-app.com/) to generate an HTML [Sankey Chart](https://de.wikipedia.org/wiki/Sankey-Diagramm) from the categories of the exported transactions.
+This is an extension for the great [MoneyMoney app](https://moneymoney-app.com/) to export an HTML [Sankey Chart](https://de.wikipedia.org/wiki/Sankey-Diagramm) from the transaction categories.
 
 ![Sankey Sample Chart](https://dev-investor.de/wp-content/uploads/moneymoney_sankey_diagramm-1.jpg)
 
@@ -8,7 +8,7 @@ This is an extension for the great [MoneyMoney software](https://moneymoney-app.
 
 This MoneyMoney extension must be installed as follows:
 1. In the MoneyMoney app open menu Help → Show database in Finder
-2. Copy the `dist/SankeyChart.lua` file into that folder.
+2. Copy the `SankeyChart.lua` from the [release](https://github.com/ma4nn/moneymoney-sankey/releases) file into that folder.
 
 ## Usage
 
@@ -22,6 +22,8 @@ For more information see also [my blog post](https://dev-investor.de/finanz-apps
 ```
 make dist
 ```
+
+The compiled MoneyMoney extension can then be found in `dist/SankeyChart.lua`.
 
 ## Notes
 
