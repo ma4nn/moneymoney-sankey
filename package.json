@@ -7,9 +7,13 @@
     "highcharts": "^11.3.0",
     "terser": "^5.15.1"
   },
+  "devDependencies": {
+    "html-validate": "^8.9.1",
+    "typescript": "^5.3.3"
+  },
   "author": "Christoph Massmann <chris@dev-investor.de>",
   "license": "MIT",
-  "devDependencies": {
-    "typescript": "^5.3.3"
+  "scripts": {
+    "test": "lua ./src/SankeyChartTest.lua | html-validate --stdin"
   }
 }

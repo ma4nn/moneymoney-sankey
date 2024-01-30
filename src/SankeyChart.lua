@@ -27,6 +27,8 @@ Exporter {version = 1.00,
           reverseOrder = false,
           description = "Generate a beautiful Sankey Chart from your category transactions"}
 
+-- @todo maybe rename this file to better distinguish from dist?
+
 -------------------------
 -- Global Configuration
 -------------------------
@@ -111,7 +113,6 @@ end
 function WriteHeader (account, startDate, endDate, transactionCount)
     local start_date = os.date('%d.%m.%Y', startDate)
     local end_date = os.date('%d.%m.%Y', endDate)
-    local transaction_count = transactionCount
 
     local html = [[
 <!DOCTYPE html><html lang="de"><head><meta charset="utf-8">
@@ -126,8 +127,8 @@ ${STYLES_CSS}
 <div class="container">
     <h1 class="text-center">Cashflows</h1>
     <h5 class="text-center">]] .. account.name .. [[, ]] .. start_date .. [[ bis ]] .. end_date .. [[</h5>
-    <p class="text-center">Das folgende <a href="https://de.wikipedia.org/wiki/Sankey-Diagramm" target="_blank">Sankey Chart</a> zeigt die aus <a href="https://moneymoney-app.com/" target="_blank">MoneyMoney</a> exportierten Cashflows des <strong>Kontos ]] .. account.name .. [[ (]] .. account.accountNumber .. [[)</strong> für den <strong>Zeitraum ]] .. start_date .. [[ bis ]] .. end_date .. [[</strong>.<br />
-    Es wurde aus insgesamt <strong>]] .. transaction_count .. [[ Transaktionen</strong> generiert.</p>
+    <p class="text-center">Das folgende <a href="https://de.wikipedia.org/wiki/Sankey-Diagramm" target="_blank">Sankey Chart</a> zeigt die aus <a href="https://moneymoney-app.com/" target="_blank">MoneyMoney</a> exportierten Cashflows des <strong>Kontos ]] .. account.name .. [[ (]] .. account.accountNumber .. [[)</strong> für den <strong>Zeitraum ]] .. start_date .. [[ bis ]] .. end_date .. [[</strong>.<br>
+    Es wurde aus insgesamt <strong>]] .. transactionCount .. [[ Transaktionen</strong> generiert.</p>
 
     <div class="controls pb-4">
         <div class="accordion" id="accordionConfig">
@@ -155,7 +156,7 @@ ${STYLES_CSS}
                                     </div>
                                 </div>
                                 <div class="col-12">
-                                    <button id="applySettingsButton" type="button" class="btn btn-primary">Anwenden</button>
+                                    <button id="applySettingsButton" type="submit" class="btn btn-primary">Anwenden</button>
                                 </div>
                             </div>
                         </form>
@@ -173,7 +174,7 @@ ${STYLES_CSS}
     -- global array to store mapping of category ids to category full paths
     categories = {};
     -- the currency to filter
-    currency = nil
+    currency = account.currency
     number_of_months = math.max(os.difftime(endDate, startDate) / SECONDS_PER_MONTH, 1)
 end
 
@@ -183,11 +184,6 @@ function WriteTransactions (account, transactions)
     -- it is used to sum up all the bookings into a global category links variable.
     for _,transaction in ipairs(transactions) do
         local category_path = transaction.category
-
-        if currency == nil then
-            currency = transaction.currency
-            print("Setting currency to " .. currency)
-        end
 
         local is_category_excluded = false
         for index, value in ipairs(CATEGORIES_TO_EXCLUDE) do
@@ -255,6 +251,7 @@ function WriteTail (account)
     end
 
     -- @todo remove cdns
+    -- @todo use other JavaScript placeholders that perhaps show a (console) error if wrong called
     html = html .. [[
     ${INCLUDE_MAIN_JS}
 </script>
