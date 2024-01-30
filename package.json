@@ -14,6 +14,8 @@
   "author": "Christoph Massmann <chris@dev-investor.de>",
   "license": "MIT",
   "scripts": {
-    "test": "lua ./src/SankeyChartTest.lua | html-validate --stdin"
+    "test": "npm run test-compile-validate && npm run test-placeholder",
+    "test-compile-validate": "lua ./src/SankeyChartTest.lua | html-validate --stdin",
+    "test-placeholder": "grep -qE '\\${([A-Z_]+)}' dist/SankeyChart.lua && (echo 'ERROR: Placeholders have not been replaced in dist!' && exit 1) || exit 0"
   }
 }
