@@ -1,5 +1,7 @@
 # MoneyMoney Extension: Sankey Chart
 
+![build status](https://github.com/ma4nn/moneymoney-sankey/actions/workflows/verify-lua-script.yml/badge.svg)
+
 This is an extension for the great [MoneyMoney app](https://moneymoney-app.com/) to export an HTML [Sankey Chart](https://de.wikipedia.org/wiki/Sankey-Diagramm) from the transaction categories.
 
 ![Sankey Sample Chart](https://dev-investor.de/wp-content/uploads/moneymoney_sankey_diagramm-1.jpg)
