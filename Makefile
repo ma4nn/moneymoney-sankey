@@ -10,5 +10,9 @@ dist:
 		envsubst < src/SankeyChart.lua > dist/SankeyChart.lua && \
 		rm dist/*.js
 
+.PHONY: install
+install:
+	cp dist/SankeyChart.lua ~/Library/Containers/com.moneymoney-app.retail/Data/Library/Application\ Support/MoneyMoney/Extensions
+
 clean:
 	rm -f dist/*.js dist/*.lua
