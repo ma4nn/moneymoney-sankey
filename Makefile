@@ -6,8 +6,11 @@ dist: clean
 	npm install
 	npx tsc
 	export INCLUDE_TREE_JS=`$(TERSER_BIN) dist/Tree.js` && \
+		[ "$${INCLUDE_TREE_JS}" ] || exit 1 && \
 		export INCLUDE_MAIN_JS=`$(TERSER_BIN) dist/main.js` && \
-		export STYLES_CSS=`sass --no-source-map src/styles.scss` && \
+		[ "$${INCLUDE_MAIN_JS}" ] || exit 1 && \
+		export STYLES_CSS=`npx sass --no-source-map src/styles.scss` && \
+		[ "$${STYLES_CSS}" ] || exit 1 && \
 		envsubst < src/SankeyChart.lua > dist/SankeyChart.lua && \
 		chmod +x dist/SankeyChart.lua && \
 		make distclean

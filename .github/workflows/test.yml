@@ -15,7 +15,7 @@ jobs:
 
     - uses: leafo/gh-actions-lua@v10
       with:
-        luaVersion: "5.4.3"
+        luaVersion: "5.4"
 
     - name: build
       run: |
