@@ -32,7 +32,7 @@ The compiled MoneyMoney extension can then be found in `dist/SankeyChart.lua` an
 - Modern browser is required
 
 ### Known Limitations 🚧
-- Only 1 currency is supported (the currency of the first transaction is taken, other currencies are ignored then (see debug console))
+- Only 1 currency is supported (the currency of the account is taken, other currencies are ignored)
 - The report is available in German language only
 
 ## Issues
