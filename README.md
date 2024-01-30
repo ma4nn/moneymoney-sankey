@@ -4,11 +4,11 @@ This is an extension for the great [MoneyMoney app](https://moneymoney-app.com/)
 
 ![Sankey Sample Chart](https://dev-investor.de/wp-content/uploads/moneymoney_sankey_diagramm-1.jpg)
 
-## Installation
+## Installing / Getting started
 
 This MoneyMoney extension must be installed as follows:
 1. In the MoneyMoney app open menu Help → Show database in Finder
-2. Copy the `SankeyChart.lua` from the [release](https://github.com/ma4nn/moneymoney-sankey/releases) file into that folder.
+2. Download the `SankeyChart.lua` from the [latest release](https://github.com/ma4nn/moneymoney-sankey/releases/latest/download/SankeyChart.lua) file into that folder.
 
 ## Usage
 
@@ -17,7 +17,7 @@ Afterwards choose "Sankey Chart (.html)" as the export format and open the gener
 
 For more information see also [my blog post](https://dev-investor.de/finanz-apps/money-money/kategorien-budgets-nutzen/).
 
-## Build
+## Developing
 
 ```
 make dist
@@ -25,7 +25,7 @@ make dist
 
 The compiled MoneyMoney extension can then be found in `dist/SankeyChart.lua`.
 
-## Notes
+## Compatibility
 
 - Tested with MoneyMoney 2.4.x
 - Modern browser is required
@@ -34,7 +34,11 @@ The compiled MoneyMoney extension can then be found in `dist/SankeyChart.lua`.
 - Only 1 currency is supported (the currency of the first transaction is taken, other currencies are ignored then (see debug console))
 - The report is available in German language only
 
-## License
+## Issues
+In case you are experiencing any issues please try to reproduce it with an MoneyMoney offline account and provide the exported HTML file.  
+At least open the [Developer Tools](https://developer.chrome.com/docs/devtools/open?hl=de) of your browser and provide the complete output of the console into the ticket description.
+
+## Licensing
 
 This repository is published under the [MIT license](./LICENSE).  
 This repository uses the great Highchart library, please obtain a valid license [on their website](https://shop.highcharts.com/).

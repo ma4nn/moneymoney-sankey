@@ -22,7 +22,7 @@
 -- THE SOFTWARE.
 
 Exporter {version = 1.00,
-          format = "SankeyChart",
+          format = "Sankey-Chart",
           fileExtension = "html",
           reverseOrder = false,
           description = "Generate a beautiful Sankey Chart from your category transactions"}
