@@ -34,6 +34,7 @@ function setExcludedCategoriesFromSelect(): void {
 
 function updateChartData(): void {
     divider = (document.querySelector("form #isShowMonthlyValues") as HTMLInputElement).checked ? numberOfMonths : 1;
+    console.debug('using divider ' + divider);
 
     // verify that excludedCategoryIds does not contain main node
     const index = excludedCategoryIds.indexOf(mainNodeId);
