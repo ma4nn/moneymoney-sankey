@@ -117,8 +117,8 @@ function WriteHeader (account, startDate, endDate, transactionCount)
     local html = [[
 <!DOCTYPE html><html lang="de"><head><meta charset="utf-8">
 <title>Cashflow Chart ]] .. start_date .. [[ bis ]] .. end_date .. [[</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highcharts@11.3.0/css/highcharts.css" integrity="sha384-ik8taHI0uJ0E3oBau2yMQafhM4JvBHnjBsAkwXygD1Bv9f2F71W2pHkwf7hX2vt6" crossorigin="anonymous">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highcharts@11.4.0/css/highcharts.css" integrity="sha384-ik8taHI0uJ0E3oBau2yMQafhM4JvBHnjBsAkwXygD1Bv9f2F71W2pHkwf7hX2vt6" crossorigin="anonymous">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 <style>
 ${STYLES_CSS}
 </style>
@@ -255,9 +255,9 @@ function WriteTail (account)
     html = html .. [[
     ${INCLUDE_MAIN_JS}
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/highcharts@11.3.0/highcharts.js" integrity="sha384-sdSHdV37JEsmwft9nBHPKnSUQOiBhivIWWWWJOSvVhiaj+zw38Q4QMxcm1p4Q1ry" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/highcharts@11.3.0/modules/sankey.js" integrity="sha384-JRa1V69STkqlUlYKNGODlSHDvNVF/RcAv1YmQdJWX2fRdX/28EedAKs3nNG0G9XL" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.0/highcharts.js" integrity="sha384-x5VMYdr3fISR+WXDIJzlWWbHe6kNKFZG/UHL0oBHwXup048fVMnx/GColN0OElKo" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.0/modules/sankey.js" integrity="sha384-7bYJUJPIkBo578ZuRPY4//HWLLoAyji2r4oVH6s/0C/FzLjtQp0PWCSCbU+Xswor" crossorigin="anonymous"></script>
 ]]
     write_line(html)
     write_line("</body></html>")
