@@ -5,7 +5,8 @@ INSTALL_DIR = ~/Library/Containers/com.moneymoney-app.retail/Data/Library/Applic
 dist: clean
 	npm install
 	npx tsc
-	export INCLUDE_TREE_JS=`$(TERSER_BIN) dist/Tree.js` && \
+	VERSION_SEMVER=`cat package.json | jq -r '.version'` && export VERSION=$${VERSION_SEMVER%.*} && \
+		export INCLUDE_TREE_JS=`$(TERSER_BIN) dist/Tree.js` && \
 		[ "$${INCLUDE_TREE_JS}" ] || exit 1 && \
 		export INCLUDE_MAIN_JS=`$(TERSER_BIN) dist/main.js` && \
 		[ "$${INCLUDE_MAIN_JS}" ] || exit 1 && \

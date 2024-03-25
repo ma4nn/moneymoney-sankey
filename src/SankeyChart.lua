@@ -21,7 +21,7 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 -- THE SOFTWARE.
 
-Exporter {version = 1.00,
+Exporter {version = ${VERSION},
           format = "Sankey-Chart",
           fileExtension = "html",
           reverseOrder = false,
