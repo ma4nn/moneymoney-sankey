@@ -118,7 +118,7 @@ ready(function() {
     if (Math.round(numberOfMonths) == 1) {
         document.querySelector("form input#isShowMonthlyValues").setAttribute('disabled', 'disabled');
     }
-    document.querySelector("#applySettingsButton").addEventListener('click', () => { setExcludedCategoriesFromSelect(); updateChartData() });
+    document.querySelector("#applySettingsButton").addEventListener('click', (event) => { event.preventDefault(); setExcludedCategoriesFromSelect(); updateChartData() });
 
     /** @see https://www.highcharts.com/docs/chart-and-series-types/sankey-diagram */
     chart = Highcharts.chart('chart-container', {
