@@ -10,7 +10,7 @@ dist: clean
 		[ "$${INCLUDE_TREE_JS}" ] || exit 1 && \
 		export INCLUDE_MAIN_JS=`$(TERSER_BIN) dist/main.js` && \
 		[ "$${INCLUDE_MAIN_JS}" ] || exit 1 && \
-		export STYLES_CSS=`npx sass --no-source-map src/styles.scss` && \
+		export STYLES_CSS=`npx sass --no-source-map --style=compressed src/style.scss` && \
 		[ "$${STYLES_CSS}" ] || exit 1 && \
 		envsubst < src/SankeyChart.lua > dist/SankeyChart.lua && \
 		chmod +x dist/SankeyChart.lua && \

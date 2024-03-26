@@ -18,7 +18,8 @@ text.highcharts-data-label {
 
 .highcharts-data-label.main-node text {
     font-size: x-large;
-    text-decoration: underline;
+    text-decoration-line: underline;
+    text-decoration-style: double;
 }
 
 .highcharts-link {
