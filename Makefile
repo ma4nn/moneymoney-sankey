@@ -1,19 +1,17 @@
-TERSER_BIN = ./node_modules/terser/bin/terser --compress --mangle --
 INSTALL_DIR = ~/Library/Containers/com.moneymoney-app.retail/Data/Library/Application\ Support/MoneyMoney/Extensions
+OUTPUT_FILE = dist/SankeyChart.lua
 
 .PHONY: dist
 dist: clean
 	npm install
 	npx tsc
 	VERSION_SEMVER=`cat package.json | jq -r '.version'` && export VERSION=$${VERSION_SEMVER%.*} && \
-		export INCLUDE_TREE_JS=`$(TERSER_BIN) dist/Tree.js` && \
-		[ "$${INCLUDE_TREE_JS}" ] || exit 1 && \
-		export INCLUDE_MAIN_JS=`$(TERSER_BIN) dist/main.js` && \
-		[ "$${INCLUDE_MAIN_JS}" ] || exit 1 && \
-		export STYLES_CSS=`npx sass --no-source-map --style=compressed src/style.scss` && \
-		[ "$${STYLES_CSS}" ] || exit 1 && \
-		envsubst < src/SankeyChart.lua > dist/SankeyChart.lua && \
-		chmod +x dist/SankeyChart.lua && \
+		export INLINE_JS=`npm run build:js --silent` && \
+		[ "$${INLINE_JS}" ] || exit 1 && \
+		export INLINE_CSS=`npm run build:css --silent` && \
+		[ "$${INLINE_CSS}" ] || exit 1 && \
+		envsubst '$$VERSION,$$INLINE_CSS,$$INLINE_JS' < src/SankeyChart.lua > $(OUTPUT_FILE) && \
+		chmod +x $(OUTPUT_FILE) && \
 		make distclean
 
 .PHONY: test
@@ -22,7 +20,7 @@ test:
 
 .PHONY: install
 install:
-	cp dist/SankeyChart.lua $(INSTALL_DIR)
+	cp $(OUTPUT_FILE) $(INSTALL_DIR)
 
 .PHONY: uninstall
 uninstall:

@@ -1,10 +1,10 @@
+/*! main.ts */
 // Highcharts library is loaded via CDN, just importing typedefs here
 type _Highcharts = typeof import('../node_modules/highcharts/highcharts');
 import Tree from "./Tree";
 
 declare let Highcharts: _Highcharts;
 declare let categories: Map<number,string>;
-declare let chartDataTree: Tree;
 declare let numberOfMonths: number;
 declare let currency: string;
 let chart = null;
@@ -32,7 +32,7 @@ function setExcludedCategoriesFromSelect(): void {
         .map(([categoryId, categoryPath]) => excludedCategoryIds.push(categoryId));
 }
 
-function updateChartData(): void {
+function updateChartData(chartDataTree: Tree): void {
     divider = (document.querySelector("form #isShowMonthlyValues") as HTMLInputElement).checked ? numberOfMonths : 1;
     console.debug('using divider ' + divider);
 
@@ -102,7 +102,7 @@ function buildChartNodesConfig() {
     return nodes;
 }
 
-ready(function() {
+function createChart(chartDataTree: Tree): void {
     console.debug('tree data:');
     console.debug(chartDataTree);
 
@@ -119,7 +119,10 @@ ready(function() {
     if (Math.round(numberOfMonths) == 1) {
         document.querySelector("form input#isShowMonthlyValues").setAttribute('disabled', 'disabled');
     }
-    document.querySelector("#applySettingsButton").addEventListener('click', (event) => { event.preventDefault(); setExcludedCategoriesFromSelect(); updateChartData() });
+
+    document.querySelector("#applySettingsButton").addEventListener('click', (event) => {
+        event.preventDefault(); setExcludedCategoriesFromSelect(); updateChartData(chartDataTree)
+    });
 
     /** @see https://www.highcharts.com/docs/chart-and-series-types/sankey-diagram */
     chart = Highcharts.chart('chart-container', {
@@ -158,7 +161,7 @@ ready(function() {
                         option.selected = excludedCategoryIds.includes(getCategoryIdByPath(option.value));
                     });
 
-                    updateChartData();
+                    updateChartData(chartDataTree);
                 }
             },
             keys: ['from', 'to', 'weight'],
@@ -216,5 +219,5 @@ ready(function() {
         }
     });
 
-    updateChartData();
-});
+    updateChartData(chartDataTree);
+}

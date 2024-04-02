@@ -8,15 +8,18 @@
   },
   "devDependencies": {
     "html-validate": "^8.9.1",
-    "terser": "^5.15.1",
+    "npm-run-all": "^4.1.5",
     "sass": "^1.70.0",
+    "terser": "^5.15.1",
     "typescript": "^5.3.3"
   },
   "author": "Christoph Massmann <chris@dev-investor.de>",
   "license": "MIT",
   "scripts": {
-    "test": "npm run test-compile-validate && npm run test-placeholder",
-    "test-compile-validate": "lua ./src/SankeyChartTest.lua | html-validate --stdin",
-    "test-placeholder": "grep -qE '\\${([A-Z_]+)}' dist/SankeyChart.lua && (echo 'ERROR: Placeholders have not been replaced in dist!' && exit 1) || exit 0"
+    "build:css": "sass --no-source-map --style=compressed src/style.scss",
+    "build:js": "tsc && terser --compress --mangle -- dist/*.js",
+    "test": "npm-run-all test:*",
+    "test:compile-validate": "lua ./src/SankeyChartTest.lua | html-validate --stdin",
+    "test:placeholder": "grep -qE '\\${([A-Z_]+)}' dist/SankeyChart.lua && (echo 'ERROR: Placeholders have not been replaced in dist!' && exit 1) || exit 0"
   }
 }

@@ -120,7 +120,7 @@ function WriteHeader (account, startDate, endDate, transactionCount)
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highcharts@11.4.0/css/highcharts.css" integrity="sha384-ik8taHI0uJ0E3oBau2yMQafhM4JvBHnjBsAkwXygD1Bv9f2F71W2pHkwf7hX2vt6" crossorigin="anonymous">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 <style>
-${STYLES_CSS}
+${INLINE_CSS}
 </style>
 </head>
 <body>
@@ -242,7 +242,7 @@ function WriteTail (account)
     const categories = new Map([]] .. categories_json .. [[]);
     const currency = ']] .. currency .. [[';
 
-    ${INCLUDE_TREE_JS}
+    ${INLINE_JS}
 
     let chartDataTree = new Tree(1, 0);
 ]]
@@ -253,7 +253,7 @@ function WriteTail (account)
     -- @todo remove cdns
     -- @todo use other JavaScript placeholders that perhaps show a (console) error if wrong called
     html = html .. [[
-    ${INCLUDE_MAIN_JS}
+    ready(() => createChart(chartDataTree));
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.0/highcharts.js" integrity="sha384-x5VMYdr3fISR+WXDIJzlWWbHe6kNKFZG/UHL0oBHwXup048fVMnx/GColN0OElKo" crossorigin="anonymous"></script>
