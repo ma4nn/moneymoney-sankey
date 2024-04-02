@@ -234,7 +234,7 @@ function WriteTail (account)
     end
 
     write_line('<div id="chart-container"></div>')
-    write_line('<footer class="text-center text-opacity-25 text-secondary p-3"><small>Dieser Bericht wurde am ' .. os.date('%d.%m.%Y %H:%M:%S') .. ' Uhr mit der MoneyMoney Extension <a href="https://github.com/ma4nn/moneymoney-sankey" target="_blank" class="text-opacity-25 text-secondary">moneymoney-sankey</a> Version v' .. string.format('%.2f', version) .. ' generiert.</small></footer>')
+    write_line('<footer class="text-center text-opacity-25 text-secondary p-3"><small>Dieser Bericht wurde am ' .. os.date('%d.%m.%Y %H:%M:%S') .. ' Uhr mit der MoneyMoney Extension <a href="https://github.com/ma4nn/moneymoney-sankey" target="_blank" class="text-opacity-25 text-secondary">moneymoney-sankey</a> Version v' .. version .. ' generiert.</small></footer>')
 
     local html = [[
 <script type="module">
