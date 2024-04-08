@@ -4,7 +4,7 @@
   "version": "1.1.0",
   "dependencies": {
     "bootstrap": "^5.3.2",
-    "highcharts": "^11.3.0"
+    "highcharts": "^11.4.1"
   },
   "devDependencies": {
     "html-validate": "^8.18.1",
