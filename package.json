@@ -7,19 +7,25 @@
     "highcharts": "^11.3.0"
   },
   "devDependencies": {
+    "clean-css-cli": "^5.6.3",
     "html-validate": "^8.18.1",
     "npm-run-all": "^4.1.5",
-    "sass": "^1.70.0",
+    "replace-in-file": "^7.1.0",
     "terser": "^5.30.1",
     "typescript": "^5.3.3"
   },
   "author": "Christoph Massmann <chris@dev-investor.de>",
   "license": "MIT",
   "scripts": {
-    "build:css": "sass --no-source-map --style=compressed src/style.scss",
-    "build:js": "tsc && terser --compress --mangle -- dist/*.js",
+    "build:css": "cleancss src/*.css",
+    "build:js": "tsc && terser --compress --mangle -- $npm_package_config_outputDir/*.js",
+    "build": "mkdir -p $npm_package_config_outputDir && cp src/SankeyChart.lua $npm_package_config_outputDir && INLINE_CSS=`npm run build:css --silent` INLINE_JS=`npm run build:js --silent` node ./build.js",
+    "postbuild": "npm test",
     "test": "npm-run-all test:*",
     "test:compile-validate": "lua ./src/SankeyChartTest.lua | html-validate --stdin",
-    "test:placeholder": "grep -qE '\\${([A-Z_]+)}' dist/SankeyChart.lua && (echo 'ERROR: Placeholders have not been replaced in dist!' && exit 1) || exit 0"
+    "test:placeholder": "grep -qE '{{ ([a-zA-Z_]+) }}' $npm_package_config_outputDir/*.lua && (echo 'ERROR: Placeholders have not been replaced in dist!' && exit 1) || exit 0"
+  },
+  "config": {
+    "outputDir": "dist/"
   }
 }
