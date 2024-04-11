@@ -22,7 +22,7 @@ For more information see also [my blog post](https://dev-investor.de/finanz-apps
 ## Developing ⚒️
 
 ```
-make dist && make test
+make && make test
 ```
 
 The compiled MoneyMoney extension can then be found in `dist/SankeyChart.lua` and installed with `make install`.
