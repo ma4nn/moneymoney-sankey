@@ -20,7 +20,6 @@
     "build:css": "cleancss src/*.css",
     "build:js": "tsc && terser --compress --mangle -- $npm_package_config_outputDir/*.js",
     "build": "mkdir -p $npm_package_config_outputDir && cp src/SankeyChart.lua $npm_package_config_outputDir && INLINE_CSS=`npm run build:css --silent` INLINE_JS=`npm run build:js --silent` node ./build.js",
-    "postbuild": "npm test",
     "test": "npm-run-all test:*",
     "test:compile-validate": "lua ./src/SankeyChartTest.lua | html-validate --stdin",
     "test:placeholder": "grep -qE '{{ ([a-zA-Z_]+) }}' $npm_package_config_outputDir/*.lua && (echo 'ERROR: Placeholders have not been replaced in dist!' && exit 1) || exit 0"
