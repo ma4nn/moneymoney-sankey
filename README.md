@@ -2,13 +2,13 @@
 
 ![build status](https://github.com/ma4nn/moneymoney-sankey/actions/workflows/verify-lua-script.yml/badge.svg)
 
-This is an extension for the great [MoneyMoney app](https://moneymoney-app.com/) to export an HTML [Sankey Chart](https://de.wikipedia.org/wiki/Sankey-Diagramm) from the transaction categories.
+This is an extension for the great [MoneyMoney app](https://moneymoney-app.com/) to export an interactive HTML [Sankey Chart](https://de.wikipedia.org/wiki/Sankey-Diagramm) from the transaction categories.
 
 ![Sankey Sample Chart](https://dev-investor.de/wp-content/uploads/moneymoney_sankey_diagramm-1.jpg)
 
 ## Installing
 
-This MoneyMoney extension must be installed as follows:
+This MoneyMoney extension can be installed as follows:
 1. Download the file `SankeyChart.lua` from the [latest release](https://github.com/ma4nn/moneymoney-sankey/releases/latest/download/SankeyChart.lua)
 2. In the MoneyMoney app open menu _Help → Show database in Finder_ and copy the downloaded file into the sub-folder "Extensions".
 

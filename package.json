@@ -1,6 +1,6 @@
 {
   "name": "moneymoney-sankey",
-  "description": "An extension for the great MoneyMoney app to export an HTML Sankey Chart based on the transaction categories",
+  "description": "An extension for the great MoneyMoney app to export an interactive HTML Sankey Chart based on the transaction categories",
   "version": "1.1.0",
   "dependencies": {
     "bootstrap": "^5.3.2",
@@ -26,5 +26,8 @@
   },
   "config": {
     "outputDir": "dist/"
-  }
+  },
+  "browserslist": [
+    "last 2 versions, not dead"
+  ]
 }
