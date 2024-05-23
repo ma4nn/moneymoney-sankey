@@ -10,7 +10,7 @@ This is an extension for the great [MoneyMoney app](https://moneymoney-app.com/)
 
 This MoneyMoney extension can be installed as follows:
 1. Download the file `SankeyChart.lua` from the [latest release](https://github.com/ma4nn/moneymoney-sankey/releases/latest/download/SankeyChart.lua)
-2. In the MoneyMoney app open menu _Help → Show database in Finder_ and copy the downloaded file into the sub-folder "Extensions".
+2. In the MoneyMoney app open menu _Help → Show database in Finder_ and copy the downloaded file into the sub-folder `Extensions/`.
 
 ## Usage 💡
 
