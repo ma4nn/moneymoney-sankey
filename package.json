@@ -1,7 +1,7 @@
 {
   "name": "moneymoney-sankey",
   "description": "An extension for the great MoneyMoney app to export an interactive HTML Sankey Chart based on the transaction categories",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "dependencies": {
     "bootstrap": "^5.3.2",
     "highcharts": "^11.4.3"
@@ -22,7 +22,7 @@
     "build": "mkdir -p $npm_package_config_outputDir && cp src/SankeyChart.lua $npm_package_config_outputDir && INLINE_CSS=`npm run build:css --silent` INLINE_JS=`npm run build:js --silent` node ./build.js",
     "test": "npm-run-all test:*",
     "test:compile-validate": "lua ./src/SankeyChartTest.lua | html-validate --stdin",
-    "test:placeholder": "grep -qE '{{ ([a-zA-Z_]+) }}' $npm_package_config_outputDir/*.lua && (echo 'ERROR: Placeholders have not been replaced in dist!' && exit 1) || exit 0"
+    "test:placeholder": "grep -qE '{{ ([a-zA-Z_]+) }}' $npm_package_config_outputDir/*.lua && (echo 'error: placeholders have not been replaced in dist!' && exit 1) || exit 0"
   },
   "config": {
     "outputDir": "dist/"
