@@ -1,10 +1,12 @@
-const replace = require('replace-in-file');
-const crypto = require('crypto');
-const pkg = require('./package.json');
-const pkgLock = require('./package-lock.json');
+import {replaceInFile} from 'replace-in-file'
+import crypto from 'crypto';
+import { readFile } from 'fs/promises';
 
-simplifyVersion = version => version.replace(/^[=<>~^]/g, '');
-majorMinorVersion = version => version.split('.').slice(0, -1).join('.');
+const pkg = JSON.parse(await readFile(new URL('./package.json', import.meta.url)));
+const pkgLock = JSON.parse(await readFile(new URL('./package-lock.json', import.meta.url)));
+
+const simplifyVersion = version => version.replace(/^[=<>~^]/g, '');
+const majorMinorVersion = version => version.split('.').slice(0, -1).join('.');
 
 const urls = {
     'bootstrap_js': 'https://cdn.jsdelivr.net/npm/bootstrap@' + simplifyVersion(pkgLock.packages["node_modules/bootstrap"].version) + '/dist/js/bootstrap.bundle.min.js',
@@ -41,6 +43,6 @@ async function calculateSris(urls) {
         to: [majorMinorVersion(process.env.npm_package_version), process.env.INLINE_CSS, process.env.INLINE_JS, ...Object.values(urls), ...sris],
         countMatches: true,
     };
-})().then(options => replace(options)
+})().then(options => replaceInFile(options)
     .then(results => results.every(result => (! result.hasChanged || result.numReplacements !== options.from.length) && (() => { throw new Error('error during build: no replacements done in file ' + result.file) })()))
 );
