@@ -5,7 +5,7 @@
   "private": true,
   "dependencies": {
     "bootstrap": "^5.3.2",
-    "highcharts": "^11.4.3"
+    "highcharts": "^11.4.6"
   },
   "devDependencies": {
     "clean-css-cli": "^5.6.3",
