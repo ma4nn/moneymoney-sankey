@@ -2,6 +2,10 @@ body, .highcharts-container {
     font-family: system-ui
 }
 
+.small {
+    font-size: 9px;
+}
+
 footer, footer a:link, footer a:visited {
     color: #efefef;
 }

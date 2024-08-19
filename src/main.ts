@@ -181,7 +181,7 @@ function createChart(chartDataTree: Tree): void {
                 // tooltip for link
                 pointFormatter: function() {
                     const point = this as any;
-                    return point.fromNode.name + " → " + point.toNode.name + ": " + numberFormat(point.weight);
+                    return point.fromNode.name + " → " + point.toNode.name + ": " + numberFormat(point.weight) + "<br /><br /><span class='small'>(Klick entfernt die Kategorie aus dem Chart.)</span>";
                 },
                 // tooltip for node
                 nodeFormatter:  function() {

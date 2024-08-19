@@ -35,8 +35,8 @@ Exporter {version = {{ version }},
 MAIN_CATEGORY_NAME = "Saldo" -- name of the category for balancing incomes and expenses
 MISSING_CATEGORY_NAME = "(ohne)"
 CATEGORIES_TO_EXCLUDE = {} -- which categories should be ignored
-MAX_DEPTH_INCOME = 2 -- how deep to go down in the category path for incomes
-MAX_DEPTH_EXPENSE = 2 -- how deep to go down in the category path for expenses
+MAX_DEPTH_INCOME = 10 -- how deep to go down in the category path for incomes
+MAX_DEPTH_EXPENSE = 10 -- how deep to go down in the category path for expenses
 CATEGORIES_PATH_SEPARATOR = ' » '
 SECONDS_PER_MONTH = 60 * 60 * 24 * 30;
 CATEGORY_LINK_TYPE_INCOME = 'income'
@@ -62,7 +62,7 @@ local function pairsByKeys (t, f)
     return iter
 end
 
-local function get_link_id(category_link)
+local function get_link_id (category_link)
     return 10000 * category_link.from_category_id + category_link.to_category_id
 end
 
@@ -119,6 +119,7 @@ function WriteHeader (account, startDate, endDate, transactionCount)
 <title>Cashflow Chart ]] .. start_date .. [[ bis ]] .. end_date .. [[</title>
 <link rel="stylesheet" href="{{ highcharts_css_url }}" integrity="{{ highcharts_css_sri }}" crossorigin="anonymous">
 <link href="{{ bootstrap_css_url }}" rel="stylesheet" integrity="{{ bootstrap_css_sri }}" crossorigin="anonymous">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'%3E%3C!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--%3E%3Cpath fill='%23304f5f' d='M304 240l0-223.4c0-9 7-16.6 16-16.6C443.7 0 544 100.3 544 224c0 9-7.6 16-16.6 16L304 240zM32 272C32 150.7 122.1 50.3 239 34.3c9.2-1.3 17 6.1 17 15.4L256 288 412.5 444.5c6.7 6.7 6.2 17.7-1.5 23.1C371.8 495.6 323.8 512 272 512C139.5 512 32 404.6 32 272zm526.4 16c9.3 0 16.6 7.8 15.4 17c-7.7 55.9-34.6 105.6-73.9 142.3c-6 5.6-15.4 5.2-21.2-.7L320 288l238.4 0z'/%3E%3C/svg%3E">
 <style>
 {{ inline_css }}
 </style>
@@ -127,7 +128,7 @@ function WriteHeader (account, startDate, endDate, transactionCount)
 <div class="container">
     <h1 class="text-center">Cashflows</h1>
     <h5 class="text-center">]] .. account.name .. [[, ]] .. start_date .. [[ bis ]] .. end_date .. [[</h5>
-    <p class="text-center">Das folgende <a href="https://de.wikipedia.org/wiki/Sankey-Diagramm" target="_blank">Sankey Chart</a> zeigt die aus <a href="https://moneymoney-app.com/" target="_blank">MoneyMoney</a> exportierten Cashflows des <strong>Kontos ]] .. account.name .. [[ (]] .. account.accountNumber .. [[)</strong> für den <strong>Zeitraum ]] .. start_date .. [[ bis ]] .. end_date .. [[</strong>.<br>
+    <p class="text-center">Das folgende <a href="https://de.wikipedia.org/wiki/Sankey-Diagramm" target="_blank" rel="external noopener">Sankey Chart</a> zeigt die aus <a href="https://moneymoney-app.com/" target="_blank" rel="external noopener">MoneyMoney</a> exportierten Cashflows des <strong>Kontos ]] .. account.name .. [[ (]] .. account.accountNumber .. [[)</strong> für den <strong>Zeitraum ]] .. start_date .. [[ bis ]] .. end_date .. [[</strong>.<br>
     Es wurde aus insgesamt <strong>]] .. transactionCount .. [[ Transaktionen</strong> generiert.</p>
 
     <div class="controls pb-4">
@@ -220,7 +221,7 @@ function WriteTransactions (account, transactions)
                 end
             end
         else
-            print("Transaction " .. transaction.name .. " currency " .. transaction.currency .. " differs from the others (" .. currency .. " or category " .. transaction.category .. " is excluded, skipping.")
+            print("Transaction '" .. transaction.name .. "' in currency " .. transaction.currency .. " differs from the others (" .. currency .. ") or category " .. transaction.category .. " is excluded, skipping.")
         end
     end
 
