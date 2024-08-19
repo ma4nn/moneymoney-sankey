@@ -17,13 +17,13 @@ jobs:
       with:
         luaVersion: "5.4"
 
-    - name: build
+    - name: Build
       run: make
 
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
 
-    - name: test
+    - name: Test
       run: make test
 
     - name: Archive production artifacts
