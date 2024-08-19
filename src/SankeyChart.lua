@@ -253,7 +253,7 @@ function WriteTail (account)
 
     -- @todo remove cdns
     html = html .. [[
-    ready(() => createChart(chartDataTree));
+    ready(() => window.chart = createChart(chartDataTree));
 </script>
 <script src="{{ bootstrap_js_url }}" integrity="{{ bootstrap_js_sri }}" crossorigin="anonymous"></script>
 <script src="{{ highcharts_js_url }}" integrity="{{ highcharts_js_sri }}" crossorigin="anonymous"></script>

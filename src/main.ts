@@ -77,6 +77,7 @@ function buildChartNodesConfig() {
         id: String(mainNodeId),
         name: categories.get(mainNodeId),
         colorIndex: 1,
+        className: "main-node",
         dataLabels: {
             className: "main-node",
             nodeFormatter: function() {
@@ -102,7 +103,7 @@ function buildChartNodesConfig() {
     return nodes;
 }
 
-function createChart(chartDataTree: Tree): void {
+function createChart(chartDataTree: Tree): Highcharts.Chart {
     console.debug('tree data:');
     console.debug(chartDataTree);
 
@@ -110,7 +111,7 @@ function createChart(chartDataTree: Tree): void {
     new Map(
         [...categories].sort((a, b) => a[1] < b[1] ? -1 : 1)
             .filter(([categoryId, categoryPath]) => categoryId !== mainNodeId)
-    ).forEach(function(categoryPath, categoryId) {
+    ).forEach(function(categoryPath: string, categoryId: number) {
         // Note: we do not use the category ids as values in the select as otherwise the category names could be duplicated in the select (for income and expense)
         (document.querySelector('form #categories') as HTMLSelectElement).add(new Option(categoryPath, categoryPath))
     });
@@ -220,4 +221,6 @@ function createChart(chartDataTree: Tree): void {
     });
 
     updateChartData(chartDataTree);
+
+    return chart;
 }
