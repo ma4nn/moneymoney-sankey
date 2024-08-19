@@ -1,10 +1,11 @@
 .DEFAULT_GOAL := dist
 INSTALL_DIR = ~/Library/Containers/com.moneymoney-app.retail/Data/Library/Application\ Support/MoneyMoney/Extensions
 OUTPUT_FILE = dist/SankeyChart.lua
+TMP_DIR = tmp/
 
 .PHONY: dist
 dist: clean
-	npm install
+	npm ci
 	npm run build
 
 .PHONY: test
@@ -24,3 +25,4 @@ distclean:
 
 clean:
 	rm -f dist/* && (rmdir dist/ || true)
+	rm -rf $(TMP_DIR)
