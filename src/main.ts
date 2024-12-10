@@ -173,9 +173,11 @@ function createChart(chartDataTree: Tree): Highcharts.Chart {
                 align: 'right',
                 padding: 30,
                 nodeFormatter: function() {
-                    const point = this as any;
-                    const percentage = 'linksTo' in point && point.linksTo[0] ? (point.sum / point.linksTo[0].fromNode.sum) * 100 : null;
-                    return this.point.name + ": " + numberFormat(('getSum' in this.point ? (this.point as any).getSum() : 0)) + " " + (percentage ? "<span class='badge text-bg-secondary'>" + Math.round(percentage) + "% </span>" : "");
+                    const point = this as Highcharts.Point;
+                    const sum = 'getSum' in this ? (this as any).getSum() : 0;
+                    const percentage = 'linksTo' in point && point.linksTo[0] ? (sum / point.linksTo[0].fromNode.sum) * 100 : null;
+
+                    return point.name + ": " + numberFormat(sum) + " " + (percentage ? "<span class='badge text-bg-secondary'>" + Math.round(percentage) + "% </span>" : "");
                 }
             },
             tooltip: {
@@ -186,7 +188,7 @@ function createChart(chartDataTree: Tree): Highcharts.Chart {
                 },
                 // tooltip for node
                 nodeFormatter:  function() {
-                    const point = this as any;
+                    const point = this as Highcharts.Point;
 
                     let totalWeight = 0;
                     let weightsDetailTooltip = '';
