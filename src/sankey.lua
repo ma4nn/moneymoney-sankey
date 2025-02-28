@@ -1,7 +1,7 @@
 #!/usr/bin/env lua
 -- The MIT License (MIT)
 --
--- Copyright (c) 2022-24 Christoph Massmann <chris@dev-investor.de>
+-- Copyright (c) 2022-25 Christoph Massmann <chris@dev-investor.de>
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
 -- of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,6 @@ Exporter {version = {{ version }},
           fileExtension = "html",
           reverseOrder = false,
           description = "Generate a beautiful Sankey Chart from your category transactions"}
-
--- @todo maybe rename this file to better distinguish from dist?
 
 -------------------------
 -- Global Configuration
@@ -125,7 +123,7 @@ function WriteHeader (account, startDate, endDate, transactionCount)
 </style>
 </head>
 <body>
-<div class="container">
+<header class="container">
     <h1 class="text-center">Cashflows</h1>
     <h5 class="text-center">]] .. account.name .. [[, ]] .. start_date .. [[ bis ]] .. end_date .. [[</h5>
     <p class="text-center">Das folgende <a href="https://de.wikipedia.org/wiki/Sankey-Diagramm" target="_blank" rel="external noopener">Sankey Chart</a> zeigt die aus <a href="https://moneymoney-app.com/" target="_blank" rel="external noopener">MoneyMoney</a> exportierten Cashflows des <strong>Kontos ]] .. account.name .. [[ (]] .. account.accountNumber .. [[)</strong> für den <strong>Zeitraum ]] .. start_date .. [[ bis ]] .. end_date .. [[</strong>.<br>
@@ -166,7 +164,7 @@ function WriteHeader (account, startDate, endDate, transactionCount)
             </div>
         </div>
     </div>
-</div>
+</header>
 ]]
     write_line(html)
 
@@ -234,7 +232,7 @@ function WriteTail (account)
         categories_json = categories_json .. '[' .. category_id .. ', "' .. category.path .. '"], '
     end
 
-    write_line('<div id="chart-container"></div>')
+    write_line('<main id="chart-container"></main>')
     write_line('<footer class="text-center text-opacity-25 text-secondary p-3"><small>Dieser Bericht wurde am ' .. os.date('%d.%m.%Y %H:%M:%S') .. ' Uhr mit der MoneyMoney Extension <a href="https://github.com/ma4nn/moneymoney-sankey" target="_blank" class="text-opacity-25 text-secondary">moneymoney-sankey</a> Version v' .. version .. ' generiert.</small></footer>')
 
     local html = [[
