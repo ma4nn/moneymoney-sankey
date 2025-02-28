@@ -1,8 +1,9 @@
 {
   "files": [
     {
-      "path": "./tmp/index.html",
-      "maxSize": "200 kB"
+      "path": "./dist/SankeyChart.lua",
+      "compression": "none",
+      "maxSize": "850 kB"
     }
   ]
 }
