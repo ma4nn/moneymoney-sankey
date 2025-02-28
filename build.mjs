@@ -28,7 +28,9 @@ function assertReplacedCount(results, count) {
     const result = await esbuild.build({
         entryPoints: ['src/main.ts'],
         bundle: true,
-        // minify: true, @todo
+        minifyWhitespace: true,
+        minifySyntax: true,
+        minifyIdentifiers: false,
         outdir: 'not-relevant-but-needs-to-exist', /** @see https://github.com/evanw/esbuild/issues/2890 */
         format: 'esm',
         tsconfig: path.resolve('./tsconfig.json'),
@@ -36,7 +38,8 @@ function assertReplacedCount(results, count) {
         write: false,
     });
 
-    const jsContents = result.outputFiles[0].text;
+    // for some reason replaceInFile() substitutes "$&" with the current variable name "{{ inline_js }}"
+    const jsContents = result.outputFiles[0].text.replace('&&$&&', '&& $ &&');
     const cssContents = result.outputFiles[1].text;
 
     return {

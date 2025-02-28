@@ -1,0 +1,8 @@
+{
+  "files": [
+    {
+      "path": "./tmp/index.html",
+      "maxSize": "200 kB"
+    }
+  ]
+}
