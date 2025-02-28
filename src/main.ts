@@ -1,8 +1,13 @@
-// Highcharts library is loaded via CDN, just importing typedefs here
-type _Highcharts = typeof import('../node_modules/highcharts/highcharts');
-import Tree from "./Tree";
+import Highcharts from 'highcharts/es-modules/masters/highcharts.src.js';
+import 'highcharts/es-modules/masters/modules/sankey.src';
+import 'highcharts/css/highcharts.css';
 
-declare let Highcharts: _Highcharts;
+import 'bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+import Tree from "./Tree";
+import './style.css';
+
 declare let categories: Map<number,string>;
 declare let numberOfMonths: number;
 declare let currency: string;

@@ -201,7 +201,7 @@ function WriteTail (account)
 
     variables["init_chart_js"] = chart_js
 
-    write_line(replace_placeholders([[
+    write_line(replace_placeholders([==[
 {{ html_template }}
-]], variables))
+]==], variables))
 end

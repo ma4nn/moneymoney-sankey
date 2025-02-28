@@ -9,7 +9,6 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.46.1",
-    "clean-css": "^5.3.3",
     "esbuild": "^0.25.0",
     "html-validate": "^8.20.1",
     "http-server": "^14.1.1",
