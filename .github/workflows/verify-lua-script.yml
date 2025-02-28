@@ -13,7 +13,7 @@ jobs:
       with:
         node-version: 20
 
-    - uses: Rathoz/gh-actions-lua@patch-1
+    - uses: leafo/gh-actions-lua@v11
       with:
         luaVersion: "5.4"
 
