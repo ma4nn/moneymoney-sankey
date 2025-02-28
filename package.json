@@ -22,7 +22,7 @@
   "scripts": {
     "build:css": "cleancss src/*.css",
     "build:js": "tsc && terser --compress --mangle -- $npm_package_config_outputDir/*.js",
-    "build": "npm-run-all build:* && mkdir -p $npm_package_config_outputDir && cp src/sankey.lua $npm_package_config_outputDir/SankeyChart.lua && INLINE_CSS=`npm run build:css --silent` INLINE_JS=`npm run build:js --silent` node ./build.mjs",
+    "build": "npm-run-all build:* && mkdir -p $npm_package_config_outputDir && cp src/sankey.lua $npm_package_config_outputDir/SankeyChart.lua && cp src/$npm_package_config_templateFile $npm_package_config_outputDir && INLINE_CSS=`npm run build:css --silent` INLINE_JS=`npm run build:js --silent` node ./build.mjs",
     "test": "npm-run-all test:*",
     "test:validate": "npm-run-all test:validate:*",
     "test:validate:compile": "mkdir -p tmp && lua ./src/sankey_test.lua > tmp/index.html && html-validate tmp/index.html",
@@ -31,6 +31,7 @@
     "start": "http-server tmp/"
   },
   "config": {
+    "templateFile": "template.html",
     "outputDir": "dist/"
   },
   "browserslist": [

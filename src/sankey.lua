@@ -37,9 +37,17 @@ MAX_DEPTH_INCOME = 10 -- how deep to go down in the category path for incomes
 MAX_DEPTH_EXPENSE = 10 -- how deep to go down in the category path for expenses
 CATEGORIES_PATH_SEPARATOR = ' » '
 SECONDS_PER_MONTH = 60 * 60 * 24 * 30;
-CATEGORY_LINK_TYPE_INCOME = 'income'
-CATEGORY_LINK_TYPE_EXPENSE = 'expense'
+CATEGORY_LINK_TYPE_INCOME = "income"
+CATEGORY_LINK_TYPE_EXPENSE = "expense"
 -------------------------
+
+variables = {
+    ["today"] = os.date('%d.%m.%Y %H:%M:%S')
+}
+-- initialize global array to store category sums
+category_links = {}
+-- global array to store mapping of category ids to category full paths
+categories = {};
 
 local function write_line(line)
    assert(io.write(line, "\n"))
@@ -107,71 +115,23 @@ local function add_or_update_category (new_category_path, type)
     return get_category_id_by_path(new_category_path, type)
 end
 
+local function replace_placeholders(template, data)
+    for key, value in pairs(data) do
+        template = template:gsub("%%%%" .. key .. "%%%%", value)
+    end
+    return template
+end
+
 -- called once at the beginning of the export
 function WriteHeader (account, startDate, endDate, transactionCount)
-    local start_date = os.date('%d.%m.%Y', startDate)
-    local end_date = os.date('%d.%m.%Y', endDate)
+    variables["start_date"] = os.date('%d.%m.%Y', startDate)
+    variables["end_date"] = os.date('%d.%m.%Y', endDate)
+    variables["account_name"] = account.name
+    variables["account_number"] = account.accountNumber
+    variables["transaction_count"] = transactionCount
+    variables["number_of_months"] = math.max(os.difftime(endDate, startDate) / SECONDS_PER_MONTH, 1)
+    variables["currency"] = account.currency
 
-    local html = [[
-<!DOCTYPE html><html lang="de"><head><meta charset="utf-8">
-<title>Cashflow Chart ]] .. start_date .. [[ bis ]] .. end_date .. [[</title>
-<link rel="stylesheet" href="{{ highcharts_css_url }}" integrity="{{ highcharts_css_sri }}" crossorigin="anonymous">
-<link href="{{ bootstrap_css_url }}" rel="stylesheet" integrity="{{ bootstrap_css_sri }}" crossorigin="anonymous">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'%3E%3C!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--%3E%3Cpath fill='%23304f5f' d='M304 240l0-223.4c0-9 7-16.6 16-16.6C443.7 0 544 100.3 544 224c0 9-7.6 16-16.6 16L304 240zM32 272C32 150.7 122.1 50.3 239 34.3c9.2-1.3 17 6.1 17 15.4L256 288 412.5 444.5c6.7 6.7 6.2 17.7-1.5 23.1C371.8 495.6 323.8 512 272 512C139.5 512 32 404.6 32 272zm526.4 16c9.3 0 16.6 7.8 15.4 17c-7.7 55.9-34.6 105.6-73.9 142.3c-6 5.6-15.4 5.2-21.2-.7L320 288l238.4 0z'/%3E%3C/svg%3E">
-<style>
-{{ inline_css }}
-</style>
-</head>
-<body>
-<header class="container">
-    <h1 class="text-center">Cashflows</h1>
-    <h5 class="text-center">]] .. account.name .. [[, ]] .. start_date .. [[ bis ]] .. end_date .. [[</h5>
-    <p class="text-center">Das folgende <a href="https://de.wikipedia.org/wiki/Sankey-Diagramm" target="_blank" rel="external noopener">Sankey Chart</a> zeigt die aus <a href="https://moneymoney-app.com/" target="_blank" rel="external noopener">MoneyMoney</a> exportierten Cashflows des <strong>Kontos ]] .. account.name .. [[ (]] .. account.accountNumber .. [[)</strong> für den <strong>Zeitraum ]] .. start_date .. [[ bis ]] .. end_date .. [[</strong>.<br>
-    Es wurde aus insgesamt <strong>]] .. transactionCount .. [[ Transaktionen</strong> generiert.</p>
-
-    <div class="controls pb-4">
-        <div class="accordion" id="accordionConfig">
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="headingOne">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"/></svg>&nbsp;Chart anpassen..
-                    </button>
-                </h2>
-                <div id="collapseOne" class="accordion-collapse collapsing" aria-labelledby="headingOne" data-bs-parent="#accordionConfig">
-                    <div class="accordion-body">
-                        <form>
-                            <div class="row g-3">
-                                <div class="col-12">
-                                    <label for="categories">Kategorie ausschließen</label>
-                                    <select id="categories" class="form-select" multiple aria-label="multiple select">
-                                    </select>
-                                </div>
-                                <div class="col-12">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="isShowMonthlyValues">
-                                        <label class="form-check-label" for="isShowMonthlyValues">
-                                            Werte auf Monatsbasis anzeigen
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <button id="applySettingsButton" type="submit" class="btn btn-primary">Anwenden</button>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</header>
-]]
-    write_line(html)
-
-    -- initialize global array to store category sums
-    category_links = {}
-    -- global array to store mapping of category ids to category full paths
-    categories = {};
     -- the currency to filter
     currency = account.currency
     number_of_months = math.max(os.difftime(endDate, startDate) / SECONDS_PER_MONTH, 1)
@@ -232,31 +192,16 @@ function WriteTail (account)
         categories_json = categories_json .. '[' .. category_id .. ', "' .. category.path .. '"], '
     end
 
-    write_line('<main id="chart-container"></main>')
-    write_line('<footer class="text-center text-opacity-25 text-secondary p-3"><small>Dieser Bericht wurde am ' .. os.date('%d.%m.%Y %H:%M:%S') .. ' Uhr mit der MoneyMoney Extension <a href="https://github.com/ma4nn/moneymoney-sankey" target="_blank" class="text-opacity-25 text-secondary">moneymoney-sankey</a> Version v' .. version .. ' generiert.</small></footer>')
+    variables["categories_json"] = categories_json
 
-    local html = [[
-<script type="module">
-    const numberOfMonths = ]] .. number_of_months .. [[;
-    const categories = new Map([]] .. categories_json .. [[]);
-    const currency = ']] .. currency .. [[';
-
-    {{ inline_js }}
-
-    let chartDataTree = new Tree(1, 0);
-]]
+    chart_js = ""
     for _,link_data in pairsByKeys(category_links) do
-        html = html .. 'chartDataTree.insert(' .. link_data.from_category_id .. ", " .. link_data.to_category_id .. ", " .. link_data.amount .. ');'
+        chart_js = chart_js .. 'chartDataTree.insert(' .. link_data.from_category_id .. ", " .. link_data.to_category_id .. ", " .. link_data.amount .. ');'
     end
 
-    -- @todo remove cdns
-    html = html .. [[
-    ready(() => window.chart = createChart(chartDataTree));
-</script>
-<script src="{{ bootstrap_js_url }}" integrity="{{ bootstrap_js_sri }}" crossorigin="anonymous"></script>
-<script src="{{ highcharts_js_url }}" integrity="{{ highcharts_js_sri }}" crossorigin="anonymous"></script>
-<script src="{{ highcharts_sankey_js_url }}" integrity="{{ highcharts_sankey_js_sri }}" crossorigin="anonymous"></script>
-]]
-    write_line(html)
-    write_line("</body></html>")
+    variables["init_chart_js"] = chart_js
+
+    write_line(replace_placeholders([[
+{{ html_template }}
+]], variables))
 end

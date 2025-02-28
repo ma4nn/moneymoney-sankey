@@ -1,6 +1,7 @@
-import {replaceInFile} from 'replace-in-file'
+import { replaceInFile } from 'replace-in-file'
 import crypto from 'crypto';
 import { readFile } from 'fs/promises';
+import fs from 'fs';
 
 const pkg = JSON.parse(await readFile(new URL('./package.json', import.meta.url)));
 const pkgLock = JSON.parse(await readFile(new URL('./package-lock.json', import.meta.url)));
@@ -30,6 +31,12 @@ async function calculateSris(urls) {
     return await Promise.all(urls.map(calculateSri));
 }
 
+function assertReplacedCount(results, count) {
+    results.every(result => (! result.hasChanged || result.numReplacements !== count) && (() => {
+        throw new Error('error during build: ' + result.numReplacements + ' replacements in file ' + result.file + ' differs from expected ' + count)
+    })())
+}
+
 (async() => {
     const sris = await calculateSris(Object.values(urls));
     // variable format {{ x }} has been chosen so that a JavaScript error is thrown in case that variable has not been replaced
@@ -38,11 +45,17 @@ async function calculateSris(urls) {
     Object.keys(urls).forEach(key => variables.push(new RegExp('{{ ' + key + '_sri }}',"g")));
 
     return {
-        files: pkg.config.outputDir + "/*.lua", // @todo read from stdin?
+        files: pkg.config.outputDir + "/" + pkg.config.templateFile,
         from: variables,
         to: [majorMinorVersion(process.env.npm_package_version), process.env.INLINE_CSS, process.env.INLINE_JS, ...Object.values(urls), ...sris],
         countMatches: true,
     };
-})().then(options => replaceInFile(options)
-    .then(results => results.every(result => (! result.hasChanged || result.numReplacements !== options.from.length) && (() => { throw new Error('error during build: no replacements done in file ' + result.file) })()))
-);
+})()
+    .then(options => replaceInFile(options).then(results => assertReplacedCount(results, options.from.length)))
+    .then(() => replaceInFile({
+        files: pkg.config.outputDir + "/*.lua",
+        from: '{{ html_template }}',
+        to: [fs.readFileSync(pkg.config.outputDir + "/" + pkg.config.templateFile, 'utf8')],
+        countMatches: true,
+    }).then(results => assertReplacedCount(results, 1)))
+    .then(() => console.log(`🎉 Build complete`))
