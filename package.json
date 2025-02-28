@@ -26,7 +26,6 @@
     "test": "npm-run-all test:*",
     "test:validate": "npm-run-all test:validate:*",
     "test:validate:compile": "mkdir -p tmp && lua ./src/sankey_test.lua > tmp/index.html && html-validate tmp/index.html",
-    "test:validate:placeholder": "grep -qE '{{ ([a-zA-Z_]+) }}' $npm_package_config_outputDir/*.lua && (echo 'error: placeholders have not been replaced in dist!' && exit 1) || exit 0",
     "test:e2e": "npx playwright test",
     "start": "http-server tmp/"
   },

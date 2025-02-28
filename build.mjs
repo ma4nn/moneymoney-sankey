@@ -54,8 +54,8 @@ function assertReplacedCount(results, count) {
     .then(options => replaceInFile(options).then(results => assertReplacedCount(results, options.from.length)))
     .then(() => replaceInFile({
         files: pkg.config.outputDir + "/*.lua",
-        from: '{{ html_template }}',
-        to: [fs.readFileSync(pkg.config.outputDir + "/" + pkg.config.templateFile, 'utf8')],
+        from: [/{{ version }}/g, '{{ html_template }}'],
+        to: [majorMinorVersion(process.env.npm_package_version), fs.readFileSync(pkg.config.outputDir + "/" + pkg.config.templateFile, 'utf8')],
         countMatches: true,
-    }).then(results => assertReplacedCount(results, 1)))
+    }).then(results => assertReplacedCount(results, 2)))
     .then(() => console.log(`🎉 Build complete`))

@@ -117,7 +117,7 @@ end
 
 local function replace_placeholders(template, data)
     for key, value in pairs(data) do
-        template = template:gsub("%%%%" .. key .. "%%%%", value)
+        template = template:gsub("{{ " .. key .. " }}", value)
     end
     return template
 end
