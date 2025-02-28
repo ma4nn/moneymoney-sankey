@@ -2,6 +2,9 @@ import { replaceInFile } from 'replace-in-file'
 import crypto from 'crypto';
 import { readFile } from 'fs/promises';
 import fs from 'fs';
+import CleanCSS from 'clean-css';
+import path from 'path';
+import esbuild from 'esbuild';
 
 const pkg = JSON.parse(await readFile(new URL('./package.json', import.meta.url)));
 const pkgLock = JSON.parse(await readFile(new URL('./package-lock.json', import.meta.url)));
@@ -44,10 +47,23 @@ function assertReplacedCount(results, count) {
     Object.keys(urls).forEach(key => variables.push(new RegExp('{{ ' + key + '_url }}',"g")));
     Object.keys(urls).forEach(key => variables.push(new RegExp('{{ ' + key + '_sri }}',"g")));
 
+    const css = fs.readFileSync(path.resolve('src/style.css'), 'utf-8');
+    const minifiedCss = new CleanCSS().minify(css).styles;
+
+    const result = await esbuild.build({
+        entryPoints: ['src/main.ts'],
+        bundle: true,
+        minify: true,
+        format: 'esm',
+        tsconfig: path.resolve('./tsconfig.json'),
+        write: false,
+    });
+    const minifiedJs = result.outputFiles[0].text;
+
     return {
         files: pkg.config.outputDir + "/" + pkg.config.templateFile,
         from: variables,
-        to: [majorMinorVersion(process.env.npm_package_version), process.env.INLINE_CSS, process.env.INLINE_JS, ...Object.values(urls), ...sris],
+        to: [majorMinorVersion(process.env.npm_package_version), minifiedCss, minifiedJs, ...Object.values(urls), ...sris],
         countMatches: true,
     };
 })()

@@ -1,4 +1,3 @@
-/*! main.ts */
 // Highcharts library is loaded via CDN, just importing typedefs here
 type _Highcharts = typeof import('../node_modules/highcharts/highcharts');
 import Tree from "./Tree";
@@ -13,7 +12,9 @@ let chartData = null;
 let excludedCategoryIds: number[] = [];
 const mainNodeId = 1;
 
-function ready(fn: any): void {
+export { Tree }
+
+export function ready(fn: any): void {
     if (document.readyState !== 'loading') {
         fn();
     } else {
@@ -103,7 +104,7 @@ function buildChartNodesConfig() {
     return nodes;
 }
 
-function createChart(chartDataTree: Tree): Highcharts.Chart {
+export function createChart(chartDataTree: Tree): Highcharts.Chart {
     console.debug('tree data:');
     console.debug(chartDataTree);
 

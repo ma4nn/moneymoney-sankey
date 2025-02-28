@@ -1,4 +1,3 @@
-/*! Tree.ts */
 class TreeNode {
   key: number;
   value: any;
