@@ -65,15 +65,11 @@
     </footer>
 
     <script type="module">
-        const numberOfMonths = {{ number_of_months }};
-        const categories = new Map([{{ categories_json }}]);
-        const currency = '{{ currency }}';
-
         {{ inline_js }}
 
         let chartDataTree = new Tree(1, 0);
         {{ init_chart_js }}
-        ready(() => window.chart = createChart(chartDataTree));
+        ready(() => window.chart = createChart(chartDataTree, new Map([{{ categories_json }}]), {{ number_of_months }}, '{{ currency }}'));
     </script>
 </body>
 </html>

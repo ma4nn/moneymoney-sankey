@@ -8,9 +8,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Tree from "./Tree";
 import './style.css';
 
-declare let categories: Map<number,string>;
-declare let numberOfMonths: number;
-declare let currency: string;
+let categories: Map<number,string>;
+let numberOfMonths: number;
+let currency: string;
 let chart = null;
 let divider = 1;
 let chartData = null;
@@ -109,7 +109,11 @@ function buildChartNodesConfig() {
     return nodes;
 }
 
-export function createChart(chartDataTree: Tree): Highcharts.Chart {
+export function createChart(chartDataTree: Tree, initCategories: Map<number,string>, initNumberOfMonths: number, initCurrency: string): Highcharts.Chart {
+    categories = initCategories;
+    numberOfMonths = initNumberOfMonths;
+    currency = initCurrency;
+
     console.debug('tree data:');
     console.debug(chartDataTree);
 
