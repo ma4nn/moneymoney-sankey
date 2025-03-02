@@ -11,7 +11,7 @@
 
 <body>
     <header class="container text-center">
-        <h1>Cashflows</h1>
+        <h1 class="my-4">Cashflows</h1>
         <h5>{{ account_name }}, {{ start_date }} bis {{ end_date }}</h5>
         <p>
             Das folgende <a href="https://de.wikipedia.org/wiki/Sankey-Diagramm" target="_blank" rel="external noopener">Sankey Chart</a>
@@ -55,9 +55,14 @@
         </div>
     </header>
 
-    <main id="chart-container"></main>
+    <main>
+        <section id="sankey" class="row">
+            <h2 class="visually-hidden">Sankey Chart</h2>
+            <div id="chart-container"></div>
+        </section>
+    </main>
 
-    <footer class="text-center text-opacity-25 text-secondary p-3">
+    <footer class="container text-center text-opacity-25 text-secondary p-3">
         <small>
             Dieser Bericht wurde am {{ today }} Uhr mit der MoneyMoney Extension
             <a href="https://github.com/ma4nn/moneymoney-sankey" target="_blank" class="text-opacity-25 text-secondary">moneymoney-sankey</a> Version v{{ version }} generiert.

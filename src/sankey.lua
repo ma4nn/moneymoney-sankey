@@ -109,7 +109,7 @@ local function add_or_update_category (new_category_path, type)
     local existing_category_id = get_category_id_by_path(new_category_path, type)
 
     if existing_category_id == nil then
-        table.insert(categories, {path = new_category_path, type = type })
+        table.insert(categories, {path = new_category_path, type = type})
     end
 
     return get_category_id_by_path(new_category_path, type)

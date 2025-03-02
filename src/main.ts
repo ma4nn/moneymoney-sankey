@@ -126,7 +126,7 @@ export function createChart(chartDataTree: Tree, initCategories: Map<number,stri
         (document.querySelector('form #categories') as HTMLSelectElement).add(new Option(categoryPath, categoryPath))
     });
 
-    document.querySelector("form label[for='isShowMonthlyValues']").insertAdjacentText("beforeend" , "(insg. " + Math.round(numberOfMonths) + " Monat(e))");
+    document.querySelector("form label[for='isShowMonthlyValues']").insertAdjacentText("beforeend" , " (insg. " + Math.round(numberOfMonths) + " Monat(e))");
     if (Math.round(numberOfMonths) == 1) {
         document.querySelector("form input#isShowMonthlyValues").setAttribute('disabled', 'disabled');
     }
