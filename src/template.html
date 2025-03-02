@@ -10,49 +10,32 @@
 </head>
 
 <body>
+    <svg class="d-none">
+        <defs>
+            <svg id="arrow-up-right-square" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm5.854 8.803a.5.5 0 1 1-.708-.707L9.243 6H6.475a.5.5 0 1 1 0-1h3.975a.5.5 0 0 1 .5.5v3.975a.5.5 0 1 1-1 0V6.707z"/>
+            </svg>
+            <svg id="arrow-up-right" viewBox="0 0 16 16">
+  <path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/>
+</svg>
+        </defs>
+    </svg>
     <header class="container text-center">
         <h1 class="my-4">Cashflows</h1>
         <h5>{{ account_name }}, {{ start_date }} bis {{ end_date }}</h5>
         <p>
-            Das folgende <a href="https://de.wikipedia.org/wiki/Sankey-Diagramm" target="_blank" rel="external noopener">Sankey Chart</a>
-            zeigt die aus <a href="https://moneymoney-app.com/" target="_blank" rel="external noopener">MoneyMoney</a> exportierten Cashflows des
+            Das folgende <a class="icon-link" href="https://de.wikipedia.org/wiki/Sankey-Diagramm" target="_blank" rel="external noopener">Sankey Chart<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a>
+            zeigt die aus <a class="icon-link" href="https://moneymoney-app.com/" target="_blank" rel="external noopener">MoneyMoney<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a> exportierten Cashflows des
             <strong>Kontos {{ account_name }} ({{ account_number }})</strong> für den <strong>Zeitraum {{ start_date }} bis {{ end_date }}</strong>.<br>
             Es wurde aus insgesamt <strong id="transactionCount">{{ transaction_count }} Transaktionen</strong> generiert.
         </p>
 
-        <div class="controls pb-4 text-start">
-            <div class="accordion" id="accordionConfig">
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="headingOne">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                            <svg xmlns="http://www.w3.org/2000/svg" height="16" width="16" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"/></svg>&nbsp;Chart anpassen..
-                        </button>
-                    </h2>
-                    <div id="collapseOne" class="accordion-collapse collapsing" aria-labelledby="headingOne" data-bs-parent="#accordionConfig">
-                        <div class="accordion-body">
-                            <form>
-                                <div class="row g-3">
-                                    <div class="col-12">
-                                        <label for="categories">Kategorie ausschließen</label>
-                                        <select id="categories" class="form-select" multiple aria-label="multiple select">
-                                        </select>
-                                    </div>
-                                    <div class="col-12">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="isShowMonthlyValues">
-                                            <label class="form-check-label" for="isShowMonthlyValues">Werte auf Monatsbasis anzeigen</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-12">
-                                        <button id="applySettingsButton" type="submit" class="btn btn-primary">Anwenden</button>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <button class="btn btn-light" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasConfig" aria-controls="offcanvasConfig">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear-fill" viewBox="0 0 16 16">
+                <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
+            </svg>
+            Chart anpassen
+        </button>
     </header>
 
     <main>
@@ -68,6 +51,35 @@
             <a href="https://github.com/ma4nn/moneymoney-sankey" target="_blank" class="text-opacity-25 text-secondary">moneymoney-sankey</a> Version v{{ version }} generiert.
         </small>
     </footer>
+
+
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasConfig" aria-labelledby="offcanvasConfigLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasConfigLabel">Konfiguration</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <p>Hier kann das Sankey-Chart angepasst werden.</p>
+            <form>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label for="categories">Kategorie ausschließen</label>
+                        <select id="categories" class="form-select" multiple aria-label="multiple select">
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="isShowMonthlyValues">
+                            <label class="form-check-label" for="isShowMonthlyValues">Werte auf Monatsbasis anzeigen</label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <button id="applySettingsButton" type="submit" class="btn btn-primary" data-bs-dismiss="offcanvas">Anwenden</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script type="module">
         {{ inline_js }}
