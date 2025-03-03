@@ -1,0 +1,83 @@
+name: Build Lua Script
+
+on: [push, workflow_dispatch]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+
+    - uses: leafo/gh-actions-lua@v11
+      with:
+        luaVersion: "5.4"
+
+    - name: Build
+      run: make
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+
+    - name: Test
+      run: make test
+
+    - name: Archive Production Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: moneymoney-sankey
+        path: dist/SankeyChart.lua
+
+    - name: Archive Sample Output
+      uses: actions/upload-artifact@v4
+      with:
+        name: sample-output
+        path: tmp/
+
+    - name: Archive Test Reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 30
+
+  deploy-demo:
+    if: github.ref_name == github.event.repository.default_branch
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: sample-output
+          path: ./dist
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
