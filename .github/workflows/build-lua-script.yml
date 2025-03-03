@@ -32,20 +32,8 @@ jobs:
     - name: Build
       run: make
 
-    - name: Extract Playwright Version
-      id: playwright-version
-      shell: bash
-      run: echo "PLAYWRIGHT_VERSION=$(jq -r '.packages["node_modules/@playwright/test"].version' package-lock.json)" >> $GITHUB_ENV
-
-    - name: Cache Playwright Browsers
-      id: playwright-cache
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/ms-playwright
-        key: playwright-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}
-
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps --only-shell
+    - name: Setup Playwright
+      uses: ./.github/actions/setup-playwright
 
     - name: Test
       run: make test
