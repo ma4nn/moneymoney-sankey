@@ -15,19 +15,26 @@ test('has valid Saldo', async ({ page }) => {
 });
 
 test('has correct metadata', async ({ page }) => {
-  await page.locator('#chart-container').screenshot({ path: 'tmp/sample.png' }); // take a screenshot for readme file
+  await page.locator('#chart-container').screenshot({ path: 'tmp/sample.png' }); // take a screenshot for README file
 
   await expect(page.locator('#transactionCount')).toHaveText('7 Transaktionen');
 });
 
-test('can view options', async ({ page }) => {
-  const config = page.locator('#offcanvasConfig');
-  const select = page.getByRole('button', { name: 'Chart anpassen' });
+test('threshold can be configured', async ({ page }) => {
+  const configMenu = page.locator('#offcanvasConfig');
+  const button = page.getByRole('button', { name: 'Chart anpassen' });
 
-  await expect(config).toBeHidden();
-  await expect(select).toBeVisible();
-  await expect(select).toBeEnabled();
+  await expect(configMenu).toBeHidden();
+  await expect(button).toBeVisible();
+  await expect(button).toBeEnabled();
 
-  await select.click();
-  await expect(config).toBeVisible();
+  await button.click();
+  await expect(configMenu).toBeVisible();
+
+  const node = page.getByTestId('chart-node-3');
+  await expect(node).toBeVisible();
+  const thresholdInput = page.locator('form #threshold');
+  await thresholdInput.fill('140');
+  await page.getByRole('button', { name: 'Anwenden' }).click();
+  await expect(node).toBeHidden();
 });

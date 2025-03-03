@@ -61,12 +61,12 @@
         </div>
         <div class="offcanvas-body">
             <p>
-                Das <a class="icon-link" href="https://de.wikipedia.org/wiki/Sankey-Diagramm" target="_blank" rel="external noopener">Sankey Chart<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a>
-                zeigt die aus <a class="icon-link" href="https://moneymoney-app.com/" target="_blank" rel="external noopener">MoneyMoney<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a> exportierten Cashflows des
-                Kontos <strong>{{ account_name }} ({{ account_number }})</strong> für den Zeitraum <strong>{{ start_date }} bis {{ end_date }}</strong>.
-            </p>
-            <p>
-                Es wurde aus insgesamt <strong id="transactionCount">{{ transaction_count }} Transaktionen</strong> generiert.
+                <small>
+                    Das <a class="icon-link" href="https://de.wikipedia.org/wiki/Sankey-Diagramm" target="_blank" rel="external noopener">Sankey Chart<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a>
+                    zeigt die aus <a class="icon-link" href="https://moneymoney-app.com/" target="_blank" rel="external noopener">MoneyMoney<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a> exportierten Cashflows des
+                    Kontos <strong>{{ account_name }} ({{ account_number }})</strong> für den Zeitraum <strong>{{ start_date }} bis {{ end_date }}</strong>.<br>
+                    Es wurde aus insgesamt <strong id="transactionCount">{{ transaction_count }} Transaktionen</strong> generiert.
+                </small>
             </p>
             <form>
                 <div class="row g-3">
@@ -75,11 +75,20 @@
                         <select id="categories" class="form-select" multiple aria-label="multiple select">
                         </select>
                     </div>
+
                     <div class="col-12">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="isShowMonthlyValues">
                             <label class="form-check-label" for="isShowMonthlyValues">Werte pro Monat anzeigen</label>
                             <span class="form-text">(insg. {{ number_of_months_formatted }} Monat(e))</span>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="mb-3">
+                            <label for="threshold" class="form-label">Schwellwert ({{ currency }})</label>
+                            <input type="number" class="form-control" id="threshold" placeholder="100" min="0">
+                            <div class="form-text">Es werden nur Pfade angezeigt, die größer als der konfigurierte Wert sind.</div>
                         </div>
                     </div>
 

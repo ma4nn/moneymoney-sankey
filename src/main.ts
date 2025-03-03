@@ -7,15 +7,16 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import Tree from "./Tree";
 import './style.css';
+import {PointOptionsObject, SeriesSankeyNodesOptionsObject} from "highcharts/highcharts.src";
 
 let categories: Map<number,string>;
 let numberOfMonths: number;
 let currency: string;
-let chart = null;
-let divider = 1;
-let chartData = null;
+let chart: Highcharts.Chart = null;
+let scaling_factor: number = 1;
+let chartData: Array<PointOptionsObject> = null;
 let excludedCategoryIds: number[] = [];
-const mainNodeId = 1;
+const mainNodeId: number = 1;
 
 export { Tree }
 
@@ -39,8 +40,14 @@ function setExcludedCategoriesFromSelect(): void {
 }
 
 function updateChartData(chartDataTree: Tree): void {
-    divider = (document.querySelector("form #isShowMonthlyValues") as HTMLInputElement).checked ? numberOfMonths : 1;
-    console.debug('using divider ' + divider);
+    console.debug('updating chart data..');
+
+    scaling_factor = (document.querySelector("form #isShowMonthlyValues") as HTMLInputElement).checked ? numberOfMonths : 1;
+    console.debug('scaling: ' + scaling_factor);
+
+    let threshold = parseFloat((document.querySelector("form #threshold") as HTMLInputElement).value);
+    threshold = isNaN(threshold) ? 0 : threshold;
+    console.debug('threshold: ' + threshold);
 
     // verify that excludedCategoryIds does not contain main node
     const index = excludedCategoryIds.indexOf(mainNodeId);
@@ -52,7 +59,7 @@ function updateChartData(chartDataTree: Tree): void {
     console.debug(excludedCategoryIds);
 
     // recalculate weight values for each parent node
-    [...chartDataTree.postOrderTraversal()].filter(x => x.children.length > 0).map(x => x.value = x.children.reduce(function (a: Tree, b: Tree) {
+    [...chartDataTree.postOrderTraversal()].filter(x => x.children.length > 0).map(x => x.value = x.children.reduce((a: Tree, b: Tree) => {
         return excludedCategoryIds.includes(parseInt(b["key"])) ? a : a + b["value"];
     }, 0));
 
@@ -63,13 +70,19 @@ function updateChartData(chartDataTree: Tree): void {
     //  - using category ids instead of names because these might be the same for income and expense
     chartData = [...chartDataTree.preOrderTraversal()].filter(x => x.value >= 0 && x.parent && ! excludedCategoryIds.includes(x.key)).map(x => { return {from: String(x.key), to: String(x.parent.key), weight: x.value, custom: {real: x.value}}})
         .concat([...chartDataTree.preOrderTraversal()].filter(x => x.value < 0 && x.parent && ! excludedCategoryIds.includes(x.key)).map(x => { return {from: String(x.parent.key), to: String(x.key), weight: (-1)*x.value, outgoing: !x.hasChildren, custom: {real: x.value}}}));
+    chartData = chartData.filter((x: PointOptionsObject) => Math.abs(x.weight) > threshold);
+
     console.debug('chart data:');
     console.debug(chartData);
+
     (chart.series[0] as Highcharts.Series).setData(chartData);
+
+    // add ids for testing
+    chart.series[0].points.map(point => point.graphic.element).forEach((elem, i) => elem.setAttribute('data-testid', 'chart-node-' + i));
 }
 
 function numberFormat(nb: number) {
-    return '<strong>' + new Intl.NumberFormat(undefined, { style: 'currency', currency: currency }).format(nb/divider) + '</strong>';
+    return '<strong>' + new Intl.NumberFormat(undefined, { style: 'currency', currency: currency }).format(nb/scaling_factor) + '</strong>';
 }
 
 function numberFormatColored(nb: number) {
@@ -77,20 +90,21 @@ function numberFormatColored(nb: number) {
     return '<strong style="color:' + color + '">' + numberFormat(nb) + '</strong>';
 }
 
-function buildChartNodesConfig() {
-    let nodes = [];
+function buildChartNodesConfig(): Array<SeriesSankeyNodesOptionsObject> {
+    let nodes: Array<SeriesSankeyNodesOptionsObject> = [];
     nodes.push({
         id: String(mainNodeId),
         name: categories.get(mainNodeId),
         colorIndex: 1,
-        className: "main-node",
         dataLabels: {
             className: "main-node",
-            nodeFormatter: function() {
-                const incomingWeight = ('linksTo' in this.point ? (this.point as any).linksTo.map(point => point.weight) : []).reduce((pv, cv) => pv + cv, 0);
-                const outgoingWeight = ('linksFrom' in this.point ? (this.point as any).linksFrom.map(point => point.weight) : []).reduce((pv, cv) => pv + cv, 0);
+            nodeFormatter: function(): string {
+                // @ts-ignore
+                const point: any = this.point;
+                const incomingWeight = ('linksTo' in point ? point.linksTo.map((point: PointOptionsObject) => point.weight) : []).reduce((pv, cv) => pv + cv, 0);
+                const outgoingWeight = ('linksFrom' in point ? point.linksFrom.map(point => point.weight) : []).reduce((pv, cv) => pv + cv, 0);
 
-                return this.point.name + ': ' + numberFormatColored(incomingWeight - outgoingWeight);
+                return point.name + ': ' + numberFormatColored(incomingWeight - outgoingWeight);
             }
         }
     });
@@ -98,7 +112,7 @@ function buildChartNodesConfig() {
     new Map([...categories].filter(([categoryId, categoryPath]) => categoryId !== mainNodeId))
         .forEach(function(categoryPath, categoryId) {
             nodes.push({
-               id: String(categoryId), // Highcarts need the id to be string
+               id: String(categoryId), // Highcarts needs the id to be string
                name: categoryPath.split("]] .. CATEGORIES_PATH_SEPARATOR .. [[").pop() // remove first separator from path
             });
     });
@@ -131,7 +145,9 @@ export function createChart(chartDataTree: Tree, initCategories: Map<number,stri
     }
 
     document.querySelector("#applySettingsButton").addEventListener('click', (event) => {
-        event.preventDefault(); setExcludedCategoriesFromSelect(); updateChartData(chartDataTree)
+        event.preventDefault();
+        setExcludedCategoriesFromSelect();
+        updateChartData(chartDataTree);
     });
 
     /** @see https://www.highcharts.com/docs/chart-and-series-types/sankey-diagram */
@@ -182,7 +198,7 @@ export function createChart(chartDataTree: Tree, initCategories: Map<number,stri
             dataLabels: {
                 align: 'right',
                 padding: 30,
-                nodeFormatter: function() {
+                nodeFormatter: function(): string {
                     const point = this as Highcharts.Point;
                     const sum = 'getSum' in this ? (this as any).getSum() : 0;
                     const percentage = 'linksTo' in point && point.linksTo[0] ? (sum / point.linksTo[0].fromNode.sum) * 100 : null;
@@ -192,12 +208,12 @@ export function createChart(chartDataTree: Tree, initCategories: Map<number,stri
             },
             tooltip: {
                 // tooltip for link
-                pointFormatter: function() {
+                pointFormatter: function(): string {
                     const point = this as any;
                     return point.fromNode.name + " → " + point.toNode.name + ": " + numberFormat(point.weight) + "<br /><br /><span class='small'>(Klick entfernt die Kategorie aus dem Chart.)</span>";
                 },
                 // tooltip for node
-                nodeFormatter:  function() {
+                nodeFormatter: function(): string {
                     const point = this as Highcharts.Point;
 
                     let totalWeight = 0;
@@ -221,7 +237,7 @@ export function createChart(chartDataTree: Tree, initCategories: Map<number,stri
                     return point.name + ': ' + (totalWeight != 0 ? numberFormatColored(totalWeight) : '') + '<br />' + weightsDetailTooltip;
                 }
             },
-            nodes: buildChartNodesConfig(),
+            nodes: buildChartNodesConfig()
         }],
         chart: {
             height: 700,
