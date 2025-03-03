@@ -15,10 +15,9 @@ test('has valid Saldo', async ({ page }) => {
 });
 
 test('has correct metadata', async ({ page }) => {
-  const div = page.locator('header #transactionCount');
+  await page.locator('#chart-container').screenshot({ path: 'tmp/sample.png' }); // take a screenshot for readme file
 
-  await expect(div).toBeVisible();
-  await expect(div).toHaveText('7 Transaktionen');
+  await expect(page.locator('#transactionCount')).toHaveText('7 Transaktionen');
 });
 
 test('can view options', async ({ page }) => {

@@ -16,29 +16,25 @@
                 <path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm5.854 8.803a.5.5 0 1 1-.708-.707L9.243 6H6.475a.5.5 0 1 1 0-1h3.975a.5.5 0 0 1 .5.5v3.975a.5.5 0 1 1-1 0V6.707z"/>
             </svg>
             <svg id="arrow-up-right" viewBox="0 0 16 16">
-  <path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/>
-</svg>
+              <path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/>
+            </svg>
         </defs>
     </svg>
+
     <header class="container text-center">
         <h1 class="my-4">Cashflows</h1>
-        <h5>{{ account_name }}, {{ start_date }} bis {{ end_date }}</h5>
-        <p>
-            Das folgende <a class="icon-link" href="https://de.wikipedia.org/wiki/Sankey-Diagramm" target="_blank" rel="external noopener">Sankey Chart<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a>
-            zeigt die aus <a class="icon-link" href="https://moneymoney-app.com/" target="_blank" rel="external noopener">MoneyMoney<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a> exportierten Cashflows des
-            <strong>Kontos {{ account_name }} ({{ account_number }})</strong> für den <strong>Zeitraum {{ start_date }} bis {{ end_date }}</strong>.<br>
-            Es wurde aus insgesamt <strong id="transactionCount">{{ transaction_count }} Transaktionen</strong> generiert.
-        </p>
-
-        <button class="btn btn-light" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasConfig" aria-controls="offcanvasConfig">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear-fill" viewBox="0 0 16 16">
-                <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
-            </svg>
-            Chart anpassen
-        </button>
+        <p>{{ account_name }}, {{ start_date }} bis {{ end_date }}</p>
+        <button class="btn btn-light" type="button" data-bs-toggle="offcanvas"
+                    data-bs-target="#offcanvasConfig" aria-controls="offcanvasConfig">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                     class="bi bi-gear-fill" viewBox="0 0 16 16">
+                    <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
+                </svg>
+                Chart anpassen
+            </button>
     </header>
 
-    <main>
+    <main class="container-fluid my-3">
         <section id="sankey" class="row">
             <h2 class="visually-hidden">Sankey Chart</h2>
             <div id="chart-container"></div>
@@ -47,11 +43,16 @@
 
     <footer class="container text-center text-opacity-25 text-secondary p-3">
         <small>
-            Dieser Bericht wurde am {{ today }} Uhr mit der MoneyMoney Extension
-            <a href="https://github.com/ma4nn/moneymoney-sankey" target="_blank" class="text-opacity-25 text-secondary">moneymoney-sankey</a> Version v{{ version }} generiert.
+            Generiert am {{ today }} Uhr mit der MoneyMoney Extension
+            <a href="https://github.com/ma4nn/moneymoney-sankey" target="_blank" class="text-opacity-25 text-secondary">moneymoney-sankey</a> Version v{{ version }}.<br>
+            &copy; 2024-25 <a class="text-opacity-25 text-secondary" href="https://dev-investor.de" rel="external noopener" target="_blank">dev-investor</a>.
+            Die Extension wird kostenlos unter der MIT Lizenz zur Verfügung gestellt. Danke für
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
+              <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+            </svg>
+            auf Github.
         </small>
     </footer>
-
 
     <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasConfig" aria-labelledby="offcanvasConfigLabel">
         <div class="offcanvas-header">
@@ -59,7 +60,14 @@
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body">
-            <p>Hier kann das Sankey-Chart angepasst werden.</p>
+            <p>
+                Das <a class="icon-link" href="https://de.wikipedia.org/wiki/Sankey-Diagramm" target="_blank" rel="external noopener">Sankey Chart<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a>
+                zeigt die aus <a class="icon-link" href="https://moneymoney-app.com/" target="_blank" rel="external noopener">MoneyMoney<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a> exportierten Cashflows des
+                Kontos <strong>{{ account_name }} ({{ account_number }})</strong> für den Zeitraum <strong>{{ start_date }} bis {{ end_date }}</strong>.
+            </p>
+            <p>
+                Es wurde aus insgesamt <strong id="transactionCount">{{ transaction_count }} Transaktionen</strong> generiert.
+            </p>
             <form>
                 <div class="row g-3">
                     <div class="col-12">
@@ -70,9 +78,11 @@
                     <div class="col-12">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="isShowMonthlyValues">
-                            <label class="form-check-label" for="isShowMonthlyValues">Werte auf Monatsbasis anzeigen</label>
+                            <label class="form-check-label" for="isShowMonthlyValues">Werte pro Monat anzeigen</label>
+                            <span class="form-text">(insg. {{ number_of_months_formatted }} Monat(e))</span>
                         </div>
                     </div>
+
                     <div class="col-12">
                         <button id="applySettingsButton" type="submit" class="btn btn-primary" data-bs-dismiss="offcanvas">Anwenden</button>
                     </div>

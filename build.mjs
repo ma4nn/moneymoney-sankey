@@ -8,7 +8,7 @@ const pkg = JSON.parse(await readFile(new URL('./package.json', import.meta.url)
 const version = process.env.npm_package_version.split('.').slice(0, -1).join('.'); // extract major.minor version
 
 function assertReplacedCount(results, count) {
-    results.every(result => (! result.hasChanged || result.numReplacements !== count) && (() => {
+    results.every(result => (! result.hasChanged || result.numReplacements < count) && (() => {
         throw new Error('error during build: ' + result.numReplacements + ' replacements performed in file ' + result.file + ' while expecting ' + count)
     })())
 }

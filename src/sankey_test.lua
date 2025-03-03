@@ -29,7 +29,7 @@ local transactions = {
 
 local sankey_extension = require("dist/SankeyChart")
 
-WriteHeader (dummyAccount, os.time{year=2024, month=3, day=10, hour=0}, os.time{year=2024, month=4, day=19, hour=0}, #transactions)
+WriteHeader (dummyAccount, os.time{year=2024, month=3, day=10, hour=0}, os.time{year=2024, month=5, day=19, hour=0}, #transactions)
 WriteTransactions (dummyAccount, transactions)
 WriteTail (dummyAccount)
 

@@ -130,6 +130,7 @@ function WriteHeader (account, startDate, endDate, transactionCount)
     variables["account_number"] = account.accountNumber
     variables["transaction_count"] = transactionCount
     variables["number_of_months"] = math.max(os.difftime(endDate, startDate) / SECONDS_PER_MONTH, 1)
+    variables["number_of_months_formatted"] = math.floor(variables["number_of_months"])
     variables["currency"] = account.currency
 
     -- the currency to filter

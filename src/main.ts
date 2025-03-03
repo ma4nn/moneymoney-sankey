@@ -126,7 +126,6 @@ export function createChart(chartDataTree: Tree, initCategories: Map<number,stri
         (document.querySelector('form #categories') as HTMLSelectElement).add(new Option(categoryPath, categoryPath))
     });
 
-    document.querySelector("form label[for='isShowMonthlyValues']").insertAdjacentHTML("beforeend" , " <span class='form-text'>(insg. " + Math.round(numberOfMonths) + " Monat(e))</span>");
     if (Math.round(numberOfMonths) == 1) {
         document.querySelector("form input#isShowMonthlyValues").setAttribute('disabled', 'disabled');
     }
@@ -146,6 +145,7 @@ export function createChart(chartDataTree: Tree, initCategories: Map<number,stri
             }
         },
         series: [{
+            animation: false,
             cursor: 'pointer',
             events: {
                 click: function (event: any) {
