@@ -21,7 +21,7 @@ test('has correct metadata', async ({ page }) => {
 });
 
 test('can view options', async ({ page }) => {
-  const config = page.locator('#accordionConfig #collapseOne');
+  const config = page.locator('#offcanvasConfig');
   const select = page.getByRole('button', { name: 'Chart anpassen' });
 
   await expect(config).toBeHidden();
