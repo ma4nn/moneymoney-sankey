@@ -3,6 +3,7 @@ import { readFile } from 'fs/promises';
 import fs from 'fs';
 import path from 'path';
 import esbuild from 'esbuild';
+import crypto from 'crypto';
 
 const pkg = JSON.parse(await readFile(new URL('./package.json', import.meta.url)));
 const version = process.env.npm_package_version.split('.').slice(0, -1).join('.'); // extract major.minor version
@@ -11,6 +12,10 @@ function assertReplacedCount(results, count) {
     results.every(result => (! result.hasChanged || result.numReplacements < count) && (() => {
         throw new Error('error during build: ' + result.numReplacements + ' replacements performed in file ' + result.file + ' while expecting ' + count)
     })())
+}
+
+function createNonce() {
+    return crypto.randomBytes(16).toString('base64');
 }
 
 /**
@@ -44,8 +49,8 @@ function assertReplacedCount(results, count) {
 
     return {
         files: pkg.config.outputDir + "/" + pkg.config.templateFile,
-        from: [/{{ version }}/g, '{{ inline_css }}', '{{ inline_js }}'],
-        to: [version, cssContents, jsContents],
+        from: [/{{ nonce }}/g, /{{ version }}/g, '{{ inline_css }}', '{{ inline_js }}'],
+        to: [createNonce(), version, cssContents, jsContents],
         countMatches: true,
     };
 })()
