@@ -190,7 +190,7 @@ end
 function WriteTail (account)
     local categories_json = ""
     for category_id,category in pairs(categories) do
-        categories_json = categories_json .. '[' .. category_id .. ', "' .. category.path .. '"], '
+        categories_json = categories_json .. '[' .. category_id .. ', {id: ' .. category_id .. ', name: "' .. category.path .. '", active: true}], '
     end
 
     variables["categories_json"] = categories_json

@@ -1,22 +1,17 @@
-import Highcharts from 'highcharts/es-modules/masters/highcharts.src.js';
-import 'highcharts/es-modules/masters/modules/sankey.src';
-import 'highcharts/css/highcharts.css';
-
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+import {Config, save as persistConfig, load as loadConfig} from "./config";
 import Tree from "./Tree";
+import {SankeyChart} from "./sankey";
+import {Category} from "./category";
 import './style.css';
-import {PointOptionsObject, SeriesSankeyNodesOptionsObject} from "highcharts/highcharts.src";
 
-let categories: Map<number,string>;
-let numberOfMonths: number;
-let currency: string;
-let chart: Highcharts.Chart = null;
-let scaling_factor: number = 1;
-let chartData: Array<PointOptionsObject> = null;
-let excludedCategoryIds: number[] = [];
-const mainNodeId: number = 1;
+let chart: SankeyChart;
+const defaultThreshold: number = 0;
+const defaultScaling: number = 1;
+
+let config: Config = {excludedCategoryIds: [], scalingFactor: defaultScaling, threshold: defaultThreshold, currency: 'EUR', categories: new Map()};
 
 export { Tree }
 
@@ -28,227 +23,119 @@ export function ready(fn: any): void {
     }
 }
 
-function getCategoryIdByPath(val: string): number {
-    return [...categories].find(([key, value]) => val === value)[0];
-}
+function setCategories(): void {
+    document.querySelectorAll<HTMLTableRowElement>("form #category-config tbody tr").forEach(row => {
+        config.categories.get(parseInt(row.dataset.categoryId)).active = row.querySelector<HTMLInputElement>('input[name="category-is-active"]').checked
+    });
 
-function setExcludedCategoriesFromSelect(): void {
-    // Translate excluded category paths to category ids (necessary because we might have the same path for income and expense)
-    const excludedCategoryPaths = [...(document.querySelector("form #categories") as HTMLSelectElement).options].filter(option => option.selected).map(option => option.value);
-    [...categories].filter(([categoryId, categoryPath]) => excludedCategoryPaths.includes(categoryPath))
-        .map(([categoryId, categoryPath]) => excludedCategoryIds.push(categoryId));
-}
+    // assure that main node is always active
+    config.categories.get(chart.mainNodeId).active = true;
 
-function updateChartData(chartDataTree: Tree): void {
-    console.debug('updating chart data..');
-
-    scaling_factor = (document.querySelector("form #isShowMonthlyValues") as HTMLInputElement).checked ? numberOfMonths : 1;
-    console.debug('scaling: ' + scaling_factor);
-
-    let threshold = parseFloat((document.querySelector("form #threshold") as HTMLInputElement).value);
-    threshold = isNaN(threshold) ? 0 : threshold;
-    console.debug('threshold: ' + threshold);
-
-    // verify that excludedCategoryIds does not contain main node
-    const index = excludedCategoryIds.indexOf(mainNodeId);
-    if (index > -1) {
-        excludedCategoryIds.splice(index, 1);
-    }
-
-    console.debug('excluded category ids:');
-    console.debug(excludedCategoryIds);
-
-    // recalculate weight values for each parent node
-    [...chartDataTree.postOrderTraversal()].filter(x => x.children.length > 0).map(x => x.value = x.children.reduce((a: Tree, b: Tree) => {
-        return excludedCategoryIds.includes(parseInt(b["key"])) ? a : a + b["value"];
-    }, 0));
-
-    // build the data array for the Highchart
-    // notes:
-    //  - node ids need to be strings according to the Highcharts definitions
-    //  - weight has to be positive (thats why the signed value is saved in custom attributes)
-    //  - using category ids instead of names because these might be the same for income and expense
-    chartData = [...chartDataTree.preOrderTraversal()].filter(x => x.value >= 0 && x.parent && ! excludedCategoryIds.includes(x.key)).map(x => { return {from: String(x.key), to: String(x.parent.key), weight: x.value, custom: {real: x.value}}})
-        .concat([...chartDataTree.preOrderTraversal()].filter(x => x.value < 0 && x.parent && ! excludedCategoryIds.includes(x.key)).map(x => { return {from: String(x.parent.key), to: String(x.key), weight: (-1)*x.value, outgoing: !x.hasChildren, custom: {real: x.value}}}));
-    chartData = chartData.filter((x: PointOptionsObject) => Math.abs(x.weight) > threshold);
-
-    console.debug('chart data:');
-    console.debug(chartData);
-
-    (chart.series[0] as Highcharts.Series).setData(chartData);
-
-    // add ids for testing
-    chart.series[0].points.map(point => point.graphic.element).forEach((elem, i) => elem.setAttribute('data-testid', 'chart-node-' + i));
-}
-
-function numberFormat(nb: number) {
-    return '<strong>' + new Intl.NumberFormat(undefined, { style: 'currency', currency: currency }).format(nb/scaling_factor) + '</strong>';
-}
-
-function numberFormatColored(nb: number) {
-    let color = (nb >= 0) ? '#14c57e' : '#ff6b4a';
-    return '<strong style="color:' + color + '">' + numberFormat(nb) + '</strong>';
-}
-
-function buildChartNodesConfig(): Array<SeriesSankeyNodesOptionsObject> {
-    let nodes: Array<SeriesSankeyNodesOptionsObject> = [];
-    nodes.push({
-        id: String(mainNodeId),
-        name: categories.get(mainNodeId),
-        colorIndex: 1,
-        dataLabels: {
-            className: "main-node",
-            nodeFormatter: function(): string {
-                // @ts-ignore
-                const point: any = this.point;
-                const incomingWeight = ('linksTo' in point ? point.linksTo.map((point: PointOptionsObject) => point.weight) : []).reduce((pv, cv) => pv + cv, 0);
-                const outgoingWeight = ('linksFrom' in point ? point.linksFrom.map(point => point.weight) : []).reduce((pv, cv) => pv + cv, 0);
-
-                return point.name + ': ' + numberFormatColored(incomingWeight - outgoingWeight);
-            }
+    config.categories.forEach(category => {
+        if (! category.active) {
+            chart.removeCategory(category.id)
         }
-    });
-
-    new Map([...categories].filter(([categoryId, categoryPath]) => categoryId !== mainNodeId))
-        .forEach(function(categoryPath, categoryId) {
-            nodes.push({
-               id: String(categoryId), // Highcarts needs the id to be string
-               name: categoryPath.split("]] .. CATEGORIES_PATH_SEPARATOR .. [[").pop() // remove first separator from path
-            });
-    });
-
-    console.debug('nodes data:');
-    console.debug(nodes);
-
-    return nodes;
+    })
 }
 
-export function createChart(chartDataTree: Tree, initCategories: Map<number,string>, initNumberOfMonths: number, initCurrency: string): Highcharts.Chart {
-    categories = initCategories;
-    numberOfMonths = initNumberOfMonths;
-    currency = initCurrency;
+function updateCategoryTable(): void {
+    const template = document.getElementById('category-table-template') as HTMLTemplateElement;
+    const container = document.getElementById('category-table-container') as HTMLElement;
 
-    console.debug('tree data:');
-    console.debug(chartDataTree);
+    container.querySelectorAll('table').forEach(element => element.remove());
 
-    // Fill exclude categories select with category paths
-    new Map(
-        [...categories].sort((a, b) => a[1] < b[1] ? -1 : 1)
-            .filter(([categoryId, categoryPath]) => categoryId !== mainNodeId)
-    ).forEach(function(categoryPath: string, categoryId: number) {
-        // Note: we do not use the category ids as values in the select as otherwise the category names could be duplicated in the select (for income and expense)
-        (document.querySelector('form #categories') as HTMLSelectElement).add(new Option(categoryPath, categoryPath))
+    const table = template.content.cloneNode(true) as HTMLTableElement;
+    const tbody = table.querySelector('tbody');
+
+    new Map([...config.categories.entries()].sort((a, b) => a[1].name.localeCompare(b[1].name))).forEach((category, categoryId) => {
+        if (categoryId === chart.mainNodeId) {
+            return;
+        }
+
+        const row = document.createElement('tr');
+        row.dataset.categoryId = String(categoryId);
+        // Note: we do not use the category ids as values as otherwise the category names could be duplicated in the select (for income and expense)
+        row.innerHTML = `
+      <td>${category.name}</td>
+      <td><div class="form-check"><input id="exclude-category-${categoryId}" name="category-is-active" class="form-check-input" type="checkbox" value="${category.name}" ${category.active ? 'checked' : ''}></div></td>
+    `;
+        tbody.appendChild(row);
     });
+
+    container.appendChild(table);
+}
+
+function setScaling(): void {
+    const input = document.querySelector("form #isShowMonthlyValues") as HTMLInputElement;
+    config.scalingFactor = input.checked ? parseFloat(input.value) : defaultScaling;
+    console.debug('scaling: ' + config.scalingFactor);
+}
+
+function setThreshold(): void {
+    let threshold = parseFloat((document.querySelector("form #threshold") as HTMLInputElement).value);
+    config.threshold = isNaN(threshold) ? defaultThreshold : threshold * config.scalingFactor;
+    console.debug('threshold: ' + config.threshold);
+}
+
+export function initApp(chartDataTree: Tree, numberOfMonths: number, currency: string, categories: Map<number,Category>): void {
+    config = loadConfig() ?? config;
+
+    config.categories = categories;
+    config.currency = currency;
+
+    chart = new SankeyChart(chartDataTree, config);
+
+    update();
 
     if (Math.round(numberOfMonths) == 1) {
         document.querySelector("form input#isShowMonthlyValues").setAttribute('disabled', 'disabled');
     }
 
-    document.querySelector("#applySettingsButton").addEventListener('click', (event) => {
+    document.querySelector("#apply-settings-btn").addEventListener('click', (event) => {
         event.preventDefault();
-        setExcludedCategoriesFromSelect();
-        updateChartData(chartDataTree);
+
+        applyConfig();
+        persistConfig(config);
+        update();
     });
 
-    /** @see https://www.highcharts.com/docs/chart-and-series-types/sankey-diagram */
-    chart = Highcharts.chart('chart-container', {
-        title: {
-            text: null
-        },
-        accessibility: {
-            point: {
-                valueDescriptionFormat: '{index}. {point.from} to {point.to}, {point.weight}.'
-            }
-        },
-        series: [{
-            animation: false,
-            cursor: 'pointer',
-            events: {
-                click: function (event: any) {
-                    if (! ('custom' in event.point) || ! ('real' in event.point.custom)) {
-                        return;
-                    }
+    document.querySelector("#reset-settings-btn").addEventListener('click', (event) => {
+        event.preventDefault();
 
-                    let categoryId: number;
-                    if (event.point.to !== mainNodeId && event.point.custom.real < 0) {
-                         categoryId= parseInt(event.point.to);
-                    } else if (event.point.from !== mainNodeId && event.point.custom.real >= 0) {
-                         categoryId= parseInt(event.point.from);
-                    } else {
-                        return;
-                    }
-
-                    [...chartDataTree.postOrderTraversal(chartDataTree.find(categoryId))].map(x => {
-                        console.debug('excluding category ' + x.key);
-                        excludedCategoryIds.push(x.key);
-                    });
-
-                    // update select element
-                    Array.from((document.querySelector('form #categories') as HTMLSelectElement).options).forEach(function (option) {
-                        option.selected = excludedCategoryIds.includes(getCategoryIdByPath(option.value));
-                    });
-
-                    updateChartData(chartDataTree);
-                }
-            },
-            keys: ['from', 'to', 'weight'],
-            data: [],
-            type: 'sankey',
-            name: 'Cashflow',
-            dataLabels: {
-                align: 'right',
-                padding: 30,
-                nodeFormatter: function(): string {
-                    const point = this as Highcharts.Point;
-                    const sum = 'getSum' in this ? (this as any).getSum() : 0;
-                    const percentage = 'linksTo' in point && point.linksTo[0] ? (sum / point.linksTo[0].fromNode.sum) * 100 : null;
-
-                    return point.name + ": " + numberFormat(sum) + " " + (percentage ? "<span class='badge text-bg-secondary'>" + Math.round(percentage) + "% </span>" : "");
-                }
-            },
-            tooltip: {
-                // tooltip for link
-                pointFormatter: function(): string {
-                    const point = this as any;
-                    return point.fromNode.name + " → " + point.toNode.name + ": " + numberFormat(point.weight) + "<br /><br /><span class='small'>(Klick entfernt die Kategorie aus dem Chart.)</span>";
-                },
-                // tooltip for node
-                nodeFormatter: function(): string {
-                    const point = this as Highcharts.Point;
-
-                    let totalWeight = 0;
-                    let weightsDetailTooltip = '';
-                    const linksTo = 'linksTo' in point ? (point as any).linksTo : [];
-                    linksTo.forEach(function(link: any) {
-                        if (link.from === mainNodeId || link.weight === 0) return;
-                        weightsDetailTooltip += '+ ' + numberFormat(link.weight) + ' (' + link.fromNode.name + ')<br />';
-                        totalWeight += link.weight;
-                    });
-
-                    const linksFrom = 'linksFrom' in point ? (point as any).linksFrom : [];
-                    linksFrom.forEach(function(link: any) {
-                        if (link.to === mainNodeId || link.weight === 0) return;
-                        weightsDetailTooltip += '- ' + numberFormat(link.weight) + ' (' + link.toNode.name + ')<br />';
-                        totalWeight -= link.weight;
-                    });
-
-                    totalWeight = Number(totalWeight.toFixed(2));
-
-                    return point.name + ': ' + (totalWeight != 0 ? numberFormatColored(totalWeight) : '') + '<br />' + weightsDetailTooltip;
-                }
-            },
-            nodes: buildChartNodesConfig()
-        }],
-        chart: {
-            height: 700,
-            styledMode: true,
-            numberFormatter: function () {
-                return numberFormat(arguments[0]);
-            }
-        }
+        reset();
+        update();
     });
 
-    updateChartData(chartDataTree);
+    document.addEventListener('ChartCategoryRemoved', (event: CustomEvent) => {
+        console.debug('hiding categories ' + event.detail.childCategoryIds);
 
-    return chart;
+        event.detail.childCategoryIds.forEach((categoryId: number) => config.categories.get(categoryId).active = false);
+
+        updateCategoryTable();
+        persistConfig(config);
+    });
+
+    // @ts-ignore
+    window.chart = chart.create();
+}
+
+function applyConfig(): void {
+    setScaling();
+    setThreshold();
+    setCategories();
+    chart.update();
+}
+
+function update(): void {
+    updateCategoryTable();
+    (document.querySelector("form #threshold") as HTMLInputElement).value = String(config.threshold);
+    (document.querySelector("form input#isShowMonthlyValues") as HTMLInputElement).checked = config.scalingFactor !== 1;
+}
+
+function reset(): void {
+    config.categories.forEach(category => category.active = true);
+    config.threshold = defaultThreshold;
+    config.scalingFactor = defaultScaling;
+
+    update();
 }
