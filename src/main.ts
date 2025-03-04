@@ -128,7 +128,7 @@ function applyConfig(): void {
 
 function update(): void {
     updateCategoryTable();
-    (document.querySelector("form #threshold") as HTMLInputElement).value = String(config.threshold);
+    (document.querySelector("form #threshold") as HTMLInputElement).value = String(config.threshold / config.scalingFactor);
     (document.querySelector("form input#isShowMonthlyValues") as HTMLInputElement).checked = config.scalingFactor !== 1;
 }
 
