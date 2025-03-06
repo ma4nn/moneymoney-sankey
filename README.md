@@ -7,6 +7,12 @@ This is an extension for the great [MoneyMoney app](https://moneymoney-app.com/)
 
 [![Sankey Sample Chart](https://ma4nn.github.io/moneymoney-sankey/sample.png)](https://ma4nn.github.io/moneymoney-sankey/)
 
+## Features
+
+- Hide categories by click
+- Add configurable budgets per each category
+- Add threshold value for chart paths
+
 ## Installing
 
 This MoneyMoney extension can be installed as follows:

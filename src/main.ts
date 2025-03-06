@@ -72,7 +72,7 @@ function setScaling(): void {
 }
 
 function setThreshold(): void {
-    let threshold = parseFloat((document.querySelector("form #threshold") as HTMLInputElement).value);
+    let threshold = parseFloat((document.querySelector("input#threshold") as HTMLInputElement).value);
     config.threshold = isNaN(threshold) ? defaultConfig.threshold : threshold * config.scalingFactor;
     console.debug('threshold: ' + config.threshold);
 }
@@ -99,12 +99,21 @@ export function initApp(chartDataTree: Tree, numberOfMonths: number, currency: s
         chart.update();
     });
 
+    document.querySelector("input#threshold").addEventListener('change', (event) => {
+        event.preventDefault();
+
+        setThreshold();
+        persistConfig(config);
+        chart.update();
+    });
+
     document.querySelector("#apply-settings-btn").addEventListener('click', (event) => {
         event.preventDefault();
 
-        applyConfig();
+        setCategories();
         persistConfig(config);
         update();
+        chart.update();
     });
 
     document.querySelector("#reset-settings-btn").addEventListener('click', (event) => {
@@ -127,15 +136,9 @@ export function initApp(chartDataTree: Tree, numberOfMonths: number, currency: s
     window.chart = chart.create();
 }
 
-function applyConfig(): void {
-    setThreshold();
-    setCategories();
-    chart.update();
-}
-
 function update(): void {
     updateCategoryTable();
-    (document.querySelector("form #threshold") as HTMLInputElement).value = String((config.threshold / config.scalingFactor).toFixed(2));
+    (document.querySelector("input#threshold") as HTMLInputElement).value = String((config.threshold / config.scalingFactor).toFixed(2));
     (document.querySelector("input#is-show-monthly") as HTMLInputElement).checked = config.scalingFactor !== 1;
 }
 
