@@ -1,6 +1,7 @@
 import { Category } from "./category";
 import { Config } from "./config";
 import { numberFormat } from "./helper";
+import {SankeyNode} from "./sankey";
 
 interface ValidatorInterface {
     message(): string;
@@ -32,9 +33,9 @@ class BudgetValidator implements ValidatorInterface {
     private readonly scalingFactor: number;
     private readonly node: any;
 
-    constructor(node: any, config: Config) {
+    constructor(node: SankeyNode, config: Config) {
         this.node = node;
-        this.category = config.categories.get(parseInt(node.point.id));
+        this.category = config.categories.get(node.categoryId);
         this.scalingFactor = config.scalingFactor;
     }
 

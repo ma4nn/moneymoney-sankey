@@ -141,13 +141,11 @@ export class SankeyChart {
                     align: 'right',
                     padding: 30,
                     nodeFormatter: function (): string {
-                        const node = this as Highcharts.Point;
-                        const sum = 'getSum' in this ? (this as any).getSum() : 0;
-                        const percentage = 'linksTo' in node && node.linksTo[0] ? (sum / node.linksTo[0].fromNode.sum) * 100 : null;
+                        const node = new SankeyNode(this as Highcharts.SankeyNodeObject);
 
                         return node.name + ': ' + (new NodeValidator(node, config).validate() ? '' : NodeValidator.warningSign)
-                            + numberFormat(sum/config.scalingFactor) + ' '
-                            + (percentage ? "<span class='badge text-bg-secondary'>" + Math.round(percentage) + "% </span>" : "");
+                            + numberFormat(node.getSum()) + ' '
+                            + (node.getPercentage() ? "<span class='badge text-bg-secondary'>" + Math.round(node.getPercentage()) + "% </span>" : "");
                     }
                 },
                 tooltip: {
@@ -158,7 +156,7 @@ export class SankeyChart {
                     },
                     // tooltip for node
                     nodeFormatter: function (): string {
-                        const node = this as Highcharts.Point;
+                        const node = new SankeyNode(this as Highcharts.SankeyNodeObject);
 
                         let totalWeight = 0;
                         let weightsDetailTooltip = '';
@@ -209,5 +207,25 @@ export class SankeyChart {
         }));
 
         this.update();
+    }
+}
+
+export class SankeyNode {
+    public name: string = '';
+    public categoryId: number;
+    private readonly node: Highcharts.SankeyNodeObject;
+
+    constructor(node: Highcharts.SankeyNodeObject) {
+        this.node = node;
+        this.name = node.name;
+        this.categoryId = parseInt((node as any).point.id);
+    }
+
+    public getSum(): number {
+         return 'getSum' in this.node ? (this.node as any).getSum() / config.scalingFactor : 0;
+    }
+
+    public getPercentage(): number|null {
+        return 'linksTo' in this.node && this.node.linksTo[0] ? (this.getSum() / this.node.linksTo[0].fromNode.sum) * 100 : null;
     }
 }
