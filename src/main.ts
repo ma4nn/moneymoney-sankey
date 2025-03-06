@@ -66,7 +66,7 @@ function updateCategoryTable(): void {
 }
 
 function setScaling(): void {
-    const input = document.querySelector("form #is-show-monthly") as HTMLInputElement;
+    const input = document.querySelector("input#is-show-monthly") as HTMLInputElement;
     config.scalingFactor = input.checked ? parseFloat(input.value) : defaultConfig.scalingFactor;
     console.debug('scaling: ' + config.scalingFactor);
 }
@@ -88,8 +88,16 @@ export function initApp(chartDataTree: Tree, numberOfMonths: number, currency: s
     update();
 
     if (Math.round(numberOfMonths) == 1) {
-        document.querySelector("form input#is-show-monthly").setAttribute('disabled', 'disabled');
+        document.querySelector("input#is-show-monthly").setAttribute('disabled', 'disabled');
     }
+
+    document.querySelector("input#is-show-monthly").addEventListener('change', (event) => {
+        event.preventDefault();
+
+        setScaling();
+        persistConfig(config);
+        chart.update();
+    });
 
     document.querySelector("#apply-settings-btn").addEventListener('click', (event) => {
         event.preventDefault();
@@ -120,7 +128,6 @@ export function initApp(chartDataTree: Tree, numberOfMonths: number, currency: s
 }
 
 function applyConfig(): void {
-    setScaling();
     setThreshold();
     setCategories();
     chart.update();
@@ -129,7 +136,7 @@ function applyConfig(): void {
 function update(): void {
     updateCategoryTable();
     (document.querySelector("form #threshold") as HTMLInputElement).value = String((config.threshold / config.scalingFactor).toFixed(2));
-    (document.querySelector("form input#is-show-monthly") as HTMLInputElement).checked = config.scalingFactor !== 1;
+    (document.querySelector("input#is-show-monthly") as HTMLInputElement).checked = config.scalingFactor !== 1;
 }
 
 function reset(): void {
