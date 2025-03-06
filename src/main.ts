@@ -11,7 +11,7 @@ let chart: SankeyChart;
 const defaultThreshold: number = 0;
 const defaultScaling: number = 1;
 
-let config: Config = {excludedCategoryIds: [], scalingFactor: defaultScaling, threshold: defaultThreshold, currency: 'EUR', categories: new Map()};
+let config: Config = {scalingFactor: defaultScaling, threshold: defaultThreshold, currency: 'EUR', categories: new Map()};
 
 export { Tree }
 
@@ -25,7 +25,9 @@ export function ready(fn: any): void {
 
 function setCategories(): void {
     document.querySelectorAll<HTMLTableRowElement>("form #category-config tbody tr").forEach(row => {
-        config.categories.get(parseInt(row.dataset.categoryId)).active = row.querySelector<HTMLInputElement>('input[name="category-is-active"]').checked
+        const category = config.categories.get(parseInt(row.dataset.categoryId));
+        category.active = row.querySelector<HTMLInputElement>('input[name="category-is-active"]').checked;
+        category.budget = parseFloat(row.querySelector<HTMLInputElement>('input[name="budget"]').value);
     });
 
     // assure that main node is always active
@@ -47,26 +49,26 @@ function updateCategoryTable(): void {
     const table = template.content.cloneNode(true) as HTMLTableElement;
     const tbody = table.querySelector('tbody');
 
-    new Map([...config.categories.entries()].sort((a, b) => a[1].name.localeCompare(b[1].name))).forEach((category, categoryId) => {
-        if (categoryId === chart.mainNodeId) {
-            return;
+    new Map([...config.categories.entries()]
+            .filter(a => a[0] !== chart.mainNodeId)
+            .sort((a, b) => a[1].name.localeCompare(b[1].name)))
+        .forEach((category, categoryId) => {
+            const row = document.createElement('tr');
+            row.dataset.categoryId = String(categoryId);
+            row.innerHTML = `
+                  <td>${category.name}</td>
+                  <td><input type="number" class="form-control" name="budget" placeholder="0,00" min="0" step="0.01" value="${category.budget}"></td>
+                  <td><div class="form-check"><input id="exclude-category-${categoryId}" name="category-is-active" class="form-check-input" type="checkbox" value="${category.name}" ${category.active ? 'checked' : ''}></div></td>
+                `;
+            tbody.appendChild(row);
         }
-
-        const row = document.createElement('tr');
-        row.dataset.categoryId = String(categoryId);
-        // Note: we do not use the category ids as values as otherwise the category names could be duplicated in the select (for income and expense)
-        row.innerHTML = `
-      <td>${category.name}</td>
-      <td><div class="form-check"><input id="exclude-category-${categoryId}" name="category-is-active" class="form-check-input" type="checkbox" value="${category.name}" ${category.active ? 'checked' : ''}></div></td>
-    `;
-        tbody.appendChild(row);
-    });
+    );
 
     container.appendChild(table);
 }
 
 function setScaling(): void {
-    const input = document.querySelector("form #isShowMonthlyValues") as HTMLInputElement;
+    const input = document.querySelector("form #is-show-monthly") as HTMLInputElement;
     config.scalingFactor = input.checked ? parseFloat(input.value) : defaultScaling;
     console.debug('scaling: ' + config.scalingFactor);
 }
@@ -88,7 +90,7 @@ export function initApp(chartDataTree: Tree, numberOfMonths: number, currency: s
     update();
 
     if (Math.round(numberOfMonths) == 1) {
-        document.querySelector("form input#isShowMonthlyValues").setAttribute('disabled', 'disabled');
+        document.querySelector("form input#is-show-monthly").setAttribute('disabled', 'disabled');
     }
 
     document.querySelector("#apply-settings-btn").addEventListener('click', (event) => {
@@ -128,8 +130,8 @@ function applyConfig(): void {
 
 function update(): void {
     updateCategoryTable();
-    (document.querySelector("form #threshold") as HTMLInputElement).value = String(config.threshold / config.scalingFactor);
-    (document.querySelector("form input#isShowMonthlyValues") as HTMLInputElement).checked = config.scalingFactor !== 1;
+    (document.querySelector("form #threshold") as HTMLInputElement).value = String((config.threshold / config.scalingFactor).toFixed(2));
+    (document.querySelector("form input#is-show-monthly") as HTMLInputElement).checked = config.scalingFactor !== 1;
 }
 
 function reset(): void {

@@ -81,15 +81,15 @@
                     <div class="col-12">
                         <div class="mb-3">
                             <label for="threshold" class="form-label">Schwellwert ({{ currency }})</label>
-                            <input type="number" class="form-control" id="threshold" placeholder="100" min="0">
+                            <input type="number" class="form-control" id="threshold"  placeholder="0,00" min="0" step="0.01">
                             <div class="form-text">Es werden nur Pfade angezeigt, die größer als der konfigurierte Wert sind.</div>
                         </div>
                     </div>
 
                     <div class="col-12">
                         <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="isShowMonthlyValues" value="{{ number_of_months }}">
-                            <label class="form-check-label" for="isShowMonthlyValues">Werte pro Monat anzeigen</label>
+                            <input class="form-check-input" type="checkbox" id="is-show-monthly" value="{{ number_of_months }}">
+                            <label class="form-check-label" for="is-show-monthly">Werte pro Monat anzeigen</label>
                             <span class="form-text">(insg. {{ number_of_months_formatted }} Monat(e))</span>
                         </div>
                     </div>
@@ -99,6 +99,7 @@
                             <thead>
                             <tr>
                                 <th scope="col">Kategorie</th>
+                                <th scope="col">Budget ({{ currency }})</th>
                                 <th scope="col">aktiv</th>
                             </tr>
                             </thead>
@@ -118,6 +119,7 @@
     <script type="module" nonce="{{ nonce }}">
         {{ inline_js }}
 
+        const categorySeparator = '{{ category_separator }}';
         let chartDataTree = new Tree(1, 0);
         {{ init_chart_js }}
         ready(() => initApp(chartDataTree, {{ number_of_months }}, '{{ currency }}', new Map([{{ categories_json }}])));

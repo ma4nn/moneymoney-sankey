@@ -6,6 +6,8 @@ import 'highcharts/css/highcharts.css';
 import Tree, { TreeNode } from "./Tree";
 import { Config } from "./config";
 
+declare let categorySeparator: string;
+
 let config: Config;
 
 function numberFormat(nb: number) {
@@ -78,11 +80,11 @@ export class SankeyChart {
                 className: "main-node",
                 nodeFormatter: function (): string {
                     // @ts-ignore
-                    const point: any = this.point;
-                    const incomingWeight = ('linksTo' in point ? point.linksTo.map((point: PointOptionsObject) => point.weight) : []).reduce((pv, cv) => pv + cv, 0);
-                    const outgoingWeight = ('linksFrom' in point ? point.linksFrom.map(point => point.weight) : []).reduce((pv, cv) => pv + cv, 0);
+                    const node: any = this.point; // for Sankey charts this refers to nodes, not links
+                    const incomingWeight = ('linksTo' in node ? node.linksTo.map((point: PointOptionsObject) => point.weight) : []).reduce((pv, cv) => pv + cv, 0);
+                    const outgoingWeight = ('linksFrom' in node ? node.linksFrom.map(point => point.weight) : []).reduce((pv, cv) => pv + cv, 0);
 
-                    return point.name + ': ' + numberFormatColored(incomingWeight - outgoingWeight);
+                    return node.name + ': ' + numberFormatColored(incomingWeight - outgoingWeight);
                 }
             }
         });
@@ -91,7 +93,7 @@ export class SankeyChart {
             .forEach(function (category, categoryId) {
                 nodes.push({
                     id: String(categoryId), // Highcarts needs the id to be string
-                    name: category.name.split("]] .. CATEGORIES_PATH_SEPARATOR .. [[").pop() // remove first separator from path @todo
+                    name: category.name.split(categorySeparator).pop(), // remove first separator from path
                 });
             });
 
@@ -135,16 +137,6 @@ export class SankeyChart {
                             return;
                         }
 
-                        /*[...self.chartDataTree.postOrderTraversal(self.chartDataTree.find(categoryId))].map(x => {
-                            console.debug('excluding category ' + x.key);
-                            config.excludedCategoryIds.push(x.key);
-                        });*/
-
-                        // update select element
-                        /*Array.from((document.querySelector('form #categories') as HTMLSelectElement).options).forEach(option =>
-                            option.selected = config.excludedCategoryIds.includes(getCategoryIdByName(option.value))
-                        );*/
-
                         self.removeCategory(categoryId);
                     }
                 },
@@ -156,11 +148,14 @@ export class SankeyChart {
                     align: 'right',
                     padding: 30,
                     nodeFormatter: function (): string {
-                        const point = this as Highcharts.Point;
+                        const node = this as Highcharts.Point;
                         const sum = 'getSum' in this ? (this as any).getSum() : 0;
-                        const percentage = 'linksTo' in point && point.linksTo[0] ? (sum / point.linksTo[0].fromNode.sum) * 100 : null;
+                        const percentage = 'linksTo' in node && node.linksTo[0] ? (sum / node.linksTo[0].fromNode.sum) * 100 : null;
+                        const category = config.categories.get(parseInt((node as any).point.id));
 
-                        return point.name + ": " + numberFormat(sum) + " " + (percentage ? "<span class='badge text-bg-secondary'>" + Math.round(percentage) + "% </span>" : "");
+                        return node.name + ': ' + ((typeof category?.budget != 'undefined' && category?.budget * config.scalingFactor < sum) ? '⚠️ ' : '')
+                            + numberFormat(sum) + ' '
+                            + (percentage ? "<span class='badge text-bg-secondary'>" + Math.round(percentage) + "% </span>" : "");
                     }
                 },
                 tooltip: {

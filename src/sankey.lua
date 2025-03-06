@@ -42,7 +42,8 @@ CATEGORY_LINK_TYPE_EXPENSE = "expense"
 -------------------------
 
 variables = {
-    ["today"] = os.date('%d.%m.%Y %H:%M:%S')
+    ["today"] = os.date('%d.%m.%Y %H:%M:%S'),
+    ["category_separator"] = CATEGORIES_PATH_SEPARATOR
 }
 -- initialize global array to store category sums
 category_links = {}

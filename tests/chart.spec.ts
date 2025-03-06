@@ -1,6 +1,8 @@
 import {test, expect, Page} from '@playwright/test';
 import * as Highcharts from 'highcharts';
 
+const mainNodeId: number = 1;
+
 async function getChartNodeById(nodeId: number, page: Page): Promise<Highcharts.SeriesSankeyNodesOptionsObject> {
   const chart = await page.evaluateHandle('window.chart');
   const chartData = await page.evaluate(chart => (chart as Highcharts.Chart).series[0], chart) as unknown as Highcharts.SeriesSankeyOptions;
@@ -11,7 +13,7 @@ async function getChartNodeById(nodeId: number, page: Page): Promise<Highcharts.
 }
 
 async function validateSaldo(saldo: string = '€4,127.71', page: Page) {
-  const mainNode = await getChartNodeById(1, page);
+  const mainNode = await getChartNodeById(mainNodeId, page);
   expect(mainNode.dataLabels[0].textStr).toEqual('Saldo: <strong style="color:#14c57e"><strong>' + saldo + '</strong></strong>');
 }
 
@@ -35,6 +37,9 @@ test('has configurable options', async ({ page }) => {
   await expect(configMenu).toBeHidden();
   await expect(configButton).toBeVisible();
   await expect(configButton).toBeEnabled();
+
+  const mainNodeConfig = page.locator('table#category-config [data-category-id="' + mainNodeId + '"]');
+  await expect(mainNodeConfig).toHaveCount(0);
 
   const applyButton = page.getByRole('button', { name: 'Anwenden' });
 
