@@ -23,12 +23,16 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('has valid initial state', async ({ page }) => {
-  await page.locator('#chart-container').screenshot({ path: 'tmp/sample.png' }); // take a screenshot for README file
   await expect(page.getByRole('heading', { name: 'Cashflows' })).toBeVisible();
 
   await expect(page.locator('#transaction-count')).toHaveText('22 Transaktionen');
 
   await validateSaldo('€4,127.71', page);
+});
+
+test('take screenshot', async ({ page }) => {
+  await page.evaluate(() => document.querySelectorAll('header').forEach(header => header.remove()));
+  await page.locator('#chart-container').screenshot({ path: 'tmp/sample.png' }); // take a screenshot for README file
 });
 
 test('has configurable options', async ({ page }) => {
