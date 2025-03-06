@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 import {Config, save as persistConfig, load as loadConfig} from "./config";
 import defaultConfig from "./config";
-import Tree from "./Tree_";
+import Tree from "./tree";
 import {SankeyChart} from "./sankey";
 import {Category} from "./category";
 import './style.css';
