@@ -1,4 +1,4 @@
-# Sankey Charts for MoneyMoney
+# Interactive Sankey Charts for MoneyMoney
 
 ![build status](https://github.com/ma4nn/moneymoney-sankey/actions/workflows/build-lua-script.yml/badge.svg)
 

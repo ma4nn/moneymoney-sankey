@@ -2,16 +2,14 @@ import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import {Config, save as persistConfig, load as loadConfig} from "./config";
-import Tree from "./Tree";
+import defaultConfig from "./config";
+import Tree from "./Tree_";
 import {SankeyChart} from "./sankey";
 import {Category} from "./category";
 import './style.css';
 
+let config: Config = defaultConfig;
 let chart: SankeyChart;
-const defaultThreshold: number = 0;
-const defaultScaling: number = 1;
-
-let config: Config = {scalingFactor: defaultScaling, threshold: defaultThreshold, currency: 'EUR', categories: new Map()};
 
 export { Tree }
 
@@ -69,20 +67,20 @@ function updateCategoryTable(): void {
 
 function setScaling(): void {
     const input = document.querySelector("form #is-show-monthly") as HTMLInputElement;
-    config.scalingFactor = input.checked ? parseFloat(input.value) : defaultScaling;
+    config.scalingFactor = input.checked ? parseFloat(input.value) : defaultConfig.scalingFactor;
     console.debug('scaling: ' + config.scalingFactor);
 }
 
 function setThreshold(): void {
     let threshold = parseFloat((document.querySelector("form #threshold") as HTMLInputElement).value);
-    config.threshold = isNaN(threshold) ? defaultThreshold : threshold * config.scalingFactor;
+    config.threshold = isNaN(threshold) ? defaultConfig.threshold : threshold * config.scalingFactor;
     console.debug('threshold: ' + config.threshold);
 }
 
 export function initApp(chartDataTree: Tree, numberOfMonths: number, currency: string, categories: Map<number,Category>): void {
     config = loadConfig() ?? config;
 
-    config.categories = categories;
+    config.categories = new Map([...categories, ...config.categories]);
     config.currency = currency;
 
     chart = new SankeyChart(chartDataTree, config);
@@ -135,9 +133,9 @@ function update(): void {
 }
 
 function reset(): void {
-    config.categories.forEach(category => category.active = true);
-    config.threshold = defaultThreshold;
-    config.scalingFactor = defaultScaling;
+    config.categories.forEach(category => (category.active = true, category.budget = null));
+    config.threshold = defaultConfig.threshold;
+    config.scalingFactor = defaultConfig.scalingFactor;
 
     update();
 }

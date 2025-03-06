@@ -1,5 +1,6 @@
 import {test, expect, Page} from '@playwright/test';
 import * as Highcharts from 'highcharts';
+import {NodeValidator} from "../src/validators";
 
 const mainNodeId: number = 1;
 
@@ -55,8 +56,12 @@ test('has configurable options', async ({ page }) => {
   await expect(node).toBeVisible();
   await configButton.click();
   await page.locator('form #threshold').fill('50');
+  await page.locator('form table#category-config [data-category-id="9"] input[name="budget"]').fill('100');
   await applyButton.click();
   await expect(node).toBeHidden();
+
+  const node2 = await getChartNodeById(9, page);
+  expect(node2.dataLabels[0].textStr).toContain(NodeValidator.warningSign);
 
   await validateSaldo('€4,177.56', page);
 });

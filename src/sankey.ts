@@ -3,21 +3,14 @@ import Highcharts from "highcharts/es-modules/masters/highcharts.src";
 import 'highcharts/es-modules/masters/modules/sankey.src';
 import 'highcharts/css/highcharts.css';
 
-import Tree, { TreeNode } from "./Tree";
+import Tree, { TreeNode } from "./Tree_";
 import { Config } from "./config";
+import { NodeValidator } from "./validators";
+import { numberFormat, numberFormatColored } from "./helper";
 
 declare let categorySeparator: string;
 
 let config: Config;
-
-function numberFormat(nb: number) {
-    return '<strong>' + new Intl.NumberFormat(undefined, { style: 'currency', currency: config.currency }).format(nb/config.scalingFactor) + '</strong>';
-}
-
-function numberFormatColored(nb: number) {
-    let color = (nb >= 0) ? '#14c57e' : '#ff6b4a';
-    return '<strong style="color:' + color + '">' + numberFormat(nb) + '</strong>';
-}
 
 export class SankeyChart {
     public mainNodeId: number = 1;
@@ -151,10 +144,9 @@ export class SankeyChart {
                         const node = this as Highcharts.Point;
                         const sum = 'getSum' in this ? (this as any).getSum() : 0;
                         const percentage = 'linksTo' in node && node.linksTo[0] ? (sum / node.linksTo[0].fromNode.sum) * 100 : null;
-                        const category = config.categories.get(parseInt((node as any).point.id));
 
-                        return node.name + ': ' + ((typeof category?.budget != 'undefined' && category?.budget * config.scalingFactor < sum) ? '⚠️ ' : '')
-                            + numberFormat(sum) + ' '
+                        return node.name + ': ' + (new NodeValidator(node, config).validate() ? '' : NodeValidator.warningSign)
+                            + numberFormat(sum/config.scalingFactor) + ' '
                             + (percentage ? "<span class='badge text-bg-secondary'>" + Math.round(percentage) + "% </span>" : "");
                     }
                 },
@@ -162,31 +154,36 @@ export class SankeyChart {
                     // tooltip for link
                     pointFormatter: function (): string {
                         const point = this as any;
-                        return point.fromNode.name + " → " + point.toNode.name + ": " + numberFormat(point.weight) + "<br /><br /><span class='small'>(Klick entfernt die Kategorie aus dem Chart.)</span>";
+                        return point.fromNode.name + " → " + point.toNode.name + ": " + numberFormat(point.weight/config.scalingFactor) + "<br /><br /><span class='small'>(Klick entfernt die Kategorie aus dem Chart.)</span>";
                     },
                     // tooltip for node
                     nodeFormatter: function (): string {
-                        const point = this as Highcharts.Point;
+                        const node = this as Highcharts.Point;
 
                         let totalWeight = 0;
                         let weightsDetailTooltip = '';
-                        const linksTo = 'linksTo' in point ? (point as any).linksTo : [];
+                        const linksTo = 'linksTo' in node ? (node as any).linksTo : [];
                         linksTo.forEach(function (link: any) {
                             if (link.from === self.mainNodeId || link.weight === 0) return;
-                            weightsDetailTooltip += '+ ' + numberFormat(link.weight) + ' (' + link.fromNode.name + ')<br />';
+                            weightsDetailTooltip += '+ ' + numberFormat(link.weight/config.scalingFactor) + ' (' + link.fromNode.name + ')<br />';
                             totalWeight += link.weight;
                         });
 
-                        const linksFrom = 'linksFrom' in point ? (point as any).linksFrom : [];
+                        const linksFrom = 'linksFrom' in node ? (node as any).linksFrom : [];
                         linksFrom.forEach(function (link: any) {
                             if (link.to === self.mainNodeId || link.weight === 0) return;
-                            weightsDetailTooltip += '- ' + numberFormat(link.weight) + ' (' + link.toNode.name + ')<br />';
+                            weightsDetailTooltip += '- ' + numberFormat(link.weight/config.scalingFactor) + ' (' + link.toNode.name + ')<br />';
                             totalWeight -= link.weight;
                         });
 
+                        const validator = new NodeValidator(node, config);
+                        validator.validate();
+
                         totalWeight = Number(totalWeight.toFixed(2));
 
-                        return point.name + ': ' + (totalWeight != 0 ? numberFormatColored(totalWeight) : '') + '<br />' + weightsDetailTooltip;
+                        return node.name + ': ' + (totalWeight == 0 ? '' : numberFormatColored(totalWeight)) + '<br />'
+                            + weightsDetailTooltip + '<br />'
+                            + validator.messages;
                     }
                 },
                 nodes: this.buildNodesConfig()
@@ -195,7 +192,7 @@ export class SankeyChart {
                 height: 700,
                 styledMode: true,
                 numberFormatter: function () {
-                    return numberFormat(arguments[0]);
+                    return numberFormat(arguments[0]/config.scalingFactor);
                 }
             }
         });
