@@ -33,7 +33,7 @@ test('has valid initial state', async ({ page }) => {
 
 test('has configurable options', async ({ page }) => {
   const configMenu = page.locator('#offcanvasConfig');
-  const configButton = page.getByRole('button', { name: 'Chart anpassen' });
+  const configButton = page.getByRole('button', { name: 'Kategorien anpassen' });
 
   await expect(configMenu).toBeHidden();
   await expect(configButton).toBeVisible();
@@ -55,8 +55,8 @@ test('has configurable options', async ({ page }) => {
   const node = page.getByTestId('chart-node-25');
   await expect(node).toBeVisible();
   await configButton.click();
-  await page.locator('form #threshold').fill('50');
-  await page.locator('form table#category-config [data-category-id="9"] input[name="budget"]').fill('100');
+  await page.locator('input#threshold').fill('50');
+  await page.locator('table#category-config [data-category-id="9"] input[name="budget"]').fill('100');
   await applyButton.click();
   await expect(node).toBeHidden();
 
