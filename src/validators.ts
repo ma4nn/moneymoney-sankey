@@ -30,17 +30,16 @@ export class NodeValidator {
 
 class BudgetValidator implements ValidatorInterface {
     private readonly category: Category;
-    private readonly scalingFactor: number;
     private readonly node: any;
 
     constructor(node: SankeyNode, config: Config) {
         this.node = node;
         this.category = config.categories.get(node.categoryId);
-        this.scalingFactor = config.scalingFactor;
     }
 
     public valid(): boolean {
-        return this.getBudget() === null || this.getBudget() >= this.getValue();
+        let budget = this.getBudget();
+        return budget === null || isNaN(budget) || budget >= this.getValue();
     }
 
     public message(): string {
@@ -48,7 +47,7 @@ class BudgetValidator implements ValidatorInterface {
     }
 
     private getValue(): number {
-        return 'getSum' in this.node ? this.node.getSum()/this.scalingFactor : 0;
+        return this.node.getSum();
     }
 
     private getBudget(): number|null {
@@ -56,6 +55,6 @@ class BudgetValidator implements ValidatorInterface {
             return null;
         }
 
-        return this.category.budget * this.scalingFactor;
+        return this.category.budget;
     }
 }

@@ -72,12 +72,7 @@ export class SankeyChart {
             dataLabels: {
                 className: "main-node",
                 nodeFormatter: function (): string {
-                    // @ts-ignore
-                    const node: any = this.point; // for Sankey charts this refers to nodes, not links
-                    const incomingWeight = ('linksTo' in node ? node.linksTo.map((point: PointOptionsObject) => point.weight) : []).reduce((pv, cv) => pv + cv, 0);
-                    const outgoingWeight = ('linksFrom' in node ? node.linksFrom.map(point => point.weight) : []).reduce((pv, cv) => pv + cv, 0);
-
-                    return node.name + ': ' + numberFormatColored(incomingWeight - outgoingWeight);
+                    return new SankeyNode(this as Highcharts.SankeyNodeObject).toString();
                 }
             }
         });
@@ -158,28 +153,21 @@ export class SankeyChart {
                     nodeFormatter: function (): string {
                         const node = new SankeyNode(this as Highcharts.SankeyNodeObject);
 
-                        let totalWeight = 0;
                         let weightsDetailTooltip = '';
-                        const linksTo = 'linksTo' in node ? (node as any).linksTo : [];
-                        linksTo.forEach(function (link: any) {
-                            if (link.from === self.mainNodeId || link.weight === 0) return;
-                            weightsDetailTooltip += '+ ' + numberFormat(link.weight/config.scalingFactor) + ' (' + link.fromNode.name + ')<br />';
-                            totalWeight += link.weight;
-                        });
+                        node.getLinksTo().filter(link => link.from !== String(self.mainNodeId) && link.weight > 0)
+                            .forEach(function (link: any) {
+                                weightsDetailTooltip += '+ ' + numberFormat(link.weight/config.scalingFactor) + ' (' + link.fromNode.name + ')<br />';
+                            });
 
-                        const linksFrom = 'linksFrom' in node ? (node as any).linksFrom : [];
-                        linksFrom.forEach(function (link: any) {
-                            if (link.to === self.mainNodeId || link.weight === 0) return;
-                            weightsDetailTooltip += '- ' + numberFormat(link.weight/config.scalingFactor) + ' (' + link.toNode.name + ')<br />';
-                            totalWeight -= link.weight;
-                        });
+                        node.getLinksFrom().filter(link => link.to !== String(self.mainNodeId) && link.weight > 0)
+                            .forEach(function (link: any) {
+                                weightsDetailTooltip += '- ' + numberFormat(link.weight/config.scalingFactor) + ' (' + link.toNode.name + ')<br />';
+                            });
 
                         const validator = new NodeValidator(node, config);
                         validator.validate();
 
-                        totalWeight = Number(totalWeight.toFixed(2));
-
-                        return node.name + ': ' + (totalWeight == 0 ? '' : numberFormatColored(totalWeight)) + '<br />'
+                        return node.toString() + '<br />'
                             + weightsDetailTooltip + '<br />'
                             + validator.messages;
                     }
@@ -221,11 +209,35 @@ export class SankeyNode {
         this.categoryId = parseInt((node as any).point.id);
     }
 
+    public toString(): string {
+        return `${this.name}: ${this.getTotalWeight() == 0 ? '' : numberFormatColored(this.getTotalWeight())}`;
+    }
+
     public getSum(): number {
          return 'getSum' in this.node ? (this.node as any).getSum() / config.scalingFactor : 0;
     }
 
     public getPercentage(): number|null {
         return 'linksTo' in this.node && this.node.linksTo[0] ? (this.getSum() / this.node.linksTo[0].fromNode.sum) * 100 : null;
+    }
+
+    public getLinksFrom(): Array<PointOptionsObject> {
+        return 'linksFrom' in this.node ? (this.node as any).linksFrom : [];
+    }
+
+    public getLinksTo(): Array<PointOptionsObject> {
+        return 'linksTo' in this.node ? (this.node as any).linksTo : [];
+    }
+
+    public getTotalIncomingWeight(): number {
+        return this.getLinksTo().map(point => point.weight).reduce((pv, cv) => pv + cv, 0) / config.scalingFactor;
+    }
+
+    public getTotalOutgoingWeight(): number {
+        return this.getLinksFrom().map(point => point.weight).reduce((pv, cv) => pv + cv, 0) / config.scalingFactor;
+    }
+
+    public getTotalWeight(): number {
+        return this.getTotalIncomingWeight() - this.getTotalOutgoingWeight();
     }
 }
