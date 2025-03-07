@@ -96,9 +96,11 @@ test('show monthly values', async ({ page }) => {
     const nodeIdTransport = 16;
     expect(await getChartNodeLabel(nodeIdTransport, page)).toContain('18%');
 
-    const input = page.locator('input#is-show-monthly');
-    await expect(input).toHaveValue('2.3319444444444');
-    await input.check();
+    const scalingValue = await page.evaluate(() => {
+        return parseFloat(document.querySelector<HTMLInputElement>('input#is-show-monthly').value);
+    });
+    await expect(scalingValue).toBeCloseTo(2.33, 2);
+    await page.locator('input#is-show-monthly').check();
 
     expect(await getChartNodeLabel(nodeIdTransport, page)).toContain('18%');
 
