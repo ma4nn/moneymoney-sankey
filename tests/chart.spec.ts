@@ -89,3 +89,18 @@ test('has configurable options', async ({ page }) => {
 
     await validateSaldo('€4,177.56', page);
 });
+
+test('show monthly values', async ({ page }) => {
+    await validateSaldo('€4,127.71', page);
+
+    const nodeIdTransport = 16;
+    expect(await getChartNodeLabel(nodeIdTransport, page)).toContain('18%');
+
+    const input = page.locator('input#is-show-monthly');
+    await expect(input).toHaveValue('2.3319444444444');
+    await input.check();
+
+    expect(await getChartNodeLabel(nodeIdTransport, page)).toContain('18%');
+
+    await validateSaldo('€1,770.07', page);
+});

@@ -140,7 +140,7 @@ export class SankeyChart {
 
                         return node.name + ': ' + (new NodeValidator(node, config).validate() ? '' : NodeValidator.warningSign)
                             + numberFormat(node.getSum()) + ' '
-                            + (node.getPercentage() ? "<span class='badge text-bg-secondary'>" + Math.round(node.getPercentage()) + "% </span>" : "");
+                            + (node.getPercentage() && node.getPercentage() < 100 ? "<span class='badge text-bg-secondary'>" + Math.round(node.getPercentage()) + "% </span>" : "");
                     }
                 },
                 tooltip: {
@@ -234,7 +234,14 @@ export class SankeyNode {
     }
 
     public getPercentage(): number|null {
-        return 'linksTo' in this.node && this.node.linksTo[0] ? (this.getSum() / this.node.linksTo[0].fromNode.sum) * 100 : null;
+        const linksTo = this.getLinksTo();
+        if (linksTo.length === 0) {
+            return null;
+        }
+
+        const parentNode = new SankeyNode((linksTo[0] as any).fromNode);
+
+        return (this.getSum() / parentNode.getTotalOutgoingWeight()) * 100;
     }
 
     public getLinksFrom(): Array<PointOptionsObject> {
