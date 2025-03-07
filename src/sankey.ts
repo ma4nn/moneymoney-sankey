@@ -91,7 +91,7 @@ export class SankeyChart {
         return nodes;
     }
 
-    create(): Highcharts.Chart {
+    create(): this {
         console.debug('tree data:');
         console.debug(this.chartDataTree);
 
@@ -185,10 +185,10 @@ export class SankeyChart {
 
         this.update();
 
-        return this.chart;
+        return this;
     }
 
-    removeCategory(categoryId: number) {
+    removeCategory(categoryId: number): void {
         const categoryIds = [...this.chartDataTree.postOrderTraversal(this.chartDataTree.find(categoryId))].map(x => x.key);
         document.dispatchEvent(new CustomEvent('ChartCategoryRemoved', {
             detail: {categoryId: categoryId, childCategoryIds: categoryIds}
@@ -196,16 +196,32 @@ export class SankeyChart {
 
         this.update();
     }
+
+    public getNodeById(nodeId: number): SankeyNode {
+        const node: Highcharts.SankeyNodeObject = ((this.chart.series[0] as any).nodes as Array<Highcharts.SankeyNodeObject>).find(node => node.id === String(nodeId));
+        if (! node) {
+            throw new Error('cannot find node with id ' + nodeId);
+        }
+
+        return new SankeyNode(node);
+    }
+
+    getOutgoingWeights(): Array<number> {
+        return [...this.chartDataTree.preOrderTraversal()].filter(x => x.value < 0).map(x => Math.abs(x.value) / config.scalingFactor);
+    }
 }
 
 export class SankeyNode {
     public name: string = '';
     public categoryId: number;
-    private readonly node: Highcharts.SankeyNodeObject;
+    public label: string = '';
+    private readonly node: SeriesSankeyNodesOptionsObject;
 
-    constructor(node: Highcharts.SankeyNodeObject) {
+    constructor(node: SeriesSankeyNodesOptionsObject) {
         this.node = node;
         this.name = node.name;
+        // @ts-ignore
+        this.label = node.dataLabels !== null && typeof node.dataLabels !== 'undefined' && node.dataLabels.length > 0 ? node.dataLabels[0].textStr : '';
         this.categoryId = parseInt((node as any).point.id);
     }
 

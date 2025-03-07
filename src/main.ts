@@ -13,6 +13,12 @@ let chart: SankeyChart;
 
 export { Tree }
 
+declare global {
+  interface Window {
+    chart: SankeyChart;
+  }
+}
+
 export function ready(fn: any): void {
     if (document.readyState !== 'loading') {
         fn();
@@ -55,8 +61,8 @@ function updateCategoryTable(): void {
             row.dataset.categoryId = String(categoryId);
             row.innerHTML = `
                   <td>${category.name}</td>
-                  <td><input type="number" class="form-control" name="budget" placeholder="0,00" min="0" step="0.01" value="${category.budget}"></td>
-                  <td><div class="form-check"><input id="exclude-category-${categoryId}" name="category-is-active" class="form-check-input" type="checkbox" value="${category.name}" ${category.active ? 'checked' : ''}></div></td>
+                  <td><input type="number" class="form-control" name="budget" placeholder="(ohne)" min="0" step="0.01" value="${category.budget}"></td>
+                  <td><div class="form-check"><input id="exclude-category-${categoryId}" name="category-is-active" class="form-check-input" type="checkbox" title="Kategorie anzeigen?" value="${category.name}" ${category.active ? 'checked' : ''}></div></td>
                 `;
             tbody.appendChild(row);
         }
@@ -84,6 +90,7 @@ export function initApp(chartDataTree: Tree, numberOfMonths: number, currency: s
     config.currency = currency;
 
     chart = new SankeyChart(chartDataTree, config);
+    window.chart = chart.create();
 
     update();
 
@@ -99,7 +106,11 @@ export function initApp(chartDataTree: Tree, numberOfMonths: number, currency: s
         chart.update();
     });
 
-    document.querySelector("input#threshold").addEventListener('change', (event) => {
+    const thresholdInput = document.querySelector<HTMLInputElement>("input#threshold");
+    const sliderRange = getSliderRange(chart.getOutgoingWeights());
+    thresholdInput.min = String(sliderRange.sliderMin);
+    thresholdInput.max = String(sliderRange.sliderMax);
+    thresholdInput.addEventListener('change', (event) => {
         event.preventDefault();
 
         setThreshold();
@@ -131,9 +142,6 @@ export function initApp(chartDataTree: Tree, numberOfMonths: number, currency: s
         updateCategoryTable();
         persistConfig(config);
     });
-
-    // @ts-ignore
-    window.chart = chart.create();
 }
 
 function update(): void {
@@ -148,4 +156,32 @@ function reset(): void {
     config.scalingFactor = defaultConfig.scalingFactor;
 
     update();
+}
+
+function getSliderRange(weights: Array<number>) {
+    const sorted = [...weights].sort((a, b) => a - b);
+
+    // Helper function to compute percentile
+    function percentile(arr, p) {
+        const index = (arr.length - 1) * p;
+        const lower = Math.floor(index);
+        const upper = Math.ceil(index);
+        const weight = index - lower;
+        if (upper >= arr.length) return arr[lower];
+        return arr[lower] * (1 - weight) + arr[upper] * weight;
+    }
+
+    const q1 = percentile(sorted, 0.25);
+    const q3 = percentile(sorted, 0.75);
+    const iqr = q3 - q1;
+
+    const lowerBound = q1 - 1.5 * iqr;
+    const upperBound = q3 + 1.5 * iqr;
+
+    const filtered = sorted.filter(value => value >= lowerBound && value <= upperBound);
+
+    const sliderMin = Math.min(...filtered);
+    const sliderMax = Math.max(...filtered);
+
+    return {sliderMin, sliderMax};
 }
