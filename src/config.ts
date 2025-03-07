@@ -1,6 +1,7 @@
 import {Category} from "./category";
 
 const DATA_TYPE_MAP: string = 'Map';
+const STORAGE_KEY = 'sankey-config-v2'; // increase this version number if config is not backwards compatible
 
 export type Config = {
     scalingFactor: number;
@@ -13,11 +14,11 @@ let defaultConfig: Config = {scalingFactor: 1, threshold: 0, currency: 'EUR', ca
 export default defaultConfig;
 
 export function save(config: Config) {
-    localStorage.setItem('config', JSON.stringify(config, mapReplacer));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(config, mapReplacer));
 }
 
 export function load(): Config|null {
-    const jsonConfig = localStorage.getItem('config');
+    const jsonConfig = localStorage.getItem(STORAGE_KEY);
     return jsonConfig === null ? null : JSON.parse(jsonConfig, mapReviver);
 }
 
