@@ -136,7 +136,6 @@ function WriteHeader (account, startDate, endDate, transactionCount)
 
     -- the currency to filter
     currency = account.currency
-    number_of_months = math.max(os.difftime(endDate, startDate) / SECONDS_PER_MONTH, 1)
 end
 
 -- called for every booking day

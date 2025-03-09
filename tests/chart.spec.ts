@@ -11,18 +11,18 @@ declare global {
 }
 
 async function getChartNodeLabel(nodeId: number, page: Page): Promise<string> {
-    await page.waitForFunction(() => window.chart !== undefined);
-
-    const nodeLabel = await page.evaluate((id: number) => {
-        return window.chart.getNodeById(id).label;
-    }, nodeId);
-
-    return new Promise(resolve => resolve(nodeLabel));
+    return page.getByTestId(`chart-node-label-${nodeId}`).textContent();
 }
 
-async function validateSaldo(saldo: string = '€4,127.71', page: Page) {
-    const mainNodeLabel = await getChartNodeLabel(mainNodeId, page);
-    expect(mainNodeLabel).toEqual('Saldo: <strong style="color:#14c57e"><strong>' + saldo + '</strong></strong>');
+async function getSaldo(page: Page): Promise<number> {
+    const mainNode = await page.getByTestId(`chart-node-${mainNodeId}`);
+    const value = await mainNode.getAttribute('data-value');
+
+    if (! value) {
+        throw new Error('missing or incorrect main node');
+    }
+
+    return Number(value);
 }
 
 async function setSliderValue(selector: string, value: number, page: Page): Promise<void> {
@@ -47,7 +47,7 @@ test('has valid initial state', async ({ page }) => {
 
     await expect(page.locator('#transaction-count')).toHaveText('22 Transaktionen');
 
-    await validateSaldo('€4,127.71', page);
+    await expect(getSaldo(page)).resolves.toBeCloseTo(4127.71);
 });
 
 test('take screenshot', async ({ page }) => {
@@ -72,37 +72,36 @@ test('has configurable options', async ({ page }) => {
     await expect(configMenu).toBeVisible();
 
     // verify apply without changes does nothing
-    await validateSaldo('€4,127.71', page);
+    await expect(getSaldo(page)).resolves.toBeCloseTo(4127.71);
     await applyButton.click();
-    await validateSaldo('€4,127.71', page);
+    await expect(getSaldo(page)).resolves.toBeCloseTo(4127.71);
 
     const nodeIdLiving = 9;
-    const node = page.getByTestId('chart-node-25');
-    await expect(node).toBeVisible();
+    const link = page.getByTestId('chart-link-25');
+    await expect(link).toBeVisible();
     await configButton.click();
     await setSliderValue('input#threshold', 50, page);
     await page.locator('table#category-config [data-category-id="' + nodeIdLiving + '"] input[name="budget"]').fill('100');
     await applyButton.click();
-    await expect(node).toBeHidden();
+    await expect(link).toBeHidden();
 
     expect(await getChartNodeLabel(nodeIdLiving, page)).toContain(NodeValidator.warningSign);
 
-    await validateSaldo('€4,177.56', page);
+    await expect(getSaldo(page)).resolves.toBeCloseTo(4177.56);
 });
 
 test('show monthly values', async ({ page }) => {
-    await validateSaldo('€4,127.71', page);
+    await expect(getSaldo(page)).resolves.toBeCloseTo(4127.71);
 
     const nodeIdTransport = 16;
-    expect(await getChartNodeLabel(nodeIdTransport, page)).toContain('18%');
+    const nodeLabel = page.getByTestId(`chart-node-label-${nodeIdTransport}`);
+    await expect(nodeLabel).toContainText('18%');
 
-    const scalingValue = await page.evaluate(() => {
-        return parseFloat(document.querySelector<HTMLInputElement>('input#is-show-monthly').value);
-    });
-    await expect(scalingValue).toBeCloseTo(2.33, 2);
+    const scalingValue = await page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#is-show-monthly').value));
+    await expect(scalingValue).toBeCloseTo(2.03, 2);
     await page.locator('input#is-show-monthly').check();
 
     expect(await getChartNodeLabel(nodeIdTransport, page)).toContain('18%');
 
-    await validateSaldo('€1,770.07', page);
+    await expect(getSaldo(page)).resolves.toBeCloseTo(2030.02);
 });

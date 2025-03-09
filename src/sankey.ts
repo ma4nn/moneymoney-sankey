@@ -50,9 +50,6 @@ export class SankeyChart {
         console.debug(chartData);
 
         (this.chart.series[0] as Highcharts.Series).setData(chartData);
-
-        // add ids for testing
-        this.chart.series[0].points.forEach((point: any, i) => point.graphic.element.setAttribute('data-testid', 'chart-node-' + point.custom?.category?.id));
     }
 
     private calculateNodeWeights(): void {
@@ -70,9 +67,10 @@ export class SankeyChart {
             name: config.categories.get(this.mainNodeId).name,
             colorIndex: 1,
             dataLabels: {
-                className: "main-node",
+                className: "main-node-label",
                 nodeFormatter: function (): string {
-                    return new SankeyNode(this as Highcharts.SankeyNodeObject).toString();
+                    const node = new SankeyNode(this as Highcharts.SankeyNodeObject);
+                    return `${this.name}: ${node.getTotalWeight() == 0 ? '' : numberFormatColored(node.getTotalWeight())}`;
                 }
             }
         });
@@ -179,6 +177,22 @@ export class SankeyChart {
                 styledMode: true,
                 numberFormatter: function () {
                     return numberFormat(arguments[0]/config.scalingFactor);
+                },
+                events: {
+                    render: function() {
+                        // add ids for testing
+                        this.series[0].points.forEach((link: any, index) => {
+                            link.graphic.element.setAttribute('data-testid', `chart-link-${link.custom?.category?.id}`);
+                        });
+                        ((this.series[0] as any).nodes as Array<Highcharts.SankeyNodeObject>).forEach((point: any, index) => {
+                            const node = new SankeyNode(point);
+                            point.graphic.element.setAttribute('data-testid', `chart-node-${point.id}`);
+                            point.graphic.element.setAttribute('data-value', point.id === '1' ? node.getTotalWeight() : node.getSum());
+                            if (point.dataLabel && point.dataLabel.element) {
+                                point.dataLabel.element.setAttribute('data-testid', `chart-node-label-${point.id}`);
+                            }
+                        });
+                    }
                 }
             }
         });
@@ -197,7 +211,7 @@ export class SankeyChart {
         this.update();
     }
 
-    public getNodeById(nodeId: number): SankeyNode {
+    getNodeById(nodeId: number): SankeyNode {
         const node: Highcharts.SankeyNodeObject = ((this.chart.series[0] as any).nodes as Array<Highcharts.SankeyNodeObject>).find(node => node.id === String(nodeId));
         if (! node) {
             throw new Error('cannot find node with id ' + nodeId);
@@ -226,7 +240,7 @@ export class SankeyNode {
     }
 
     public toString(): string {
-        return `${this.name}: ${this.getTotalWeight() == 0 ? '' : numberFormatColored(this.getTotalWeight())}`;
+        return `${this.name}: ${this.getSum() == 0 ? '' : numberFormatColored(this.getSum())}`;
     }
 
     public getSum(): number {
