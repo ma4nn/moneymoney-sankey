@@ -5,7 +5,7 @@ const STORAGE_KEY = 'sankey-config-v2'; // increase this version number if confi
 
 export type Config = {
     scalingFactor: number;
-    threshold: number;
+    threshold: number; // unscaled
     currency: string;
     categories: Map<number,Category>;
 }

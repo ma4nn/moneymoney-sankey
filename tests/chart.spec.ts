@@ -67,7 +67,7 @@ test('has configurable options', async ({ page }) => {
     await configButton.click();
     await expect(configMenu).toBeVisible();
 
-    // verify apply without changes does nothing
+    // assert apply without changes does nothing
     await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(4127.71);
     await applyButton.click();
     await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(4127.71);
@@ -102,8 +102,9 @@ test('show monthly values', async ({ page }) => {
 
     await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(2030.02);
 
-    await expect(page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').min))).resolves.toBeCloseTo(7.37);
-    await expect(page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').max))).resolves.toBeCloseTo(241.43);
+    // assert threshold values remain unscaled
+    await expect(page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').min))).resolves.toBeCloseTo(14.99);
+    await expect(page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').max))).resolves.toBeCloseTo(490.90);
 
     await expect(page.getByTestId(`chart-node-label-${nodeIdTransport}`)).toContainText('18%');
 });

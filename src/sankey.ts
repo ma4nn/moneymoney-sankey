@@ -27,7 +27,7 @@ export class SankeyChart {
 
         this.calculateNodeWeights();
 
-        const treeNodes: Array<TreeNode> = [...this.chartDataTree.preOrderTraversal()].filter(x => Math.abs(x.value) > config.threshold && config.categories.get(x.key).active);
+        const treeNodes: Array<TreeNode> = [...this.chartDataTree.preOrderTraversal()].filter(x => Math.abs(x.value) >= config.threshold / config.scalingFactor && config.categories.get(x.key).active);
 
         // build the data array for the Highchart
         // remarks:
@@ -221,7 +221,7 @@ export class SankeyChart {
     }
 
     getOutgoingWeights(): Array<number> {
-        return [...this.chartDataTree.preOrderTraversal()].filter(x => x.value < 0).map(x => Math.abs(x.value) / config.scalingFactor);
+        return [...this.chartDataTree.preOrderTraversal()].filter(x => x.value < 0).map(x => Math.abs(x.value));
     }
 }
 

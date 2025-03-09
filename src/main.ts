@@ -79,13 +79,14 @@ function setScaling(): void {
 
 function setThreshold(): void {
     let threshold = parseFloat((document.querySelector("input#threshold") as HTMLInputElement).value);
-    config.threshold = isNaN(threshold) ? defaultConfig.threshold : threshold * config.scalingFactor;
+    config.threshold = isNaN(threshold) ? defaultConfig.threshold : threshold;
     console.debug('threshold: ' + config.threshold);
 }
 
 function updateThresholdInput(): void {
     const thresholdInput = document.querySelector<HTMLInputElement>("input#threshold");
     ({ min: thresholdInput.min, max: thresholdInput.max } = getSliderRange(chart.getOutgoingWeights()));
+    thresholdInput.value = String((config.threshold).toFixed(2));
 }
 
 export function initApp(chartDataTree: Tree, numberOfMonths: number, currency: string, categories: Map<number,Category>): void {
@@ -150,7 +151,7 @@ export function initApp(chartDataTree: Tree, numberOfMonths: number, currency: s
 
 function update(): void {
     updateCategoryTable();
-    (document.querySelector("input#threshold") as HTMLInputElement).value = String((config.threshold / config.scalingFactor).toFixed(2));
+    updateThresholdInput();
     (document.querySelector("input#is-show-monthly") as HTMLInputElement).checked = config.scalingFactor !== 1;
 }
 
@@ -162,8 +163,8 @@ function reset(): void {
     update();
 }
 
-function getSliderRange(weights: Array<number>) {
-    const sorted = [...weights].sort((a, b) => a - b);
+function getSliderRange(data: Array<number>) {
+    const sorted = [...data].sort((a, b) => a - b);
 
     // Helper function to compute percentile
     function percentile(arr, p) {
@@ -184,7 +185,7 @@ function getSliderRange(weights: Array<number>) {
 
     const filtered = sorted.filter(value => value >= lowerBound && value <= upperBound);
 
-    const sliderMin = Math.min(...filtered);
+    const sliderMin = sorted[0]; // assure that the minimum value is always included
     const sliderMax = Math.max(...filtered);
 
     return {min: String(sliderMin), max: String(sliderMax)};
