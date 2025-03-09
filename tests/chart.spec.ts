@@ -1,4 +1,4 @@
-import {test, expect, Page} from '@playwright/test';
+import {test, expect, Page, Locator} from '@playwright/test';
 import {NodeValidator} from "../src/validators";
 import {SankeyChart, SankeyNode} from "../src/sankey";
 
@@ -10,16 +10,10 @@ declare global {
     }
 }
 
-async function getChartNodeLabel(nodeId: number, page: Page): Promise<string> {
-    return page.getByTestId(`chart-node-label-${nodeId}`).textContent();
-}
-
-async function getSaldo(page: Page): Promise<number> {
-    const mainNode = await page.getByTestId(`chart-node-${mainNodeId}`);
-    const value = await mainNode.getAttribute('data-value');
-
+async function getNodeValue(node: Locator): Promise<number> {
+    const value = await node.getAttribute('data-value');
     if (! value) {
-        throw new Error('missing or incorrect main node');
+        throw new Error('missing or incorrect node');
     }
 
     return Number(value);
@@ -43,11 +37,12 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('has valid initial state', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Cashflows' })).toBeVisible();
+    const mainNode = page.getByTestId(`chart-node-${mainNodeId}`);
 
+    await expect(page.getByRole('heading', { name: 'Cashflows' })).toBeVisible();
     await expect(page.locator('#transaction-count')).toHaveText('22 Transaktionen');
 
-    await expect(getSaldo(page)).resolves.toBeCloseTo(4127.71);
+    await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(4127.71);
 });
 
 test('take screenshot', async ({ page }) => {
@@ -56,6 +51,7 @@ test('take screenshot', async ({ page }) => {
 });
 
 test('has configurable options', async ({ page }) => {
+    const mainNode = page.getByTestId(`chart-node-${mainNodeId}`);
     const configMenu = page.locator('#offcanvasConfig');
     const configButton = page.getByRole('button', { name: 'Kategorien anpassen' });
 
@@ -72,9 +68,9 @@ test('has configurable options', async ({ page }) => {
     await expect(configMenu).toBeVisible();
 
     // verify apply without changes does nothing
-    await expect(getSaldo(page)).resolves.toBeCloseTo(4127.71);
+    await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(4127.71);
     await applyButton.click();
-    await expect(getSaldo(page)).resolves.toBeCloseTo(4127.71);
+    await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(4127.71);
 
     const nodeIdLiving = 9;
     const link = page.getByTestId('chart-link-25');
@@ -85,23 +81,23 @@ test('has configurable options', async ({ page }) => {
     await applyButton.click();
     await expect(link).toBeHidden();
 
-    expect(await getChartNodeLabel(nodeIdLiving, page)).toContain(NodeValidator.warningSign);
+    await expect(page.getByTestId(`chart-node-label-${nodeIdLiving}`)).toContainText(NodeValidator.warningSign);
 
-    await expect(getSaldo(page)).resolves.toBeCloseTo(4177.56);
+    await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(4177.56);
 });
 
 test('show monthly values', async ({ page }) => {
-    await expect(getSaldo(page)).resolves.toBeCloseTo(4127.71);
+    const mainNode = page.getByTestId(`chart-node-${mainNodeId}`);
+    await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(4127.71);
 
     const nodeIdTransport = 16;
-    const nodeLabel = page.getByTestId(`chart-node-label-${nodeIdTransport}`);
-    await expect(nodeLabel).toContainText('18%');
+    await expect(page.getByTestId(`chart-node-label-${nodeIdTransport}`)).toContainText('18%');
 
     const scalingValue = await page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#is-show-monthly').value));
     await expect(scalingValue).toBeCloseTo(2.03, 2);
     await page.locator('input#is-show-monthly').check();
 
-    expect(await getChartNodeLabel(nodeIdTransport, page)).toContain('18%');
+    await expect(page.getByTestId(`chart-node-label-${nodeIdTransport}`)).toContainText('18%');
 
-    await expect(getSaldo(page)).resolves.toBeCloseTo(2030.02);
+    await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(2030.02);
 });
