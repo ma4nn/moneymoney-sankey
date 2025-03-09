@@ -8,7 +8,7 @@ import {SankeyChart} from "./sankey";
 import {Category} from "./category";
 import './style.css';
 
-let config: Config = defaultConfig;
+let config: Config = { ...defaultConfig };
 let chart: SankeyChart;
 
 export { Tree }
@@ -73,6 +73,7 @@ function updateCategoryTable(): void {
 
 function setScaling(): void {
     const input = document.querySelector("input#is-show-monthly") as HTMLInputElement;
+console.log('default: ' + defaultConfig.scalingFactor);
     config.scalingFactor = input.checked ? parseFloat(input.value) : defaultConfig.scalingFactor;
     console.debug('scaling: ' + config.scalingFactor);
 }

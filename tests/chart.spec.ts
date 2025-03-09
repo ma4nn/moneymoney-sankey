@@ -87,6 +87,7 @@ test('has configurable options', async ({ page }) => {
 });
 
 test('show monthly values', async ({ page }) => {
+    const showMonthlyInput = page.locator('input#is-show-monthly');
     const mainNode = page.getByTestId(`chart-node-${mainNodeId}`);
     await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(4127.71);
 
@@ -96,9 +97,8 @@ test('show monthly values', async ({ page }) => {
     const nodeIdTransport = 16;
     await expect(page.getByTestId(`chart-node-label-${nodeIdTransport}`)).toContainText('18%');
 
-    const scalingValue = await page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#is-show-monthly').value));
-    await expect(scalingValue).toBeCloseTo(2.03, 2);
-    await page.locator('input#is-show-monthly').check();
+    await expect(page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#is-show-monthly').value))).resolves.toBeCloseTo(2.03);
+    await showMonthlyInput.check();
 
     await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(2030.02);
 
@@ -107,4 +107,8 @@ test('show monthly values', async ({ page }) => {
     await expect(page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').max))).resolves.toBeCloseTo(490.90);
 
     await expect(page.getByTestId(`chart-node-label-${nodeIdTransport}`)).toContainText('18%');
+
+    await showMonthlyInput.uncheck();
+
+    await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(4127.71);
 });

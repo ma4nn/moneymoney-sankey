@@ -10,7 +10,7 @@ export type Config = {
     categories: Map<number,Category>;
 }
 
-let defaultConfig: Config = {scalingFactor: 1, threshold: 0, currency: 'EUR', categories: new Map()};
+const defaultConfig: Config = {scalingFactor: 1, threshold: 0, currency: 'EUR', categories: new Map()};
 export default defaultConfig;
 
 export function save(config: Config) {
