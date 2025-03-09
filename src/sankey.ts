@@ -61,6 +61,8 @@ export class SankeyChart {
     }
 
     buildNodesConfig(): Array<SeriesSankeyNodesOptionsObject> {
+        const self = this;
+
         let nodes: Array<SeriesSankeyNodesOptionsObject> = [];
         nodes.push({
             id: String(this.mainNodeId),
@@ -69,10 +71,10 @@ export class SankeyChart {
             dataLabels: {
                 className: "main-node-label",
                 nodeFormatter: function (): string {
-                    const node = new SankeyNode(this as Highcharts.SankeyNodeObject);
-                    return `${this.name}: ${node.getTotalWeight() == 0 ? '' : numberFormatColored(node.getTotalWeight())}`;
+                    const node = new SankeyNode(self, this as Highcharts.SankeyNodeObject);
+                    return node.toString();
                 }
-            }
+            },
         });
 
         new Map([...config.categories].filter(([categoryId, category]) => categoryId !== this.mainNodeId))
@@ -134,10 +136,10 @@ export class SankeyChart {
                     align: 'right',
                     padding: 30,
                     nodeFormatter: function (): string {
-                        const node = new SankeyNode(this as Highcharts.SankeyNodeObject);
+                        const node = new SankeyNode(self, this as Highcharts.SankeyNodeObject);
 
                         return node.name + ': ' + (new NodeValidator(node, config).validate() ? '' : NodeValidator.warningSign)
-                            + numberFormat(node.getSum()) + ' '
+                            + numberFormat(node.getValue()) + ' '
                             + (node.getPercentage() && node.getPercentage() < 100 ? "<span class='badge text-bg-secondary'>" + Math.round(node.getPercentage()) + "% </span>" : "");
                     }
                 },
@@ -145,28 +147,36 @@ export class SankeyChart {
                     // tooltip for link
                     pointFormatter: function (): string {
                         const point = this as any;
-                        return point.fromNode.name + " → " + point.toNode.name + ": " + numberFormat(point.weight/config.scalingFactor) + "<br /><br /><span class='small'>(Klick entfernt die Kategorie aus dem Chart.)</span>";
+                        return point.fromNode.name + " → " + point.toNode.name + ": " + numberFormat(point.weight/config.scalingFactor) + "<br><br><span class='small'>(Klick entfernt die Kategorie aus dem Chart.)</span>";
                     },
                     // tooltip for node
                     nodeFormatter: function (): string {
-                        const node = new SankeyNode(this as Highcharts.SankeyNodeObject);
+                        const node = new SankeyNode(self, this as Highcharts.SankeyNodeObject);
 
                         let weightsDetailTooltip = '';
                         node.getLinksTo().filter(link => link.from !== String(self.mainNodeId) && link.weight > 0)
+                            .sort((a, b) => b.weight - a.weight)
                             .forEach(function (link: any) {
-                                weightsDetailTooltip += '+ ' + numberFormat(link.weight/config.scalingFactor) + ' (' + link.fromNode.name + ')<br />';
+                                weightsDetailTooltip += '+ ' + numberFormat(link.weight/config.scalingFactor) + ' (' + link.fromNode.name + ')<br>';
                             });
+                        if (node.isMain) {
+                            weightsDetailTooltip += '= ' + numberFormat(node.getTotalIncomingWeight()) + '<br><br>';
+                        }
 
                         node.getLinksFrom().filter(link => link.to !== String(self.mainNodeId) && link.weight > 0)
+                            .sort((a, b) => b.weight - a.weight)
                             .forEach(function (link: any) {
-                                weightsDetailTooltip += '- ' + numberFormat(link.weight/config.scalingFactor) + ' (' + link.toNode.name + ')<br />';
+                                weightsDetailTooltip += '- ' + numberFormat(link.weight/config.scalingFactor) + ' (' + link.toNode.name + ')<br>';
                             });
+                        if (node.isMain) {
+                            weightsDetailTooltip += '= ' + numberFormat(node.getTotalOutgoingWeight()) + '<br>';
+                        }
 
                         const validator = new NodeValidator(node, config);
                         validator.validate();
 
-                        return node.toString() + '<br />'
-                            + weightsDetailTooltip + '<br />'
+                        return node.toString() + '<br>'
+                            + weightsDetailTooltip + '<br>'
                             + validator.messages;
                     }
                 },
@@ -185,9 +195,9 @@ export class SankeyChart {
                             link.graphic.element.setAttribute('data-testid', `chart-link-${link.custom?.category?.id}`);
                         });
                         ((this.series[0] as any).nodes as Array<Highcharts.SankeyNodeObject>).forEach((point: any, index) => {
-                            const node = new SankeyNode(point);
+                            const node = new SankeyNode(self, point);
                             point.graphic.element.setAttribute('data-testid', `chart-node-${point.id}`);
-                            point.graphic.element.setAttribute('data-value', point.id === '1' ? node.getTotalWeight() : node.getSum());
+                            point.graphic.element.setAttribute('data-value', node.getValue());
                             if (point.dataLabel && point.dataLabel.element) {
                                 point.dataLabel.element.setAttribute('data-testid', `chart-node-label-${point.id}`);
                             }
@@ -217,7 +227,7 @@ export class SankeyChart {
             throw new Error('cannot find node with id ' + nodeId);
         }
 
-        return new SankeyNode(node);
+        return new SankeyNode(this, node);
     }
 
     getOutgoingWeights(): Array<number> {
@@ -229,21 +239,30 @@ export class SankeyNode {
     public name: string = '';
     public categoryId: number;
     public label: string = '';
-    private readonly node: SeriesSankeyNodesOptionsObject;
+    public isMain: boolean = false;
+    private readonly node: Highcharts.SankeyNodeObject;
+    private readonly chart: SankeyChart;
 
-    constructor(node: SeriesSankeyNodesOptionsObject) {
+    constructor(chart: SankeyChart, node: Highcharts.SankeyNodeObject) {
+        this.chart = chart;
         this.node = node;
         this.name = node.name;
         // @ts-ignore
         this.label = node.dataLabels !== null && typeof node.dataLabels !== 'undefined' && node.dataLabels.length > 0 ? node.dataLabels[0].textStr : '';
         this.categoryId = parseInt((node as any).point.id);
+        this.isMain = this.categoryId === this.chart.mainNodeId;
     }
 
     public toString(): string {
-        return `${this.name}: ${this.getSum() == 0 ? '' : numberFormatColored(this.getSum())}`;
+        const format = this.isMain ? numberFormatColored : numberFormat;
+        return `${this.name}: ${this.getValue() == 0 ? '' : format(this.getValue())}`;
     }
 
-    public getSum(): number {
+    public getValue(): number {
+        return this.isMain ? this.getTotalWeight() : this.getSum();
+    }
+
+    private getSum(): number {
          return 'getSum' in this.node ? (this.node as any).getSum() / config.scalingFactor : 0;
     }
 
@@ -253,9 +272,9 @@ export class SankeyNode {
             return null;
         }
 
-        const parentNode = new SankeyNode((linksTo[0] as any).fromNode);
+        const parentNode = new SankeyNode(this.chart, (linksTo[0] as any).fromNode);
 
-        return (this.getSum() / parentNode.getTotalOutgoingWeight()) * 100;
+        return (this.getValue() / parentNode.getTotalOutgoingWeight()) * 100;
     }
 
     public getLinksFrom(): Array<PointOptionsObject> {
@@ -274,7 +293,7 @@ export class SankeyNode {
         return this.getLinksFrom().map(point => point.weight).reduce((pv, cv) => pv + cv, 0) / config.scalingFactor;
     }
 
-    public getTotalWeight(): number {
+    private getTotalWeight(): number {
         return this.getTotalIncomingWeight() - this.getTotalOutgoingWeight();
     }
 }

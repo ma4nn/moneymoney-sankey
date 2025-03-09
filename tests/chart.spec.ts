@@ -1,6 +1,6 @@
 import {test, expect, Page, Locator} from '@playwright/test';
 import {NodeValidator} from "../src/validators";
-import {SankeyChart, SankeyNode} from "../src/sankey";
+import {SankeyChart} from "../src/sankey";
 
 const mainNodeId: number = 1;
 
