@@ -83,6 +83,11 @@ function setThreshold(): void {
     console.debug('threshold: ' + config.threshold);
 }
 
+function updateThresholdInput(): void {
+    const thresholdInput = document.querySelector<HTMLInputElement>("input#threshold");
+    ({ min: thresholdInput.min, max: thresholdInput.max } = getSliderRange(chart.getOutgoingWeights()));
+}
+
 export function initApp(chartDataTree: Tree, numberOfMonths: number, currency: string, categories: Map<number,Category>): void {
     config = loadConfig() ?? config;
 
@@ -102,14 +107,13 @@ export function initApp(chartDataTree: Tree, numberOfMonths: number, currency: s
         event.preventDefault();
 
         setScaling();
+        updateThresholdInput();
         persistConfig(config);
         chart.update();
     });
 
     const thresholdInput = document.querySelector<HTMLInputElement>("input#threshold");
-    const sliderRange = getSliderRange(chart.getOutgoingWeights());
-    thresholdInput.min = String(sliderRange.sliderMin);
-    thresholdInput.max = String(sliderRange.sliderMax);
+    updateThresholdInput();
     thresholdInput.addEventListener('change', (event) => {
         event.preventDefault();
 
@@ -183,5 +187,5 @@ function getSliderRange(weights: Array<number>) {
     const sliderMin = Math.min(...filtered);
     const sliderMax = Math.max(...filtered);
 
-    return {sliderMin, sliderMax};
+    return {min: String(sliderMin), max: String(sliderMax)};
 }
