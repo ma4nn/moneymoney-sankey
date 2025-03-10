@@ -108,21 +108,6 @@ export function initApp(transactions: Array<Transaction>, currency: string): voi
     window.Alpine = Alpine;
     Alpine.start();
 
-    document.querySelector("input#is-show-monthly").addEventListener('change', (event) => {
-        event.preventDefault();
-
-        persistConfig(config);
-        chart.update();
-    });
-
-    const thresholdInput = document.querySelector<HTMLInputElement>("input#threshold");
-    thresholdInput.addEventListener('change', (event) => {
-        event.preventDefault();
-
-        persistConfig(config);
-        chart.update();
-    });
-
     document.querySelector("#apply-settings-btn").addEventListener('click', (event) => {
         event.preventDefault();
 

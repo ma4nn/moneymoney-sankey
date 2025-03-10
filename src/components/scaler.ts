@@ -11,6 +11,8 @@ export default (factor: number) => ({
         this.config().scalingFactor = this.currentScaling;
 
         console.debug('scaling: ' + this.config().scalingFactor);
+
+        document.dispatchEvent(new CustomEvent('config-updated'));
     },
 
     isScaled(): boolean {

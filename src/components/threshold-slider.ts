@@ -13,7 +13,10 @@ export default (rangeData: Array<number>) => ({
     zoom(event: Event): void {
         this.currentValue = Number((event.target as HTMLInputElement).value);
         this.config().threshold = this.currentValue;
+
         console.debug('threshold: ' + this.config().threshold);
+
+        document.dispatchEvent(new CustomEvent('config-updated'));
     },
 
     config(): Config {

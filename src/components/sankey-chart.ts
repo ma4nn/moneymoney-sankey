@@ -4,7 +4,7 @@ import Highcharts from "highcharts/es-modules/masters/highcharts.src";
 import 'highcharts/es-modules/masters/modules/sankey.src';
 import 'highcharts/css/highcharts.css';
 
-import Tree, { TreeNode } from "../tree";
+import { TreeNode } from "../tree";
 import { Config } from "../config";
 import { NodeValidator } from "../validators";
 import { numberFormat, numberFormatColored } from "../helper";
@@ -213,6 +213,10 @@ export class SankeyChart {
         });
 
         this.update();
+
+        document.addEventListener('config-updated', () => {
+            this.update();
+        });
 
         return this;
     }
