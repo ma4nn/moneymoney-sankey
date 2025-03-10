@@ -59,14 +59,14 @@ function updateCategoryTable(): void {
 
     new Map([...config.categories.entries()]
             .filter(a => a[0] !== chart.mainNodeId)
-            .sort((a, b) => a[1].name.localeCompare(b[1].name)))
+            .sort((a, b) => a[1].path.localeCompare(b[1].path)))
         .forEach((category, categoryId) => {
             const row = document.createElement('tr');
             row.dataset.categoryId = String(categoryId);
             row.innerHTML = `
                   <td><div class="form-check"><input id="exclude-category-${categoryId}" name="category-is-active" class="form-check-input" type="checkbox" title="Kategorie anzeigen?" value="${category.name}" ${category.active ? 'checked' : ''}></div></td>
-                  <td>${category.name}</td>
-                  <td><input type="number" class="form-control" name="budget" placeholder="(ohne)" min="0" step="0.01" value="${category.budget}"></td>
+                  <td>${category.path}</td>
+                  <td><input type="number" class="form-control" name="budget" placeholder="(ohne)" min="0" step="0.01" value="${(category?.budget ? category.budget : '')}"></td>
                 `;
             tbody.appendChild(row);
         }

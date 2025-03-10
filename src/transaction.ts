@@ -3,6 +3,7 @@ import Tree, {TreeNode} from "./tree";
 export type Category = {
     id: number;
     name: string;
+    path: string;
     active: boolean;
     budget?: number;
 }
@@ -48,7 +49,7 @@ export class CategoryTree {
 
     constructor(mainNodeId: number, categoryPathSeparator: string) {
         this.categoryTree = new Tree(new TreeNode(mainNodeId, 0));
-        this.categories.set(mainNodeId, {id: mainNodeId, name: 'Saldo', active: true});
+        this.categories.set(mainNodeId, {id: mainNodeId, name: 'Saldo', path: '', active: true});
         this.categoryPathSeparator = categoryPathSeparator;
     }
 
@@ -64,7 +65,7 @@ export class CategoryTree {
                 let existingNode: TreeNode = this.categoryTree.find(categoryId);
                 if (existingNode === null) {
                     this.categoryTree.insert(parentCategoryId, categoryId, transaction.amount);
-                    this.categories.set(categoryId, {id: categoryId, name: categoryName, active: true});
+                    this.categories.set(categoryId, {id: categoryId, name: categoryName, path: path.join(' » '), active: true});
                 } else if (categorySubPath === transaction.category) { // full category path already exists
                     existingNode.value += transaction.amount;
                 }
@@ -72,6 +73,9 @@ export class CategoryTree {
                 parentCategoryId = categoryId;
             });
         });
+
+        console.debug('categories');
+        console.debug(this.categories);
     }
 }
 

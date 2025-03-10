@@ -81,7 +81,7 @@ export class SankeyChart {
         new Map([...config.categories].filter(([categoryId, category]) => categoryId !== this.mainNodeId))
             .forEach(function (category, categoryId) {
                 nodes.push({
-                    id: String(categoryId), // Highcarts needs the id to be string
+                    id: String(categoryId), // Highcharts needs the id to be string
                     name: category.name.split(categorySeparator).pop(), // remove first separator from path
                 });
             });

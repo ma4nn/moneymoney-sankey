@@ -2,7 +2,19 @@ import {test, expect, Page, Locator} from '@playwright/test';
 import {NodeValidator} from "../src/validators";
 import {SankeyChart} from "../src/sankey";
 
-const mainNodeId: number = 1;
+const categoryIds = {
+    "main": 1,
+    "transport": 1238034679,
+    "transportCar": 1475507816,
+    "transportCarInsurance": 892808123,
+    "living": 1698513113,
+    "supply": 1497325786
+};
+const defaultNodeValue = {
+    "main": 4127.71,
+    "transport": 490.90,
+    "transportCarInsurance": 398.25
+};
 
 declare global {
     interface Window {
@@ -32,17 +44,24 @@ async function setSliderValue(selector: string, value: number, page: Page): Prom
     }, {selector, value});
 }
 
+async function showChartTooltip(nodeId: number, page: Page): Promise<string> {
+    page.getByTestId(`chart-link-${nodeId}`).hover();
+    const tooltip = await page.waitForSelector('.highcharts-tooltip .badge');
+
+    return tooltip.textContent();
+}
+
 test.beforeEach(async ({ page }) => {
     await page.goto('/');
 });
 
 test('has valid initial state', async ({ page }) => {
-    const mainNode = page.getByTestId(`chart-node-${mainNodeId}`);
+    const mainNode = page.getByTestId(`chart-node-${categoryIds.main}`);
 
     await expect(page.getByRole('heading', { name: 'Cashflows' })).toBeVisible();
     await expect(page.locator('#transaction-count')).toHaveText('19 Transaktionen');
 
-    await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(4127.71);
+    expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main);
 });
 
 test('take screenshot', async ({ page }) => {
@@ -51,7 +70,7 @@ test('take screenshot', async ({ page }) => {
 });
 
 test('has configurable options', async ({ page }) => {
-    const mainNode = page.getByTestId(`chart-node-${mainNodeId}`);
+    const mainNode = page.getByTestId(`chart-node-${categoryIds.main}`);
     const configMenu = page.locator('#offcanvasConfig');
     const configButton = page.getByRole('button', { name: 'Kategorien anpassen' });
 
@@ -59,7 +78,7 @@ test('has configurable options', async ({ page }) => {
     await expect(configButton).toBeVisible();
     await expect(configButton).toBeEnabled();
 
-    const mainNodeConfig = page.locator('table#category-config [data-category-id="' + mainNodeId + '"]');
+    const mainNodeConfig = page.locator('table#category-config [data-category-id="' + categoryIds.main + '"]');
     await expect(mainNodeConfig).toHaveCount(0);
 
     const applyButton = page.getByRole('button', { name: 'Anwenden' });
@@ -68,51 +87,76 @@ test('has configurable options', async ({ page }) => {
     await expect(configMenu).toBeVisible();
 
     // assert apply without changes does nothing
-    await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(4127.71);
+    expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main);
     await applyButton.click();
-    await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(4127.71);
+    expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main);
 
-    const nodeIdLiving = 1698513113;
-    const link = page.getByTestId('chart-link-1497325786'); // Versorgung
+    const link = page.getByTestId(`chart-link-${categoryIds.supply}`); // Versorgung
     await expect(link).toBeVisible();
     await configButton.click();
     await setSliderValue('input#threshold', 50, page);
-    await page.locator('table#category-config [data-category-id="' + nodeIdLiving + '"] input[name="budget"]').fill('100');
+    await page.locator('table#category-config [data-category-id="' + categoryIds.living + '"] input[name="budget"]').fill('100');
     await applyButton.click();
     await expect(link).toBeHidden();
 
-    await expect(page.getByTestId(`chart-node-label-${nodeIdLiving}`)).toContainText(NodeValidator.warningSign);
+    await expect(page.getByTestId(`chart-node-label-${categoryIds.living}`)).toContainText(NodeValidator.warningSign);
 
-    await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(4177.56);
+    expect(await getNodeValue(mainNode)).toBeCloseTo(4177.56);
 });
 
 test('show monthly values', async ({ page }) => {
     const showMonthlyInput = page.locator('input#is-show-monthly');
-    const mainNode = page.getByTestId(`chart-node-${mainNodeId}`);
-    await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(4127.71);
+    const mainNode = page.getByTestId(`chart-node-${categoryIds.main}`);
+    expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main);
 
-    await expect(page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').min))).resolves.toBeCloseTo(14.99);
-    await expect(page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').max))).resolves.toBeCloseTo(490.90);
+    expect(await page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').min))).toBeCloseTo(14.99);
+    expect(await page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').max))).toBeCloseTo(490.90);
 
-    const nodeIdTransport = 1238034679;
-    page.getByTestId(`chart-link-${nodeIdTransport}`).hover();
-    let tooltip = await page.waitForSelector('.highcharts-tooltip .badge');
-    await expect(await tooltip.textContent()).toContain('18%');
+    expect(await showChartTooltip(categoryIds.transport, page)).toContain('18%');
 
-    await expect(page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#is-show-monthly').value))).resolves.toBeCloseTo(2.03);
+    expect(await page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#is-show-monthly').value))).toBeCloseTo(2.03);
     await showMonthlyInput.check();
 
-    await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(2030.02);
+    expect(await getNodeValue(mainNode)).toBeCloseTo(2030.02);
 
     // assert threshold values remain unscaled
-    await expect(page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').min))).resolves.toBeCloseTo(14.99);
-    await expect(page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').max))).resolves.toBeCloseTo(490.90);
+    expect(await page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').min))).toBeCloseTo(14.99);
+    expect(await page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').max))).toBeCloseTo(490.90);
 
-    page.getByTestId(`chart-link-${nodeIdTransport}`).hover();
-    tooltip = await page.waitForSelector('.highcharts-tooltip .badge');
-    await expect(await tooltip.textContent()).toContain('18%');
+    expect(await showChartTooltip(categoryIds.transport, page)).toContain('18%');
 
     await showMonthlyInput.uncheck();
 
-    await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(4127.71);
+    expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main);
+});
+
+test('hide and re-add category', async({ page }) => {
+    const mainNode = page.getByTestId(`chart-node-${categoryIds.main}`);
+    const configButton = page.getByRole('button', { name: 'Kategorien anpassen' });
+    expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main);
+
+    const link = page.getByTestId(`chart-link-${categoryIds.transport}`);
+    await link.click();
+    await expect(link).toBeHidden();
+
+    expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main + defaultNodeValue.transport);
+
+    await configButton.click();
+    const checkboxLiving = page.locator('table#category-config [data-category-id="' + categoryIds.transport + '"] input[name="category-is-active"]');
+    expect(await checkboxLiving.isChecked()).toBeFalsy();
+    await checkboxLiving.check();
+    await page.getByRole('button', { name: 'Anwenden' }).click();
+
+    await expect(link).toBeHidden(); // link is still hidden because sub categories are also hidden
+
+    await configButton.click();
+    const checkboxTransportCar= page.locator('table#category-config [data-category-id="' + categoryIds.transportCar + '"] input[name="category-is-active"]');
+    expect(await checkboxTransportCar.isChecked()).toBeFalsy();
+    await checkboxTransportCar.check();
+    const checkboxTransportCarInsurance= page.locator('table#category-config [data-category-id="' + categoryIds.transportCarInsurance + '"] input[name="category-is-active"]');
+    expect(await checkboxTransportCarInsurance.isChecked()).toBeFalsy();
+    await checkboxTransportCarInsurance.check();
+    await page.getByRole('button', { name: 'Anwenden' }).click();
+
+    expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main + defaultNodeValue.transport - defaultNodeValue.transportCarInsurance);
 });
