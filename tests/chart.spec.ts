@@ -114,10 +114,9 @@ test('show monthly values', async ({ page }) => {
 
     expect(await showChartTooltip(categoryIds.transport, page)).toContain('18%');
 
-    expect(await page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#is-show-monthly').value))).toBeCloseTo(2.03);
     await showMonthlyInput.check();
 
-    expect(await getNodeValue(mainNode)).toBeCloseTo(2030.02);
+    expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main / 2.03333);
 
     // assert threshold values remain unscaled
     expect(await page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').min))).toBeCloseTo(14.99);

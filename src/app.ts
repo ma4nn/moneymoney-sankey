@@ -7,8 +7,9 @@ import defaultConfig from "./config";
 import Tree from "./tree";
 import {SankeyChart} from "./sankey";
 import {Transaction, MoneyMoneyCategoryTree, TransactionsManager} from "./transaction";
-import './style.css';
 import scaler from "./components/scaler";
+import thresholdSlider from "./components/threshold-slider";
+import './style.css';
 
 let config: Config = { ...defaultConfig };
 let chart: SankeyChart;
@@ -74,35 +75,10 @@ function updateCategoryTable(): void {
     container.appendChild(table);
 }
 
-function setThreshold(): void {
-    let threshold = parseFloat((document.querySelector("input#threshold") as HTMLInputElement).value);
-    config.threshold = isNaN(threshold) ? defaultConfig.threshold : threshold;
-    console.debug('threshold: ' + config.threshold);
-}
-
-function updateThresholdInput(): void {
-    const thresholdInput = document.querySelector<HTMLInputElement>("input#threshold");
-    ({ min: thresholdInput.min, max: thresholdInput.max } = getSliderRange(chart.getOutgoingWeights()));
-    thresholdInput.value = String((config.threshold).toFixed(2));
-}
-
 export function initApp(transactions: Array<Transaction>, currency: string): void {
     config = loadConfig() ?? config;
 
     const data = new TransactionsManager(transactions);
-
-    Alpine.data('transaction-meta', () => {
-        return {
-            accounts: data.accounts,
-            start_date: data.startDate.toLocaleDateString(),
-            end_date: data.endDate.toLocaleDateString(),
-            transaction_count: data.transactions.length,
-        }
-    });
-    Alpine.data('scaler-component', () => scaler(data.calculateNumberOfMonths()));
-    Alpine.store('config', config);
-    window.Alpine = Alpine;
-    Alpine.start();
 
     const categoryTree = new MoneyMoneyCategoryTree(config.mainNodeId);
     categoryTree.fromTransactions(data.transactions);
@@ -115,20 +91,31 @@ export function initApp(transactions: Array<Transaction>, currency: string): voi
 
     update();
 
+    Alpine.data('transaction-meta', () => {
+        return {
+            accounts: data.accounts,
+            start_date: data.startDate.toLocaleDateString(),
+            end_date: data.endDate.toLocaleDateString(),
+            transaction_count: data.transactions.length,
+        }
+    });
+    Alpine.data('scaler-component', () => scaler(data.calculateNumberOfMonths()));
+    Alpine.data('threshold-slider-component', () => thresholdSlider(chart.getOutgoingWeights()));
+    Alpine.store('config', config);
+    window.Alpine = Alpine;
+    Alpine.start();
+
     document.querySelector("input#is-show-monthly").addEventListener('change', (event) => {
         event.preventDefault();
 
-        updateThresholdInput();
         persistConfig(config);
         chart.update();
     });
 
     const thresholdInput = document.querySelector<HTMLInputElement>("input#threshold");
-    updateThresholdInput();
     thresholdInput.addEventListener('change', (event) => {
         event.preventDefault();
 
-        setThreshold();
         persistConfig(config);
         chart.update();
     });
@@ -161,7 +148,6 @@ export function initApp(transactions: Array<Transaction>, currency: string): voi
 
 function update(): void {
     updateCategoryTable();
-    updateThresholdInput();
 }
 
 function reset(): void {
@@ -170,32 +156,4 @@ function reset(): void {
     config.scalingFactor = defaultConfig.scalingFactor;
 
     update();
-}
-
-function getSliderRange(data: Array<number>) {
-    const sorted = [...data].sort((a, b) => a - b);
-
-    // Helper function to compute percentile
-    function percentile(arr, p) {
-        const index = (arr.length - 1) * p;
-        const lower = Math.floor(index);
-        const upper = Math.ceil(index);
-        const weight = index - lower;
-        if (upper >= arr.length) return arr[lower];
-        return arr[lower] * (1 - weight) + arr[upper] * weight;
-    }
-
-    const q1 = percentile(sorted, 0.25);
-    const q3 = percentile(sorted, 0.75);
-    const iqr = q3 - q1;
-
-    const lowerBound = q1 - 1.5 * iqr;
-    const upperBound = q3 + 1.5 * iqr;
-
-    const filtered = sorted.filter(value => value >= lowerBound && value <= upperBound);
-
-    const sliderMin = sorted[0]; // assure that the minimum value is always included
-    const sliderMax = Math.max(...filtered);
-
-    return {min: String(sliderMin), max: String(sliderMax)};
 }

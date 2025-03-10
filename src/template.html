@@ -44,12 +44,12 @@
                 <div class="form-check form-switch form-check-inline" x-data="scaler-component">
                     <input class="form-check-input" type="checkbox" role="switch" id="is-show-monthly" :checked="isScaled" @change="toggle" :disabled="isDisabled">
                     <label class="form-check-label" for="is-show-monthly">Werte pro Monat anzeigen</label>
-                    <span class="form-text">(insg. <span x-text="factor"></span> Monat(e))</span>
+                    <span class="form-text">(insg. <span x-text="factorLabel"></span> Monat(e))</span>
                 </div>
             </div>
-            <div class="col-auto ms-auto">
+            <div class="col-auto ms-auto" x-data="threshold-slider-component">
                 <label for="threshold" class="form-label visually-hidden">Detailgrad</label>
-                <input type="range" class="form-range" id="threshold" min="0" max="100" title="Detailgrad">
+                <input type="range" class="form-range" id="threshold" :min="minValue" :max="maxValue" :value="currentValue" @change="zoom" title="Detailgrad">
             </div>
         </fieldset>
     </header>

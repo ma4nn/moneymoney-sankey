@@ -25,7 +25,7 @@ export class TransactionsManager {
     constructor(transactions: Array<Transaction>) {
         this.transactions = transactions;
         this.startDate = this.transactions.map(obj => new Date(obj.date * 1000)).reduce((min, current) => (current < min ? current : min), new Date());
-        this.endDate = this.transactions.map(obj => new Date(obj.date * 1000)).reduce((max, current) => (current > max ? current : max), new Date());
+        this.endDate = this.transactions.map(obj => new Date(obj.date * 1000)).reduce((max, current) => (current > max ? current : max), new Date(0));
     }
 
     get accounts(): Array<string> {
@@ -38,7 +38,7 @@ export class TransactionsManager {
         const endYear = this.endDate.getFullYear();
         const endMonth = this.endDate.getMonth();
 
-        return (endYear - startYear) * 12 + (endMonth - startMonth);
+        return (endYear - startYear) * 12 + (endMonth - startMonth) + (this.endDate.getDate() - this.startDate.getDate()) / 30;
     }
 }
 

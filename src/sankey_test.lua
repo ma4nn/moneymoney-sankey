@@ -19,7 +19,7 @@ end
 local dummyAccount = { name = "Tagesgeld Test Bank", accountNumber = 1234, currency = currency }
 local transactions = {
     {name = "Gehalt", amount = 3487.65, currency = "EUR", category = "Einkommen", bookingDate = 1740787200},
-    {name = "Bonuszahlung", amount = 512.30, currency = "EUR", category = "Einkommen", bookingDate = 1740787200},
+    {name = "Bonuszahlung", amount = 512.30, currency = "EUR", category = "Einkommen", bookingDate = 1742083200},
     {name = "Freiberuflicher Auftrag", amount = 698.75, currency = "USD", category = "Selbstständigkeit", bookingDate = 1740700800},
     {name = "Verkauf Gebrauchtwaren", amount = 147.90, currency = "EUR", category = "Verkäufe", bookingDate = 1740441600},
     {name = "Steuerrückzahlung", amount = 1198.45, currency = "EUR", category = "Rückerstattung", bookingDate = 1740009600},
@@ -44,7 +44,7 @@ local transactions = {
 
 local sankey_extension = require("dist/SankeyChart")
 
-WriteHeader (dummyAccount, os.time{year=2024, month=1, day=10, hour=0}, os.time{year=2024, month=3, day=11, hour=0}, #transactions)
+WriteHeader (dummyAccount, os.time{year=2025, month=1, day=15, hour=0}, os.time{year=2025, month=3, day=16, hour=0}, #transactions)
 WriteTransactions (dummyAccount, transactions)
 WriteTail (dummyAccount)
 
