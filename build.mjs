@@ -31,7 +31,7 @@ function createNonce() {
  */
 (async() => {
     const result = await esbuild.build({
-        entryPoints: ['src/main.ts'],
+        entryPoints: ['src/app.ts'],
         bundle: true,
         minifyWhitespace: true,
         minifySyntax: true,

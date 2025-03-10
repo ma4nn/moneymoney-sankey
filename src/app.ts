@@ -1,8 +1,6 @@
-// @todo rename to app.ts
+import Alpine from '@alpinejs/csp';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
-import Alpine from '@alpinejs/csp';
 
 import {Config, save as persistConfig, load as loadConfig} from "./config";
 import defaultConfig from "./config";
