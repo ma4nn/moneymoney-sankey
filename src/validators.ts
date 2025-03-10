@@ -1,7 +1,7 @@
 import { Category } from "./transaction";
 import { Config } from "./config";
 import { numberFormat } from "./helper";
-import {SankeyNode} from "./sankey";
+import {SankeyNode} from "./components/sankey-chart";
 
 interface ValidatorInterface {
     message(): string;
