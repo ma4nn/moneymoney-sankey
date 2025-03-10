@@ -16,14 +16,12 @@ select#categories {
 
 .highcharts-data-label text,
 text.highcharts-data-label {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 200;
-}
 
-.highcharts-data-label.main-node-label text {
-    font-size: x-large;
-    text-decoration-line: underline;
-    text-decoration-style: double;
+    .highcharts-strong {
+        font-size: 1.3em;
+    }
 }
 
 .highcharts-link {

@@ -13,13 +13,14 @@ declare let categorySeparator: string;
 let config: Config;
 
 export class SankeyChart {
-    public mainNodeId: number = 1;
+    public mainNodeId: number;
     private readonly chartDataTree: Tree;
     private chart: Highcharts.Chart = null;
 
     constructor(initChartDataTree: Tree, initConfig: Config) {
         this.chartDataTree = initChartDataTree;
         config = initConfig;
+        this.mainNodeId = config.mainNodeId;
     }
 
     update(): void {
@@ -138,16 +139,20 @@ export class SankeyChart {
                     nodeFormatter: function (): string {
                         const node = new SankeyNode(self, this as Highcharts.SankeyNodeObject);
 
-                        return node.name + ': ' + (new NodeValidator(node, config).validate() ? '' : NodeValidator.warningSign)
-                            + numberFormat(node.getValue()) + ' '
-                            + (node.getPercentage() && node.getPercentage() < 100 ? "<span class='badge text-bg-secondary'>" + Math.round(node.getPercentage()) + "% </span>" : "");
+                        return '<small>' + node.name + '</small><br>' + (new NodeValidator(node, config).validate() ? '' : NodeValidator.warningSign)
+                            + numberFormat(node.getValue());
                     }
                 },
                 tooltip: {
                     // tooltip for link
                     pointFormatter: function (): string {
-                        const point = this as any;
-                        return point.fromNode.name + " → " + point.toNode.name + ": " + numberFormat(point.weight/config.scalingFactor) + "<br><br><span class='small'>(Klick entfernt die Kategorie aus dem Chart.)</span>";
+                        const link = this as any;
+                        const toNode = new SankeyNode(self, link.toNode);
+
+                        return link.fromNode.name + " → " + link.toNode.name + ": "
+                            + numberFormat(link.weight/config.scalingFactor)
+                            + (toNode.getPercentage() && toNode.getPercentage() < 100 ? " <span class='badge text-bg-secondary'>" + Math.round(toNode.getPercentage()) + "% </span>" : "")
+                            + "<br><br><span class='small'>(Klick entfernt die Kategorie aus dem Chart.)</span>";
                     },
                     // tooltip for node
                     nodeFormatter: function (): string {
@@ -192,12 +197,13 @@ export class SankeyChart {
                     render: function() {
                         // add ids for testing
                         this.series[0].points.forEach((link: any, index) => {
-                            link.graphic.element.setAttribute('data-testid', `chart-link-${link.custom?.category?.id}`);
+                            link.graphic?.element.setAttribute('data-testid', `chart-link-${link.custom?.category?.id}`);
                         });
+
                         ((this.series[0] as any).nodes as Array<Highcharts.SankeyNodeObject>).forEach((point: any, index) => {
                             const node = new SankeyNode(self, point);
-                            point.graphic.element.setAttribute('data-testid', `chart-node-${point.id}`);
-                            point.graphic.element.setAttribute('data-value', node.getValue());
+                            point.graphic?.element.setAttribute('data-testid', `chart-node-${point.id}`);
+                            point.graphic?.element.setAttribute('data-value', node.getValue());
                             if (point.dataLabel && point.dataLabel.element) {
                                 point.dataLabel.element.setAttribute('data-testid', `chart-node-label-${point.id}`);
                             }
@@ -235,7 +241,7 @@ export class SankeyChart {
     }
 }
 
-export class SankeyNode {
+export class SankeyNode { // @todo use accessors
     public name: string = '';
     public categoryId: number;
     public label: string = '';
@@ -255,7 +261,7 @@ export class SankeyNode {
 
     public toString(): string {
         const format = this.isMain ? numberFormatColored : numberFormat;
-        return `${this.name}: ${this.getValue() == 0 ? '' : format(this.getValue())}`;
+        return `${this.name}<br>${this.getValue() == 0 ? '' : format(this.getValue())}`;
     }
 
     public getValue(): number {

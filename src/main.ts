@@ -1,11 +1,14 @@
+// @todo rename to app.ts
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+import Alpine from '@alpinejs/csp';
 
 import {Config, save as persistConfig, load as loadConfig} from "./config";
 import defaultConfig from "./config";
 import Tree from "./tree";
 import {SankeyChart} from "./sankey";
-import {Category} from "./category";
+import {Transaction, MoneyMoneyCategoryTree, TransactionsManager} from "./transaction";
 import './style.css';
 
 let config: Config = { ...defaultConfig };
@@ -16,6 +19,7 @@ export { Tree }
 declare global {
   interface Window {
     chart: SankeyChart;
+    Alpine: Alpine;
   }
 }
 
@@ -60,9 +64,9 @@ function updateCategoryTable(): void {
             const row = document.createElement('tr');
             row.dataset.categoryId = String(categoryId);
             row.innerHTML = `
+                  <td><div class="form-check"><input id="exclude-category-${categoryId}" name="category-is-active" class="form-check-input" type="checkbox" title="Kategorie anzeigen?" value="${category.name}" ${category.active ? 'checked' : ''}></div></td>
                   <td>${category.name}</td>
                   <td><input type="number" class="form-control" name="budget" placeholder="(ohne)" min="0" step="0.01" value="${category.budget}"></td>
-                  <td><div class="form-check"><input id="exclude-category-${categoryId}" name="category-is-active" class="form-check-input" type="checkbox" title="Kategorie anzeigen?" value="${category.name}" ${category.active ? 'checked' : ''}></div></td>
                 `;
             tbody.appendChild(row);
         }
@@ -73,7 +77,6 @@ function updateCategoryTable(): void {
 
 function setScaling(): void {
     const input = document.querySelector("input#is-show-monthly") as HTMLInputElement;
-console.log('default: ' + defaultConfig.scalingFactor);
     config.scalingFactor = input.checked ? parseFloat(input.value) : defaultConfig.scalingFactor;
     console.debug('scaling: ' + config.scalingFactor);
 }
@@ -90,18 +93,37 @@ function updateThresholdInput(): void {
     thresholdInput.value = String((config.threshold).toFixed(2));
 }
 
-export function initApp(chartDataTree: Tree, numberOfMonths: number, currency: string, categories: Map<number,Category>): void {
+export function initApp(transactions: Array<Transaction>, currency: string): void {
+    const data = new TransactionsManager(transactions);
+
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('transaction_metadata', () => {
+            return {
+                accounts: data.accounts,
+                start_date: data.startDate.toLocaleDateString(),
+                end_date: data.endDate.toLocaleDateString(),
+                transaction_count: data.transactions.length,
+                number_of_months: data.calculateNumberOfMonths(),
+            }
+        });
+    });
+    window.Alpine = Alpine;
+    Alpine.start();
+
     config = loadConfig() ?? config;
 
-    config.categories = new Map([...categories, ...config.categories]);
+    const categoryTree = new MoneyMoneyCategoryTree(config.mainNodeId);
+    categoryTree.fromTransactions(data.transactions);
+
+    config.categories = new Map([...categoryTree.categories, ...config.categories]); // @todo ignore categories that are not in export!
     config.currency = currency;
 
-    chart = new SankeyChart(chartDataTree, config);
+    chart = new SankeyChart(categoryTree.categoryTree, config); // @todo use categoryTree
     window.chart = chart.create();
 
     update();
 
-    if (Math.round(numberOfMonths) == 1) {
+    if (Math.round(data.calculateNumberOfMonths()) == 1) {
         document.querySelector("input#is-show-monthly").setAttribute('disabled', 'disabled');
     }
 

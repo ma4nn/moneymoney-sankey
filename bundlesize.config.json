@@ -3,7 +3,7 @@
     {
       "path": "./dist/SankeyChart.lua",
       "compression": "none",
-      "maxSize": "860 kB"
+      "maxSize": "950 kB"
     }
   ]
 }

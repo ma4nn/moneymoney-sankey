@@ -40,7 +40,7 @@ test('has valid initial state', async ({ page }) => {
     const mainNode = page.getByTestId(`chart-node-${mainNodeId}`);
 
     await expect(page.getByRole('heading', { name: 'Cashflows' })).toBeVisible();
-    await expect(page.locator('#transaction-count')).toHaveText('22 Transaktionen');
+    await expect(page.locator('#transaction-count')).toHaveText('19 Transaktionen');
 
     await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(4127.71);
 });
@@ -72,8 +72,8 @@ test('has configurable options', async ({ page }) => {
     await applyButton.click();
     await expect(getNodeValue(mainNode)).resolves.toBeCloseTo(4127.71);
 
-    const nodeIdLiving = 9;
-    const link = page.getByTestId('chart-link-25');
+    const nodeIdLiving = 1698513113;
+    const link = page.getByTestId('chart-link-1497325786'); // Versorgung
     await expect(link).toBeVisible();
     await configButton.click();
     await setSliderValue('input#threshold', 50, page);
@@ -94,8 +94,10 @@ test('show monthly values', async ({ page }) => {
     await expect(page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').min))).resolves.toBeCloseTo(14.99);
     await expect(page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').max))).resolves.toBeCloseTo(490.90);
 
-    const nodeIdTransport = 16;
-    await expect(page.getByTestId(`chart-node-label-${nodeIdTransport}`)).toContainText('18%');
+    const nodeIdTransport = 1238034679;
+    page.getByTestId(`chart-link-${nodeIdTransport}`).hover();
+    let tooltip = await page.waitForSelector('.highcharts-tooltip .badge');
+    await expect(await tooltip.textContent()).toContain('18%');
 
     await expect(page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#is-show-monthly').value))).resolves.toBeCloseTo(2.03);
     await showMonthlyInput.check();
@@ -106,7 +108,9 @@ test('show monthly values', async ({ page }) => {
     await expect(page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').min))).resolves.toBeCloseTo(14.99);
     await expect(page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').max))).resolves.toBeCloseTo(490.90);
 
-    await expect(page.getByTestId(`chart-node-label-${nodeIdTransport}`)).toContainText('18%');
+    page.getByTestId(`chart-link-${nodeIdTransport}`).hover();
+    tooltip = await page.waitForSelector('.highcharts-tooltip .badge');
+    await expect(await tooltip.textContent()).toContain('18%');
 
     await showMonthlyInput.uncheck();
 

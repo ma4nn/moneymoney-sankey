@@ -1,16 +1,17 @@
-import {Category} from "./category";
+import {Category} from "./transaction";
 
 const DATA_TYPE_MAP: string = 'Map';
-const STORAGE_KEY = 'sankey-config-v2'; // increase this version number if config is not backwards compatible
+const STORAGE_KEY = 'sankey-config-v3'; // increase this version number if config is not backwards compatible
 
 export type Config = {
     scalingFactor: number;
     threshold: number; // unscaled
     currency: string;
     categories: Map<number,Category>;
+    mainNodeId: number;
 }
 
-const defaultConfig: Config = {scalingFactor: 1, threshold: 0, currency: 'EUR', categories: new Map()};
+const defaultConfig: Config = {scalingFactor: 1, threshold: 0, currency: 'EUR', categories: new Map(), mainNodeId: 1};
 export default defaultConfig;
 
 export function save(config: Config) {

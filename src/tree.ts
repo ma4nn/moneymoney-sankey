@@ -23,8 +23,8 @@ export class TreeNode {
 export default class Tree {
     root: TreeNode;
 
-    constructor(key: number, value = key) {
-        this.root = new TreeNode(key, value);
+    constructor(rootNode: TreeNode) {
+        this.root = rootNode;
     }
 
     * preOrderTraversal(node = this.root): Generator<TreeNode> {
@@ -52,6 +52,7 @@ export default class Tree {
                 return true;
             }
         }
+
         return false;
     }
 
@@ -68,13 +69,13 @@ export default class Tree {
         return false;
     }
 
-    find(key: number): TreeNode {
+    find(key: number): TreeNode|null {
         for (let node of this.preOrderTraversal()) {
             if (node.key === key) {
               return node;
             }
         }
 
-        return undefined;
+        return null;
     }
 }

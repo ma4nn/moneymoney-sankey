@@ -25,7 +25,7 @@ Exporter {version = {{ version }},
           format = "Sankey-Chart",
           fileExtension = "html",
           reverseOrder = false,
-          description = "Generate a beautiful Sankey Chart from your category transactions"}
+          description = "Generate an interactive Sankey Chart from your category transactions"}
 
 -------------------------
 -- Global Configuration
@@ -48,11 +48,53 @@ variables = {
 -- initialize global array to store category sums
 category_links = {}
 -- global array to store mapping of category ids to category full paths
-categories = {};
+categories = {}
+
+export_data = {}
 
 local function write_line(line)
    assert(io.write(line, "\n"))
 end
+
+function tableToJSON(tbl)
+    local function serialize(o)
+        if type(o) == "number" or type(o) == "boolean" then
+            return tostring(o)
+        elseif type(o) == "string" then
+            return string.format("%q", o:gsub("\\", "\\\\"))
+        elseif type(o) == "table" then
+            local isArray = true
+            local index = 1
+            for k, _ in pairs(o) do
+                if k ~= index then
+                    isArray = false
+                    break
+                end
+                index = index + 1
+            end
+
+            local items = {}
+            if isArray then
+                for _, v in ipairs(o) do
+                    table.insert(items, serialize(v))
+                end
+
+                return "[" .. table.concat(items, ",") .. "]"
+            else
+                for k, v in pairs(o) do
+                    table.insert(items, string.format("%q:%s", k, serialize(v)))
+                end
+
+                return "{" .. table.concat(items, ",") .. "}"
+            end
+        end
+
+        return "null"
+    end
+
+    return serialize(tbl)
+end
+
 
 -- @see https://www.lua.org/pil/19.3.html
 local function pairsByKeys (t, f)
@@ -134,12 +176,21 @@ function WriteHeader (account, startDate, endDate, transactionCount)
     variables["number_of_months_formatted"] = math.floor(variables["number_of_months"])
     variables["currency"] = account.currency
 
+    export_data = {
+        startDate = os.date('%d.%m.%Y', startDate),
+        endDate = os.date('%d.%m.%Y', endDate),
+        name = account.name,
+        number = account.accountNumber,
+        currency = account.currency
+    }
+
     -- the currency to filter
     currency = account.currency
 end
 
 -- called for every booking day
 function WriteTransactions (account, transactions)
+    filtered_transactions = {}
     -- This method is called for every booking day.
     -- it is used to sum up all the bookings into a global category links variable.
     for _,transaction in ipairs(transactions) do
@@ -163,6 +214,15 @@ function WriteTransactions (account, transactions)
             else
                 type = CATEGORY_LINK_TYPE_EXPENSE
             end
+
+            table.insert(filtered_transactions, {
+                id = transaction.id,
+                amount = transaction.amount,
+                category = transaction.category,
+                currency = transaction.currency,
+                account = account.name,
+                date = transaction.bookingDate
+            })
 
             local category_path_full = ""
             local parent_category_id = add_or_update_category(MAIN_CATEGORY_NAME, nil)
@@ -201,6 +261,16 @@ function WriteTail (account)
     end
 
     variables["init_chart_js"] = chart_js
+
+    transactions_js = ""
+    for _,transaction in pairs(filtered_transactions) do
+        transactions_js = transactions_js .. '[' .. 9 .. ', {id: ' .. 9 .. ', amount: ' .. transaction.amount .. ', category: "' .. transaction.category .. '", currency: "' .. transaction.currency .. '"}], '
+    end
+
+    export_data["transactions"] = filtered_transactions
+    variables["export_json"] = tableToJSON(export_data)
+
+    variables["transactions_json"] = tableToJSON(filtered_transactions)
 
     write_line(replace_placeholders([==[
 {{ html_template }}
