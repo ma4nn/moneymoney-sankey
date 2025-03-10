@@ -26,7 +26,7 @@
     <header class="container-fluid text-center" aria-label="primary">
         <h1 class="my-4">Cashflows</h1>
 
-        <p class="lead" x-data="transaction_metadata"><span x-text="accounts"></span> &dash; <span x-text="start_date"></span> bis <span x-text="end_date"></span></p>
+        <p class="lead" x-data="transaction-meta"><span x-text="accounts"></span> &dash; <span x-text="start_date"></span> bis <span x-text="end_date"></span></p>
     </header>
 
     <header class="container-fluid sticky-top" aria-label="configuration">
@@ -41,10 +41,10 @@
                 </button>
             </div>
             <div class="col-auto">
-                <div class="form-check form-switch form-check-inline">
-                    <input class="form-check-input" type="checkbox" role="switch" id="is-show-monthly" value="{{ number_of_months }}">
+                <div class="form-check form-switch form-check-inline" x-data="scaler-component">
+                    <input class="form-check-input" type="checkbox" role="switch" id="is-show-monthly" :checked="isScaled" @change="toggle" :disabled="isDisabled">
                     <label class="form-check-label" for="is-show-monthly">Werte pro Monat anzeigen</label>
-                    <span class="form-text" x-data="transaction_metadata">(insg. <span x-text="number_of_months"></span> Monat(e))</span>
+                    <span class="form-text">(insg. <span x-text="factor"></span> Monat(e))</span>
                 </div>
             </div>
             <div class="col-auto ms-auto">
@@ -81,7 +81,7 @@
         </div>
         <div class="offcanvas-body pt-0">
             <p>
-                <small x-data="transaction_metadata">
+                <small x-data="transaction-meta">
                     Das <a class="icon-link" href="https://de.wikipedia.org/wiki/Sankey-Diagramm" target="_blank" rel="external noopener">Sankey Chart<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a>
                     zeigt die aus <a class="icon-link" href="https://moneymoney-app.com/" target="_blank" rel="external noopener">MoneyMoney<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a> exportierten Cashflows der
                     Konten <strong x-text="accounts"></strong> für den Zeitraum <strong><span x-text="start_date"></span> bis <span x-text="end_date"></span></strong>.
@@ -121,7 +121,6 @@
     <script type="module" nonce="{{ nonce }}">
         {{ inline_js }}
 
-        const categorySeparator = '{{ category_separator }}';
         initApp({{ transactions_json }}, '{{ currency }}');
     </script>
 </body>

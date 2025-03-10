@@ -8,6 +8,7 @@ import Tree from "./tree";
 import {SankeyChart} from "./sankey";
 import {Transaction, MoneyMoneyCategoryTree, TransactionsManager} from "./transaction";
 import './style.css';
+import scaler from "./components/scaler";
 
 let config: Config = { ...defaultConfig };
 let chart: SankeyChart;
@@ -73,12 +74,6 @@ function updateCategoryTable(): void {
     container.appendChild(table);
 }
 
-function setScaling(): void {
-    const input = document.querySelector("input#is-show-monthly") as HTMLInputElement;
-    config.scalingFactor = input.checked ? parseFloat(input.value) : defaultConfig.scalingFactor;
-    console.debug('scaling: ' + config.scalingFactor);
-}
-
 function setThreshold(): void {
     let threshold = parseFloat((document.querySelector("input#threshold") as HTMLInputElement).value);
     config.threshold = isNaN(threshold) ? defaultConfig.threshold : threshold;
@@ -92,23 +87,22 @@ function updateThresholdInput(): void {
 }
 
 export function initApp(transactions: Array<Transaction>, currency: string): void {
+    config = loadConfig() ?? config;
+
     const data = new TransactionsManager(transactions);
 
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('transaction_metadata', () => {
-            return {
-                accounts: data.accounts,
-                start_date: data.startDate.toLocaleDateString(),
-                end_date: data.endDate.toLocaleDateString(),
-                transaction_count: data.transactions.length,
-                number_of_months: data.calculateNumberOfMonths(),
-            }
-        });
+    Alpine.data('transaction-meta', () => {
+        return {
+            accounts: data.accounts,
+            start_date: data.startDate.toLocaleDateString(),
+            end_date: data.endDate.toLocaleDateString(),
+            transaction_count: data.transactions.length,
+        }
     });
+    Alpine.data('scaler-component', () => scaler(data.calculateNumberOfMonths()));
+    Alpine.store('config', config);
     window.Alpine = Alpine;
     Alpine.start();
-
-    config = loadConfig() ?? config;
 
     const categoryTree = new MoneyMoneyCategoryTree(config.mainNodeId);
     categoryTree.fromTransactions(data.transactions);
@@ -121,14 +115,9 @@ export function initApp(transactions: Array<Transaction>, currency: string): voi
 
     update();
 
-    if (Math.round(data.calculateNumberOfMonths()) == 1) {
-        document.querySelector("input#is-show-monthly").setAttribute('disabled', 'disabled');
-    }
-
     document.querySelector("input#is-show-monthly").addEventListener('change', (event) => {
         event.preventDefault();
 
-        setScaling();
         updateThresholdInput();
         persistConfig(config);
         chart.update();
@@ -173,7 +162,6 @@ export function initApp(transactions: Array<Transaction>, currency: string): voi
 function update(): void {
     updateCategoryTable();
     updateThresholdInput();
-    (document.querySelector("input#is-show-monthly") as HTMLInputElement).checked = config.scalingFactor !== 1;
 }
 
 function reset(): void {
