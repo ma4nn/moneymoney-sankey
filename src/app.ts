@@ -1,4 +1,5 @@
 import Alpine from '@alpinejs/csp';
+import persist from '@alpinejs/persist'
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -80,17 +81,20 @@ export function initApp(transactions: Array<Transaction>, currency: string): voi
 
     const data = new TransactionsManager(transactions);
 
-    const categoryTree = new MoneyMoneyCategoryTree(config.mainNodeId);
-    categoryTree.fromTransactions(data.transactions);
+    const categories = new MoneyMoneyCategoryTree(config.mainNodeId);
+    categories.fromTransactions(data.transactions);
 
-    config.categories = new Map([...categoryTree.categories, ...config.categories]); // @todo ignore categories that are not in export!
+    config.categories = new Map([...categories.list, ...config.categories]); // @todo ignore categories that are not in export!
     config.currency = currency;
 
-    chart = new SankeyChart(categoryTree.categoryTree, config); // @todo use categoryTree
+    Alpine.store('config', config);
+
+    chart = new SankeyChart(categories);
     window.chart = chart.create();
 
     update();
 
+    Alpine.plugin(persist);
     Alpine.data('transaction-meta', () => {
         return {
             accounts: data.accounts,
@@ -101,7 +105,6 @@ export function initApp(transactions: Array<Transaction>, currency: string): voi
     });
     Alpine.data('scaler-component', () => scaler(data.calculateNumberOfMonths()));
     Alpine.data('threshold-slider-component', () => thresholdSlider(chart.getOutgoingWeights()));
-    Alpine.store('config', config);
     window.Alpine = Alpine;
     Alpine.start();
 

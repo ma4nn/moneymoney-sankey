@@ -4,15 +4,14 @@ import Alpine from '@alpinejs/csp';
 export default (rangeData: Array<number>) => ({
     minValue: 0,
     maxValue: 100,
-    currentValue: 0,
+    currentValue: Alpine.$persist(0),
 
     init(): void {
-        this.currentValue = this.config().threshold;
         ({ min: this.minValue, max: this.maxValue } = getSliderRange(rangeData));
     },
 
     zoom(event: Event): void {
-        this.currentValue = (event.target as HTMLInputElement).value;
+        this.currentValue = Number((event.target as HTMLInputElement).value);
         this.config().threshold = this.currentValue;
         console.debug('threshold: ' + this.config().threshold);
     },

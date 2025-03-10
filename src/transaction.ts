@@ -43,29 +43,29 @@ export class TransactionsManager {
 }
 
 export class CategoryTree {
-    public categories: Map<number,Category> = new Map();
-    public categoryTree: Tree;
+    public list: Map<number,Category> = new Map();
+    public tree: Tree;
     protected categoryPathSeparator: string;
 
     constructor(mainNodeId: number, categoryPathSeparator: string) {
-        this.categoryTree = new Tree(new TreeNode(mainNodeId, 0));
-        this.categories.set(mainNodeId, {id: mainNodeId, name: 'Saldo', path: '', active: true});
+        this.tree = new Tree(new TreeNode(mainNodeId, 0));
+        this.list.set(mainNodeId, {id: mainNodeId, name: 'Saldo', path: '', active: true});
         this.categoryPathSeparator = categoryPathSeparator;
     }
 
     fromTransactions(transactions: Array<Transaction>): void {
         transactions.forEach(transaction => {
-            let parentCategoryId = this.categoryTree.root.key;
+            let parentCategoryId = this.tree.root.key;
             const path = [];
             transaction.category.split(this.categoryPathSeparator).forEach(categoryName => {
                 path.push(categoryName);
                 let categorySubPath = path.join(this.categoryPathSeparator);
 
                 let categoryId = generateCategoryIdFromPath(categorySubPath);
-                let existingNode: TreeNode = this.categoryTree.find(categoryId);
+                let existingNode: TreeNode = this.tree.find(categoryId);
                 if (existingNode === null) {
-                    this.categoryTree.insert(parentCategoryId, categoryId, transaction.amount);
-                    this.categories.set(categoryId, {id: categoryId, name: categoryName, path: path.join(' » '), active: true});
+                    this.tree.insert(parentCategoryId, categoryId, transaction.amount);
+                    this.list.set(categoryId, {id: categoryId, name: categoryName, path: path.join(' » '), active: true});
                 } else if (categorySubPath === transaction.category) { // full category path already exists
                     existingNode.value += transaction.amount;
                 }
@@ -75,7 +75,7 @@ export class CategoryTree {
         });
 
         console.debug('categories');
-        console.debug(this.categories);
+        console.debug(this.list);
     }
 }
 

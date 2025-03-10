@@ -1,3 +1,4 @@
+import Alpine from '@alpinejs/csp';
 import {PointOptionsObject, SeriesSankeyNodesOptionsObject} from "highcharts/highcharts.src";
 import Highcharts from "highcharts/es-modules/masters/highcharts.src";
 import 'highcharts/es-modules/masters/modules/sankey.src';
@@ -7,16 +8,17 @@ import Tree, { TreeNode } from "../tree";
 import { Config } from "../config";
 import { NodeValidator } from "../validators";
 import { numberFormat, numberFormatColored } from "../helper";
+import {CategoryTree} from "../transaction";
 
 export class SankeyChart {
     public mainNodeId: number;
-    private readonly chartDataTree: Tree;
+    private readonly categories: CategoryTree;
     private chart: Highcharts.Chart = null;
     private config: Config;
 
-    constructor(initChartDataTree: Tree, config: Config) {
-        this.chartDataTree = initChartDataTree;
-        this.config = config;
+    constructor(categoryTree: CategoryTree) {
+        this.categories = categoryTree;
+        this.config = Alpine.store('config');
         this.mainNodeId = this.config.mainNodeId;
     }
 
@@ -25,7 +27,7 @@ export class SankeyChart {
 
         this.calculateNodeWeights();
 
-        const treeNodes: Array<TreeNode> = [...this.chartDataTree.preOrderTraversal()].filter(x => Math.abs(x.value) >= this.config.threshold / this.config.scalingFactor && this.config.categories.get(x.key).active);
+        const treeNodes: Array<TreeNode> = [...this.categories.tree.preOrderTraversal()].filter(x => Math.abs(x.value) >= this.config.threshold / this.config.scalingFactor && this.config.categories.get(x.key).active);
 
         // build the data array for the Highchart
         // remarks:
@@ -52,7 +54,7 @@ export class SankeyChart {
 
     private calculateNodeWeights(): void {
         // recalculate weight values for each parent node
-        [...this.chartDataTree.postOrderTraversal()].filter(x => x.children.length > 0).map(x => x.value = x.children.reduce((a, b): number => {
+        [...this.categories.tree.postOrderTraversal()].filter(x => x.children.length > 0).map(x => x.value = x.children.reduce((a, b): number => {
             const category = this.config.categories.get(b.key);
             return category.active ? a + b.value : a;
         }, 0));
@@ -91,7 +93,7 @@ export class SankeyChart {
 
     create(): this {
         console.debug('tree data:');
-        console.debug(this.chartDataTree);
+        console.debug(this.categories);
 
         const self = this;
 
@@ -216,7 +218,7 @@ export class SankeyChart {
     }
 
     removeCategory(categoryId: number): void {
-        const categoryIds = [...this.chartDataTree.postOrderTraversal(this.chartDataTree.find(categoryId))].map(x => x.key);
+        const categoryIds = [...this.categories.tree.postOrderTraversal(this.categories.tree.find(categoryId))].map(x => x.key);
         document.dispatchEvent(new CustomEvent('ChartCategoryRemoved', {
             detail: {categoryId: categoryId, childCategoryIds: categoryIds}
         }));
@@ -225,7 +227,7 @@ export class SankeyChart {
     }
 
     getOutgoingWeights(): Array<number> {
-        return [...this.chartDataTree.preOrderTraversal()].filter(x => x.value < 0).map(x => Math.abs(x.value));
+        return [...this.categories.tree.preOrderTraversal()].filter(x => x.value < 0).map(x => Math.abs(x.value));
     }
 }
 
