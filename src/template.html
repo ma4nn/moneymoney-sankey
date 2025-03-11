@@ -30,7 +30,7 @@
     </header>
 
     <header class="container-fluid sticky-top" aria-label="configuration">
-        <fieldset class="row align-items-center justify-content-center bg-light py-2 my-3">
+        <fieldset id="header-configuration" class="row align-items-center justify-content-center bg-light py-2 my-3" disabled>
             <legend class="visually-hidden">Konfiguration</legend>
             <div class="col-auto">
                 <button class="btn btn-light" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasConfig" aria-controls="offcanvasConfig">
@@ -55,6 +55,13 @@
     </header>
 
     <main class="container-fluid my-3">
+        <div x-data="alert-component">
+            <div x-show="message" class="alert alert-danger" role="alert" x-transition>
+                Leider ist ein <strong>schwerwiegender Fehler</strong> aufgetreten: <span x-text="message"></span>
+                <button type="button" @click="reset" class="btn btn-link p-0 pb-1">App zurücksetzen</button>
+            </div>
+        </div>
+
         <section id="sankey" class="row">
             <h2 class="visually-hidden">Sankey Chart</h2>
             <div id="chart-container" x-data="sankey-chart-component"></div>

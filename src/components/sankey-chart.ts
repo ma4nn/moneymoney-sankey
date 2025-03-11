@@ -35,7 +35,7 @@ export default (data: Tree) => ({
         console.debug('updating chart data..');
 
         const treeNodes: Array<TreeNode> = [...this.categoryTree.preOrderTraversal()]
-            .filter(x => Math.abs(x.value) >= this.threshold / this.scaling && this.categories.get(x.key).active);
+            .filter(x => Math.abs(x.value) >= this.threshold / this.scaling && this.categories.get(x.key)?.active);
 
         // build the data array for the Highchart
         // remarks:
@@ -58,6 +58,12 @@ export default (data: Tree) => ({
         console.debug(chartData);
 
         (this.chart.series[0] as Highcharts.Series).setData(chartData);
+
+        if (chartData.length === 0) {
+            document.getElementById('header-configuration').setAttribute('disabled', String(true));
+        } else {
+            document.getElementById('header-configuration').removeAttribute('disabled');
+        }
     },
 
     buildNodesConfig(): Array<SeriesSankeyNodesOptionsObject> {
@@ -66,7 +72,7 @@ export default (data: Tree) => ({
         let nodes: Array<SeriesSankeyNodesOptionsObject> = [];
         nodes.push({
             id: String(this.mainNodeId),
-            name: this.categories.get(this.mainNodeId).name,
+            name: this.categories.get(this.mainNodeId)?.name,
             colorIndex: 1,
             dataLabels: {
                 className: "main-node-label",
@@ -98,7 +104,7 @@ export default (data: Tree) => ({
         const self = this;
 
         /** @see https://www.highcharts.com/docs/chart-and-series-types/sankey-diagram */
-        this.chart = Highcharts.chart('chart-container', {
+        this.chart = Highcharts.chart(this.el, {
             title: {
                 text: null
             },
@@ -209,7 +215,7 @@ export default (data: Tree) => ({
                         });
                     }
                 }
-            }
+            },
         });
 
         this.update();

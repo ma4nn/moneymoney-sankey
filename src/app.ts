@@ -31,25 +31,60 @@ export function ready(fn: any): void {
 export function initApp(transactions: Array<Transaction>, currency: string = 'EUR'): void {
     Alpine.plugin(persist);
 
+    Alpine.store('error', {
+        errorMessage: null,
+
+        setMessage(message: string) {
+            this.errorMessage = message;
+        },
+
+        clear() {
+            this.errorMessage = null;
+        }
+    });
+
+    Alpine.data('alert-component',  () => ({
+        get message(): string {
+            return Alpine.store('error').errorMessage;
+        },
+
+        reset(): void {
+            localStorage.clear();
+            window.location.reload();
+        }
+    }));
+
     const mainNodeId = 1;
     const data = new TransactionsManager(transactions);
 
     const categories = new MoneyMoneyCategoryTree(mainNodeId);
     categories.fromTransactions(data.transactions);
 
-    Alpine.store('config', {
-        scalingFactor: Alpine.$persist(defaultConfig.scalingFactor),
-        threshold: Alpine.$persist(defaultConfig.threshold),
-        currency: currency,
-        _categories: Alpine.$persist([...categories.list.values()]), // Alpine.$persist does not work with Maps, so we save it as array internally and use an accessor
-        mainNodeId: mainNodeId,
+    try {
+        Alpine.store('config', {
+            scalingFactor: Alpine.$persist(defaultConfig.scalingFactor) as number,
+            threshold: Alpine.$persist(defaultConfig.threshold) as number,
+            currency: currency,
+            _categories: Alpine.$persist([]) as Array<Category>, // Alpine.$persist does not work with Maps, so we save it as array internally and use an accessor
+            mainNodeId: mainNodeId,
 
-        get categories(): Map<number,Category> {
-             // @todo ignore categories that are not in export
-            return new Map(this._categories.map((category: Category) => [category.id, category]));
-        }
-    });
-    const config: Config = Alpine.store('config');
+            init(): void {
+                // merge transaction categories with persisted configuration
+                this._categories = [...new Map([...categories.list, ...this.categories]).values()];
+            },
+
+            get categories(): Map<number, Category> {
+                if (! (this._categories instanceof Array)) {
+                    return new Map();
+                }
+
+                return new Map(this._categories.map((category: Category) => [category.id, category]));
+            }
+        });
+    } catch (e) {
+        console.error('error loading persisted config from storage: ' + e);
+        Alpine.store('error').setMessage('Konfiguration kann nicht geladen werden.');
+    }
 
     Alpine.data('sankey-chart-component', () => sankeyChartComponent(categories.tree));
     Alpine.data('transaction-meta', () => {
@@ -66,9 +101,4 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
 
     window.Alpine = Alpine;
     Alpine.start();
-}
-
-function reset(): void {
-    localStorage.clear();
-    document.dispatchEvent(new CustomEvent('ChartInvalidated'));
 }
