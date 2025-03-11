@@ -43,6 +43,11 @@ export default () => ({
         document.dispatchEvent(new CustomEvent('ChartInvalidated'));
     },
 
+    reset(): void {
+        this.config.categories.forEach((category: Category) => (category.active = true, category.budget = null));
+        document.dispatchEvent(new CustomEvent('ChartInvalidated'));
+    },
+
     getCategoryFromElement(element: HTMLElement): Category {
         const categoryId = Number(element.closest('tr').dataset.categoryId);
 

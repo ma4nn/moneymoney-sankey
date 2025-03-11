@@ -66,20 +66,9 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
 
     window.Alpine = Alpine;
     Alpine.start();
-
-    document.querySelector("#reset-settings-btn").addEventListener('click', (event) => {
-        event.preventDefault();
-
-        reset();
-    });
 }
 
 function reset(): void {
-    const config = Alpine.store('config');
-
-    // @todo clear storage
-
-    config.categories.forEach(category => (category.active = true, category.budget = null));
-    config.threshold = defaultConfig.threshold;
-    config.scalingFactor = defaultConfig.scalingFactor;
+    localStorage.clear();
+    document.dispatchEvent(new CustomEvent('ChartInvalidated'));
 }

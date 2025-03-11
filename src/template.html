@@ -88,15 +88,15 @@
                     Es wurde aus insgesamt <strong id="transaction-count"><span x-text="transaction_count"></span> Transaktionen</strong> generiert.
                 </small>
             </p>
-            <form>
+            <form x-data="categories-table-component">
                 <div class="row sticky-top bg-white">
                     <div class="col-12 pb-4">
                         <button id="apply-settings-btn" type="submit" class="btn btn-primary" data-bs-dismiss="offcanvas">Anwenden</button>
-                        <button id="reset-settings-btn" type="button" class="btn">Zurücksetzen</button>
+                        <button id="reset-settings-btn" type="button" class="btn" @click="reset">Zurücksetzen</button>
                     </div>
                 </div>
                 <div class="row g-3">
-                    <table id="category-config" class="table table-hover" x-data="categories-table-component">
+                    <table id="category-config" class="table table-hover">
                         <thead>
                         <tr>
                             <th scope="col">aktiv</th>
