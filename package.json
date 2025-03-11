@@ -1,7 +1,6 @@
 {
   "name": "moneymoney-sankey",
   "description": "An extension for the great MoneyMoney app to export an interactive HTML Sankey Chart based on the transaction categories",
-  "version": "2.0.0",
   "private": true,
   "dependencies": {
     "@alpinejs/csp": "^3.14.8",

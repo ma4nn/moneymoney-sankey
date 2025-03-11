@@ -4,9 +4,10 @@ import fs from 'fs';
 import path from 'path';
 import esbuild from 'esbuild';
 import crypto from 'crypto';
+import { execSync } from 'child_process';
 
 const pkg = JSON.parse(await readFile(new URL('./package.json', import.meta.url)));
-const version = process.env.npm_package_version.split('.').slice(0, -1).join('.'); // extract major.minor version
+const version = execSync('git describe --tags --abbrev=0').toString().trim().replace(/^v/, "").split('.').slice(0, -1).join('.'); // extract major.minor version;
 
 function assertReplacedCount(results, count) {
     results.every(result => (! result.hasChanged || result.numReplacements < count) && (() => {
@@ -30,6 +31,8 @@ function createNonce() {
  * and tests will fail.
  */
 (async() => {
+    console.log(`Assembling ${process.env.npm_package_name} v${version}..`);
+
     const result = await esbuild.build({
         entryPoints: ['src/app.ts'],
         bundle: true,
