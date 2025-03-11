@@ -4,30 +4,38 @@ import Highcharts from "highcharts/es-modules/masters/highcharts.src";
 import 'highcharts/es-modules/masters/modules/sankey.src';
 import 'highcharts/css/highcharts.css';
 
-import { TreeNode } from "../tree";
+import Tree, { TreeNode } from "../tree";
 import { Config } from "../config";
 import { NodeValidator } from "../validators";
 import { numberFormat, numberFormatColored } from "../helper";
-import {CategoryTree} from "../transaction";
+import {Category} from "../transaction";
 
-export class SankeyChart {
-    public mainNodeId: number;
-    private readonly categories: CategoryTree;
-    private chart: Highcharts.Chart = null;
-    private config: Config;
+export default (data: Tree) => ({
+    categoryTree: data,
+    chart: Highcharts.Chart = null,
+    mainNodeId: data.root.key,
 
-    constructor(categoryTree: CategoryTree) {
-        this.categories = categoryTree;
-        this.config = Alpine.store('config');
-        this.mainNodeId = this.config.mainNodeId;
-    }
+    get scaling(): number {
+        return this.config.scalingFactor;
+    },
+
+    get threshold(): number {
+        return this.config.threshold;
+    },
+
+    get categories(): Map<number,Category> {
+        return this.config.categories;
+    },
+
+    get config(): Config {
+        return Alpine.store('config');
+    },
 
     update(): void {
         console.debug('updating chart data..');
 
-        this.calculateNodeWeights();
-
-        const treeNodes: Array<TreeNode> = [...this.categories.tree.preOrderTraversal()].filter(x => Math.abs(x.value) >= this.config.threshold / this.config.scalingFactor && this.config.categories.get(x.key).active);
+        const treeNodes: Array<TreeNode> = [...this.categoryTree.preOrderTraversal()]
+            .filter(x => Math.abs(x.value) >= this.threshold / this.scaling && this.categories.get(x.key).active);
 
         // build the data array for the Highchart
         // remarks:
@@ -35,14 +43,14 @@ export class SankeyChart {
         //  - weight has to be positive (thats why the signed value is saved in custom attributes)
         //  - using category ids instead of names because these might be the same for income and expense
         let chartData: Array<PointOptionsObject> = treeNodes.filter(x => x.value >= 0 && x.parent).map(x => {
-            return {from: String(x.key), to: String(x.parent.key), weight: x.value, custom: {real: x.value, category: this.config.categories.get(x.key)}}
+            return {from: String(x.key), to: String(x.parent.key), weight: x.value, custom: {real: x.value, category: this.categories.get(x.key)}}
         }).concat(treeNodes.filter(x => x.value < 0 && x.parent).map(x => {
             return {
                 from: String(x.parent.key),
                 to: String(x.key),
                 weight: (-1) * x.value,
                 outgoing: !x.hasChildren,
-                custom: {real: x.value, category: this.config.categories.get(x.key)}
+                custom: {real: x.value, category: this.categories.get(x.key)}
             }
         }));
 
@@ -50,15 +58,7 @@ export class SankeyChart {
         console.debug(chartData);
 
         (this.chart.series[0] as Highcharts.Series).setData(chartData);
-    }
-
-    private calculateNodeWeights(): void {
-        // recalculate weight values for each parent node
-        [...this.categories.tree.postOrderTraversal()].filter(x => x.children.length > 0).map(x => x.value = x.children.reduce((a, b): number => {
-            const category = this.config.categories.get(b.key);
-            return category.active ? a + b.value : a;
-        }, 0));
-    }
+    },
 
     buildNodesConfig(): Array<SeriesSankeyNodesOptionsObject> {
         const self = this;
@@ -66,21 +66,21 @@ export class SankeyChart {
         let nodes: Array<SeriesSankeyNodesOptionsObject> = [];
         nodes.push({
             id: String(this.mainNodeId),
-            name: this.config.categories.get(this.mainNodeId).name,
+            name: this.categories.get(this.mainNodeId).name,
             colorIndex: 1,
             dataLabels: {
                 className: "main-node-label",
                 nodeFormatter: function (): string {
-                    const node = new SankeyNode(self, this as Highcharts.SankeyNodeObject, self.config.scalingFactor);
+                    const node = new SankeyNode(this as Highcharts.SankeyNodeObject, self.mainNodeId, self.scaling);
                     return node.toString();
                 }
             },
         });
 
-        new Map([...self.config.categories].filter(([categoryId, category]) => categoryId !== this.mainNodeId))
-            .forEach(function (category, categoryId) {
+        new Map([...self.categories].filter(([categoryId, category]) => categoryId !== this.mainNodeId))
+            .forEach((category: Category) => {
                 nodes.push({
-                    id: String(categoryId), // Highcharts needs the id to be string
+                    id: String(category.id), // Highcharts needs the id to be string
                     name: category.name,
                 });
             });
@@ -89,9 +89,9 @@ export class SankeyChart {
         console.debug(nodes);
 
         return nodes;
-    }
+    },
 
-    create(): this {
+    init(): void {
         console.debug('tree data:');
         console.debug(this.categories);
 
@@ -136,7 +136,7 @@ export class SankeyChart {
                     align: 'right',
                     padding: 30,
                     nodeFormatter: function (): string {
-                        const node = new SankeyNode(self, this as Highcharts.SankeyNodeObject, self.config.scalingFactor);
+                        const node = new SankeyNode(this as Highcharts.SankeyNodeObject, self.mainNodeId, self.scaling);
 
                         return '<small>' + node.name + '</small><br>' + (new NodeValidator(node, self.config).validate() ? '' : NodeValidator.warningSign)
                             + numberFormat(node.getValue());
@@ -146,22 +146,22 @@ export class SankeyChart {
                     // tooltip for link
                     pointFormatter: function (): string {
                         const link = this as any;
-                        const toNode = new SankeyNode(self, link.toNode, self.config.scalingFactor);
+                        const toNode = new SankeyNode(link.toNode, self.mainNodeId, self.scaling);
 
                         return link.fromNode.name + " → " + link.toNode.name + ": "
-                            + numberFormat(link.weight/self.config.scalingFactor)
+                            + numberFormat(link.weight / self.scaling)
                             + (toNode.getPercentage() && toNode.getPercentage() < 100 ? " <span class='badge text-bg-secondary'>" + Math.round(toNode.getPercentage()) + "% </span>" : "")
                             + "<br><br><span class='small'>(Klick entfernt die Kategorie aus dem Chart.)</span>";
                     },
                     // tooltip for node
                     nodeFormatter: function (): string {
-                        const node = new SankeyNode(self, this as Highcharts.SankeyNodeObject, self.config.scalingFactor);
+                        const node = new SankeyNode(this as Highcharts.SankeyNodeObject, self.mainNodeId, self.scaling);
 
                         let weightsDetailTooltip = '';
                         node.getLinksTo().filter(link => link.from !== String(self.mainNodeId) && link.weight > 0)
                             .sort((a, b) => b.weight - a.weight)
                             .forEach(function (link: any) {
-                                weightsDetailTooltip += '+ ' + numberFormat(link.weight/self.config.scalingFactor) + ' (' + link.fromNode.name + ')<br>';
+                                weightsDetailTooltip += '+ ' + numberFormat(link.weight / self.scaling) + ' (' + link.fromNode.name + ')<br>';
                             });
                         if (node.isMain) {
                             weightsDetailTooltip += '= ' + numberFormat(node.getTotalIncomingWeight()) + '<br><br>';
@@ -170,7 +170,7 @@ export class SankeyChart {
                         node.getLinksFrom().filter(link => link.to !== String(self.mainNodeId) && link.weight > 0)
                             .sort((a, b) => b.weight - a.weight)
                             .forEach(function (link: any) {
-                                weightsDetailTooltip += '- ' + numberFormat(link.weight/self.config.scalingFactor) + ' (' + link.toNode.name + ')<br>';
+                                weightsDetailTooltip += '- ' + numberFormat(link.weight / self.scaling) + ' (' + link.toNode.name + ')<br>';
                             });
                         if (node.isMain) {
                             weightsDetailTooltip += '= ' + numberFormat(node.getTotalOutgoingWeight()) + '<br>';
@@ -190,17 +190,17 @@ export class SankeyChart {
                 height: 700,
                 styledMode: true,
                 numberFormatter: function () {
-                    return numberFormat(arguments[0]/self.config.scalingFactor);
+                    return numberFormat(arguments[0] / self.scaling);
                 },
                 events: {
-                    render: function() {
+                    render: function () {
                         // add ids for testing
                         this.series[0].points.forEach((link: any, index) => {
                             link.graphic?.element.setAttribute('data-testid', `chart-link-${link.custom?.category?.id}`);
                         });
 
                         ((this.series[0] as any).nodes as Array<Highcharts.SankeyNodeObject>).forEach((point: any, index) => {
-                            const node = new SankeyNode(self, point, self.config.scalingFactor);
+                            const node = new SankeyNode(point, self.mainNodeId, self.scaling);
                             point.graphic?.element.setAttribute('data-testid', `chart-node-${point.id}`);
                             point.graphic?.element.setAttribute('data-value', node.getValue());
                             if (point.dataLabel && point.dataLabel.element) {
@@ -214,45 +214,38 @@ export class SankeyChart {
 
         this.update();
 
-        document.addEventListener('config-updated', () => {
-            this.update();
-        });
-
-        return this;
-    }
+        document.addEventListener('ChartInvalidated', () => this.update());
+    },
 
     removeCategory(categoryId: number): void {
-        const categoryIds = [...this.categories.tree.postOrderTraversal(this.categories.tree.find(categoryId))].map(x => x.key);
-        document.dispatchEvent(new CustomEvent('ChartCategoryRemoved', {
-            detail: {categoryId: categoryId, childCategoryIds: categoryIds}
-        }));
+       [...this.categoryTree.postOrderTraversal(this.categoryTree.find(categoryId))].map(x => x.key)
+           .forEach((categoryId: number) => this.categories.get(categoryId).active = false);
 
         this.update();
-    }
-
-    getOutgoingWeights(): Array<number> {
-        return [...this.categories.tree.preOrderTraversal()].filter(x => x.value < 0).map(x => Math.abs(x.value));
-    }
-}
+    },
+});
 
 export class SankeyNode { // @todo use accessors
     public name: string = '';
     public categoryId: number;
     public label: string = '';
-    public isMain: boolean = false;
+    public mainNodeId: number;
     private readonly node: Highcharts.SankeyNodeObject;
-    private readonly chart: SankeyChart;
-    private readonly scalingFactor: number;
+    private readonly scaling: number;
 
-    constructor(chart: SankeyChart, node: Highcharts.SankeyNodeObject, scalingFactor: number) {
-        this.chart = chart;
+    constructor(node: Highcharts.SankeyNodeObject, mainNodeId: number, scaling: number) {
         this.node = node;
         this.name = node.name;
         // @ts-ignore
         this.label = node.dataLabels !== null && typeof node.dataLabels !== 'undefined' && node.dataLabels.length > 0 ? node.dataLabels[0].textStr : '';
         this.categoryId = parseInt((node as any).point.id);
-        this.isMain = this.categoryId === this.chart.mainNodeId;
-        this.scalingFactor = scalingFactor;
+
+        this.mainNodeId = mainNodeId;
+        this.scaling = scaling;
+    }
+
+    get isMain(): boolean {
+        return Number(this.node.id) === this.mainNodeId;
     }
 
     public toString(): string {
@@ -265,7 +258,7 @@ export class SankeyNode { // @todo use accessors
     }
 
     private getSum(): number {
-         return 'getSum' in this.node ? (this.node as any).getSum() / this.scalingFactor : 0;
+         return 'getSum' in this.node ? (this.node as any).getSum() / this.scaling : 0;
     }
 
     public getPercentage(): number|null {
@@ -274,7 +267,7 @@ export class SankeyNode { // @todo use accessors
             return null;
         }
 
-        const parentNode = new SankeyNode(this.chart, (linksTo[0] as any).fromNode, this.scalingFactor);
+        const parentNode = new SankeyNode((linksTo[0] as any).fromNode, this.mainNodeId, this.scaling);
 
         return (this.getValue() / parentNode.getTotalOutgoingWeight()) * 100;
     }
@@ -288,11 +281,11 @@ export class SankeyNode { // @todo use accessors
     }
 
     public getTotalIncomingWeight(): number {
-        return this.getLinksTo().map(point => point.weight).reduce((pv, cv) => pv + cv, 0) / this.scalingFactor;
+        return this.getLinksTo().map(point => point.weight).reduce((pv, cv) => pv + cv, 0) / this.scaling;
     }
 
     public getTotalOutgoingWeight(): number {
-        return this.getLinksFrom().map(point => point.weight).reduce((pv, cv) => pv + cv, 0) / this.scalingFactor;
+        return this.getLinksFrom().map(point => point.weight).reduce((pv, cv) => pv + cv, 0) / this.scaling;
     }
 
     private getTotalWeight(): number {

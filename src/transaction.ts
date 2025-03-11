@@ -74,8 +74,20 @@ export class CategoryTree {
             });
         });
 
+        this.recalculateNodeValues();
+
         console.debug('categories');
         console.debug(this.list);
+    }
+
+    recalculateNodeValues(): void {
+        // make sure that each parent node value is the sum of all childs
+        [...this.tree.postOrderTraversal()].filter(node => node.hasChildren)
+            .map(node => node.value = node.children.reduce((sum, child) => sum + child.value, 0));
+    }
+
+    getOutgoingWeights(): Array<number> {
+        return [...this.tree.preOrderTraversal()].filter(x => x.value < 0).map(x => Math.abs(x.value));
     }
 }
 

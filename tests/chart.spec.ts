@@ -13,7 +13,8 @@ const categoryIds = {
 const defaultNodeValue = {
     "main": 4127.71,
     "transport": 490.90,
-    "transportCarInsurance": 398.25
+    "transportCarInsurance": 398.25,
+    "leisureStreaming": 14.99
 };
 
 declare global {
@@ -55,6 +56,11 @@ test.beforeEach(async ({ page }) => {
     await page.goto('/');
 });
 
+test('take screenshot', async ({ page }) => {
+    await page.evaluate(() => document.querySelectorAll('header').forEach(header => header.remove()));
+    await page.locator('#chart-container').screenshot({ path: 'tmp/sample.png' }); // take a screenshot for README file
+});
+
 test('has valid initial state', async ({ page }) => {
     const mainNode = page.getByTestId(`chart-node-${categoryIds.main}`);
 
@@ -62,11 +68,6 @@ test('has valid initial state', async ({ page }) => {
     await expect(page.locator('#transaction-count')).toHaveText('19 Transaktionen');
 
     expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main);
-});
-
-test('take screenshot', async ({ page }) => {
-    await page.evaluate(() => document.querySelectorAll('header').forEach(header => header.remove()));
-    await page.locator('#chart-container').screenshot({ path: 'tmp/sample.png' }); // take a screenshot for README file
 });
 
 test('has configurable options', async ({ page }) => {
@@ -105,26 +106,28 @@ test('has configurable options', async ({ page }) => {
 });
 
 test('show monthly values', async ({ page }) => {
-    const showMonthlyInput = page.locator('input#is-show-monthly');
+    const showMonthlyInput = page.getByRole('switch', {name: 'Werte pro Monat anzeigen'});
     const mainNode = page.getByTestId(`chart-node-${categoryIds.main}`);
     expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main);
 
-    expect(await page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').min))).toBeCloseTo(14.99);
-    expect(await page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').max))).toBeCloseTo(490.90);
+    expect(await page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').min))).toBeCloseTo(defaultNodeValue.leisureStreaming); // streaming node determines min
+    expect(await page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').max))).toBeCloseTo(defaultNodeValue.transport); // transport node determines max non-outlier
 
     expect(await showChartTooltip(categoryIds.transport, page)).toContain('18%');
 
     await showMonthlyInput.check();
+    await expect(showMonthlyInput).toBeChecked();
 
     expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main / 2.03333);
 
     // assert threshold values remain unscaled
-    expect(await page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').min))).toBeCloseTo(14.99);
-    expect(await page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').max))).toBeCloseTo(490.90);
+    expect(await page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').min))).toBeCloseTo(defaultNodeValue.leisureStreaming);
+    expect(await page.evaluate(() => Number(document.querySelector<HTMLInputElement>('input#threshold').max))).toBeCloseTo(defaultNodeValue.transport);
 
     expect(await showChartTooltip(categoryIds.transport, page)).toContain('18%');
 
     await showMonthlyInput.uncheck();
+    await expect(showMonthlyInput).not.toBeChecked();
 
     expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main);
 });
@@ -140,22 +143,23 @@ test('hide and re-add category', async({ page }) => {
 
     expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main + defaultNodeValue.transport);
 
+    const configRowLocator = async (categoryId: number) => page.locator(`table#category-config [data-category-id="${categoryId}"]`);
     await configButton.click();
-    const checkboxLiving = page.locator('table#category-config [data-category-id="' + categoryIds.transport + '"] input[name="category-is-active"]');
-    expect(await checkboxLiving.isChecked()).toBeFalsy();
-    await checkboxLiving.check();
+    const checkboxTransport = (await configRowLocator(categoryIds.transport)).getByRole('checkbox', { name: "aktiv"});
+    expect(await checkboxTransport.isChecked()).toBeFalsy();
+    await checkboxTransport.check();
     await page.getByRole('button', { name: 'Anwenden' }).click();
 
-    await expect(link).toBeHidden(); // link is still hidden because sub categories are also hidden
+    await expect(link).toBeVisible();
 
     await configButton.click();
-    const checkboxTransportCar= page.locator('table#category-config [data-category-id="' + categoryIds.transportCar + '"] input[name="category-is-active"]');
+    const checkboxTransportCar= (await configRowLocator(categoryIds.transportCar)).getByRole('checkbox', { name: "aktiv"});
     expect(await checkboxTransportCar.isChecked()).toBeFalsy();
     await checkboxTransportCar.check();
-    const checkboxTransportCarInsurance= page.locator('table#category-config [data-category-id="' + categoryIds.transportCarInsurance + '"] input[name="category-is-active"]');
-    expect(await checkboxTransportCarInsurance.isChecked()).toBeFalsy();
-    await checkboxTransportCarInsurance.check();
+    const rowTransportCarInsurance= await configRowLocator(categoryIds.transportCarInsurance);
+    expect(await rowTransportCarInsurance.getByRole('checkbox', { name: ""}).isChecked()).toBeFalsy();
+    await rowTransportCarInsurance.locator('.category-name').click(); // simulate click on row
     await page.getByRole('button', { name: 'Anwenden' }).click();
 
-    expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main + defaultNodeValue.transport - defaultNodeValue.transportCarInsurance);
+    expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main); // removing sub-category does not remove parent nodes
 });

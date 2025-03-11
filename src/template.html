@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data:; style-src 'nonce-{{ nonce }}'; script-src 'nonce-{{ nonce }}';">
 
-    <title>Cashflow-Chart</title>
+    <title>Cashflows</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3C!-- Nodes --%3E%3Crect x='2' y='6' width='6' height='20' fill='%231f77b4'/%3E%3Crect x='12' y='10' width='6' height='12' fill='%232ca02c'/%3E%3Crect x='22' y='14' width='6' height='4' fill='%23d62728'/%3E%3C!-- Flows --%3E%3Cpolygon points='8,8 8,18 12,16 12,10' fill='%23aec7e8'/%3E%3Cpolygon points='18,12 18,18 22,16 22,14' fill='%2398df8a'/%3E%3C/svg%3E%0A">
     <style nonce="{{ nonce }}">
         {{ inline_css }}
@@ -57,7 +57,7 @@
     <main class="container-fluid my-3">
         <section id="sankey" class="row">
             <h2 class="visually-hidden">Sankey Chart</h2>
-            <div id="chart-container"></div>
+            <div id="chart-container" x-data="sankey-chart-component"></div>
         </section>
     </main>
 
@@ -96,19 +96,28 @@
                     </div>
                 </div>
                 <div class="row g-3">
-                    <template id="category-table-template">
-                        <table id="category-config" class="table table-hover">
-                            <thead>
-                            <tr>
-                                <th scope="col">aktiv</th>
-                                <th scope="col">Kategorie</th>
-                                <th scope="col">Budget ({{ currency }})</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
-                        </table>
-                    </template>
+                    <table id="category-config" class="table table-hover" x-data="categories-table-component">
+                        <thead>
+                        <tr>
+                            <th scope="col">aktiv</th>
+                            <th scope="col">Kategorie</th>
+                            <th scope="col">Budget ({{ currency }})</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="category in categoriesArray" :key="category.id">
+                                <tr :data-category-id="category.id">
+                                    <td>
+                                        <div class="form-check">
+                                            <input name="category-is-active" class="form-check-input" type="checkbox" title="Kategorie anzeigen?" :value="category.name" :checked="category.active" @change="toggleStatus" aria-label="aktiv">
+                                        </div>
+                                    </td>
+                                    <td @click="toggleRow" x-text="category.path" class="category-name"></td>
+                                    <td><input type="number" class="form-control" name="budget" placeholder="(ohne)" min="0" step="0.01" :value="category.budget" @change="setBudget"></td>
+                                </tr>
+                             </template>
+                        </tbody>
+                    </table>
 
                     <fieldset class="col-12" id="category-table-container">
                         <legend hidden>Kategorie-Konfiguration</legend>

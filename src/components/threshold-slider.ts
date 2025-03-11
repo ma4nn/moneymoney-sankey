@@ -4,7 +4,14 @@ import Alpine from '@alpinejs/csp';
 export default (rangeData: Array<number>) => ({
     minValue: 0,
     maxValue: 100,
-    currentValue: Alpine.$persist(0),
+
+    get currentValue(): number {
+        return this.config.threshold;
+    },
+
+    set currentValue(threshold: number) {
+        this.config.threshold = threshold;
+    },
 
     init(): void {
         ({ min: this.minValue, max: this.maxValue } = getSliderRange(rangeData));
@@ -12,19 +19,21 @@ export default (rangeData: Array<number>) => ({
 
     zoom(event: Event): void {
         this.currentValue = Number((event.target as HTMLInputElement).value);
-        this.config().threshold = this.currentValue;
 
-        console.debug('threshold: ' + this.config().threshold);
+        console.debug('threshold: ' + this.currentValue);
 
-        document.dispatchEvent(new CustomEvent('config-updated'));
+        document.dispatchEvent(new CustomEvent('ChartInvalidated'));
     },
 
-    config(): Config {
+    get config(): Config {
         return Alpine.store('config');
     }
 });
 
 function getSliderRange(data: Array<number>) {
+    console.debug('calculating slider min/max');
+    console.debug(data);
+
     const sorted = [...data].sort((a, b) => a - b);
 
     // Helper function to compute percentile
