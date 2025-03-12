@@ -21,12 +21,12 @@ export default (factor: number) => ({
         return this.factor === 0 || this.factor === this.defaultScaling;
     },
 
-    get factorLabel(): string {
-        return String(Math.round(this.factor));
-    },
-
     get config(): Config {
         return Alpine.store('config');
+    },
+
+    get tooltip(): string {
+        return `insg. ${Math.round(this.factor)} Monat(e)`;
     },
 
     toggle(event: Event): void {

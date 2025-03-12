@@ -14,9 +14,6 @@
 <body>
     <svg class="d-none">
         <defs>
-            <svg id="arrow-up-right-square" viewBox="0 0 16 16">
-                <path fill-rule="evenodd" d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm5.854 8.803a.5.5 0 1 1-.708-.707L9.243 6H6.475a.5.5 0 1 1 0-1h3.975a.5.5 0 0 1 .5.5v3.975a.5.5 0 1 1-1 0V6.707z"/>
-            </svg>
             <svg id="arrow-up-right" viewBox="0 0 16 16">
               <path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/>
             </svg>
@@ -29,30 +26,31 @@
         <p class="lead" x-data="transaction-meta"><span x-text="accounts"></span> &dash; <span x-text="start_date"></span> bis <span x-text="end_date"></span></p>
     </header>
 
-    <header class="container-fluid sticky-top" aria-label="configuration">
-        <fieldset id="header-configuration" class="row align-items-center justify-content-center bg-light py-2 my-3" disabled>
-            <legend class="visually-hidden">Konfiguration</legend>
-            <div class="col-auto">
-                <button class="btn btn-light" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasConfig" aria-controls="offcanvasConfig">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1z"/>
-                    </svg>
-                    Kategorien anpassen
-                </button>
-            </div>
-            <div class="col-auto">
-                <div class="form-check form-switch form-check-inline" x-data="scaler-component">
-                    <input class="form-check-input" type="checkbox" role="switch" id="is-show-monthly" :checked="isScaled" @change="toggle" :disabled="isDisabled">
-                    <label class="form-check-label" for="is-show-monthly">Werte pro Monat anzeigen</label>
-                    <span class="form-text">(insg. <span x-text="factorLabel"></span> Monat(e))</span>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary sticky-top">
+        <fieldset id="header-configuration" class="container-fluid" disabled>
+            <legend class="visually-hidden">Sankey-Chart Konfiguration</legend>
+            <div class="d-flex flex-column flex-md-row w-100">
+                <div class="d-flex align-items-center">
+                    <button class="nav-link btn btn-link icon-link me-4" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasConfig" aria-controls="offcanvasConfig">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3M2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3m-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1z"/>
+                        </svg>
+                        Kategorien anpassen
+                    </button>
+                    <div class="form-check form-switch form-check-inline" x-data="scaler-component">
+                        <input class="form-check-input" type="checkbox" role="switch" id="is-show-monthly" :checked="isScaled" @change="toggle" :disabled="isDisabled" :title="tooltip">
+                        <label class="form-check-label" for="is-show-monthly" :title="tooltip">Werte pro Monat anzeigen</label>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center ms-md-auto mt-2 mt-md-0">
+                    <div x-data="threshold-slider-component">
+                        <label for="threshold" class="form-label visually-hidden">Detailgrad</label>
+                        <input type="range" class="form-range" id="threshold" :min="minValue" :max="maxValue" :value="currentValue" @change="zoom" title="Detailgrad">
+                    </div>
                 </div>
             </div>
-            <div class="col-auto ms-auto" x-data="threshold-slider-component">
-                <label for="threshold" class="form-label visually-hidden">Detailgrad</label>
-                <input type="range" class="form-range" id="threshold" :min="minValue" :max="maxValue" :value="currentValue" @change="zoom" title="Detailgrad">
-            </div>
         </fieldset>
-    </header>
+    </nav>
 
     <main class="container-fluid my-3">
         <div x-data="alert-component">
