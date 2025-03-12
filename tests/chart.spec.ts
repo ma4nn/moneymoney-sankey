@@ -14,7 +14,9 @@ const defaultNodeValue = {
     "main": 4127.71,
     "transport": 490.90,
     "transportCarInsurance": 398.25,
-    "leisureStreaming": 14.99
+    "leisureStreaming": 14.99,
+    "healthSport": 38.80,
+    "supplyInternet": 49.85
 };
 
 declare global {
@@ -82,6 +84,9 @@ test('has configurable options', async ({ page }) => {
     const mainNodeConfig = page.locator('table#category-config [data-category-id="' + categoryIds.main + '"]');
     await expect(mainNodeConfig).toHaveCount(0);
 
+    // no empty category names
+    await expect(page.locator('table#category-config [data-category-id="0"]')).toHaveCount(0);
+
     const applyButton = page.getByRole('button', { name: 'Anwenden' });
 
     await configButton.click();
@@ -102,7 +107,7 @@ test('has configurable options', async ({ page }) => {
 
     await expect(page.getByTestId(`chart-node-label-${categoryIds.living}`)).toContainText(NodeValidator.warningSign);
 
-    expect(await getNodeValue(mainNode)).toBeCloseTo(4177.56);
+    expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main + defaultNodeValue.healthSport + defaultNodeValue.leisureStreaming + defaultNodeValue.supplyInternet);
 });
 
 test('show monthly values', async ({ page }) => {
@@ -137,9 +142,9 @@ test('hide and re-add category', async({ page }) => {
     const configButton = page.getByRole('button', { name: 'Kategorien anpassen' });
     expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main);
 
-    const link = page.getByTestId(`chart-link-${categoryIds.transport}`);
-    await link.click();
-    await expect(link).toBeHidden();
+    const linkTransport = page.getByTestId(`chart-link-${categoryIds.transport}`);
+    await linkTransport.click();
+    await expect(linkTransport).toBeHidden();
 
     expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main + defaultNodeValue.transport);
 
@@ -150,7 +155,7 @@ test('hide and re-add category', async({ page }) => {
     await checkboxTransport.check();
     await page.getByRole('button', { name: 'Anwenden' }).click();
 
-    await expect(link).toBeVisible();
+    await expect(linkTransport).toBeHidden();  // link is still hidden because sub categories are also hidden
 
     await configButton.click();
     const checkboxTransportCar= (await configRowLocator(categoryIds.transportCar)).getByRole('checkbox', { name: "aktiv"});
@@ -161,5 +166,5 @@ test('hide and re-add category', async({ page }) => {
     await rowTransportCarInsurance.locator('.category-name').click(); // simulate click on row
     await page.getByRole('button', { name: 'Anwenden' }).click();
 
-    expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main); // removing sub-category does not remove parent nodes
+    expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main + defaultNodeValue.transport - defaultNodeValue.transportCarInsurance);
 });

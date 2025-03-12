@@ -70,7 +70,7 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
 
             init(): void {
                 // merge transaction categories with persisted configuration
-                this._categories = [...new Map([...categories.list, ...this.categories]).values()];
+                this._categories = [...categories.list].map(([key, value]) => this.categories.has(key) ? this.categories.get(key) : value);
             },
 
             get categories(): Map<number, Category> {

@@ -34,8 +34,15 @@ export default (data: Tree) => ({
     update(): void {
         console.debug('updating chart data..');
 
-        const treeNodes: Array<TreeNode> = [...this.categoryTree.preOrderTraversal()]
-            .filter(x => Math.abs(x.value) >= this.threshold / this.scaling && this.categories.get(x.key)?.active);
+        const treeNodes: Array<TreeNode> = [...this.categoryTree.postOrderTraversal()]
+            .filter(x => Math.abs(x.value) >= this.threshold && this.categories.get(x.key)?.active);
+
+        // recalculate weight values for each parent node
+        // @todo merge with this.categoryTree.resetNodeValues()?
+        treeNodes.filter(x => x.hasChildren).map(x => x.value = x.children.reduce((a, b): number => {
+            const category = this.categories.get(b.key);
+            return Math.abs(b.value) >= this.threshold && category.active ? a + b.value : a;
+        }, 0));
 
         // build the data array for the Highchart
         // remarks:
@@ -43,7 +50,12 @@ export default (data: Tree) => ({
         //  - weight has to be positive (thats why the signed value is saved in custom attributes)
         //  - using category ids instead of names because these might be the same for income and expense
         let chartData: Array<PointOptionsObject> = treeNodes.filter(x => x.value >= 0 && x.parent).map(x => {
-            return {from: String(x.key), to: String(x.parent.key), weight: x.value, custom: {real: x.value, category: this.categories.get(x.key)}}
+            return {
+                from: String(x.key),
+                to: String(x.parent.key),
+                weight: x.value,
+                custom: {real: x.value, category: this.categories.get(x.key)}
+            }
         }).concat(treeNodes.filter(x => x.value < 0 && x.parent).map(x => {
             return {
                 from: String(x.parent.key),

@@ -8,12 +8,25 @@ currency = "EUR"
 -- print is used for logging in MoneyMoney extensions, so we redirect it here
 local print_stdout = print
 print = function(...)
-    io.stderr:write(...)
+    io.stderr:write(... .. "\n")
 end
 
 -- dummy exporter
 function Exporter(version, format, fileExtension, reverseOrder, description)
     version = version
+end
+
+function groupBy(tbl, key)
+    local grouped = {}
+    for _, item in ipairs(tbl) do
+        local groupKey = item[key]
+        if not grouped[groupKey] then
+            grouped[groupKey] = {}
+        end
+        table.insert(grouped[groupKey], item)
+    end
+
+    return grouped
 end
 
 local dummyAccount = { name = "Tagesgeld Test Bank", accountNumber = 1234, currency = currency }
@@ -36,7 +49,7 @@ local transactions = {
     {name = "KFZ-Versicherung", amount = -398.25, currency = "EUR", category = "Transport\\Auto\\Versicherung", bookingDate = 1739145600},
     {name = "Fitnessstudio", amount = -38.80, currency = "EUR", category = "Gesundheit\\Sport", bookingDate = 1738713600},
     {name = "Arztbesuch", amount = -97.55, currency = "EUR", category = "Gesundheit\\Medizin", bookingDate = 1738368000},
-    {name = "Online-Shop", amount = -118.75, currency = "EUR", category = "Freizeit\\Shopping", bookingDate = 1738022400},
+    {name = "Online-Shop", amount = -118.75, currency = "EUR", category = "", bookingDate = 1738022400},
     {name = "Kino", amount = -21.40, currency = "GBP", category = "Freizeit\\Unterhaltung", bookingDate = 1737763200},
     {name = "Handy", amount = -49.85, currency = "EUR", category = "Versorgung\\Telefon&Internet", bookingDate = 1737331200},
     {name = "Netflix", amount = -14.99, currency = "EUR", category = "Freizeit\\Streaming", bookingDate = 1736899200}
@@ -45,7 +58,9 @@ local transactions = {
 local sankey_extension = require("dist/SankeyChart")
 
 WriteHeader (dummyAccount, os.time{year=2025, month=1, day=15, hour=0}, os.time{year=2025, month=3, day=16, hour=0}, #transactions)
-WriteTransactions (dummyAccount, transactions)
+for bookingDate, transactionSet in pairs(groupBy(transactions, "bookingDate")) do
+    WriteTransactions (dummyAccount, transactionSet)
+end
 WriteTail (dummyAccount)
 
 f:seek("set", 0) -- set file handle back to start

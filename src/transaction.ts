@@ -46,6 +46,7 @@ export class CategoryTree {
     public list: Map<number,Category> = new Map();
     public tree: Tree;
     protected categoryPathSeparator: string;
+    private readonly categoryEmptyName: string = '(ohne)';
 
     constructor(mainNodeId: number, categoryPathSeparator: string) {
         this.tree = new Tree(new TreeNode(mainNodeId, 0));
@@ -58,6 +59,8 @@ export class CategoryTree {
             let parentCategoryId = this.tree.root.key;
             const path = [];
             transaction.category.split(this.categoryPathSeparator).forEach(categoryName => {
+                categoryName = categoryName || this.categoryEmptyName;
+
                 path.push(categoryName);
                 let categorySubPath = path.join(this.categoryPathSeparator);
 
@@ -74,16 +77,10 @@ export class CategoryTree {
             });
         });
 
-        this.recalculateNodeValues();
+        this.tree.resetNodeValues();
 
         console.debug('categories');
         console.debug(this.list);
-    }
-
-    recalculateNodeValues(): void {
-        // make sure that each parent node value is the sum of all childs
-        [...this.tree.postOrderTraversal()].filter(node => node.hasChildren)
-            .map(node => node.value = node.children.reduce((sum, child) => sum + child.value, 0));
     }
 
     getOutgoingWeights(): Array<number> {

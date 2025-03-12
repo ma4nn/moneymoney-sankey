@@ -29,7 +29,8 @@ export default class Tree {
 
     * preOrderTraversal(node = this.root): Generator<TreeNode> {
         yield node;
-        if (node.children.length) {
+
+        if (node.hasChildren) {
             for (let child of node.children) {
                 yield* this.preOrderTraversal(child);
             }
@@ -37,11 +38,12 @@ export default class Tree {
     }
 
     * postOrderTraversal(node = this.root): Generator<TreeNode> {
-        if (node.children.length) {
+        if (node.hasChildren) {
             for (let child of node.children) {
                 yield* this.postOrderTraversal(child);
             }
         }
+
         yield node;
     }
 
@@ -77,5 +79,11 @@ export default class Tree {
         }
 
         return null;
+    }
+
+    resetNodeValues(): void {
+        // make sure that each parent node value is the sum of all childs
+        [...this.postOrderTraversal()].filter(node => node.hasChildren)
+            .map(node => node.value = node.children.reduce((sum, child) => sum + child.value, 0));
     }
 }
