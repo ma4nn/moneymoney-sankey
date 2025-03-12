@@ -3,7 +3,7 @@ import persist from '@alpinejs/persist'
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import defaultConfig, {Config} from "./config";
+import defaultConfig from "./config";
 import Tree from "./tree";
 import {Transaction, MoneyMoneyCategoryTree, TransactionsManager, Category} from "./transaction";
 import categoriesTableComponent from "./components/categories-table";
@@ -89,7 +89,7 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
     Alpine.data('sankey-chart-component', () => sankeyChartComponent(categories.tree));
     Alpine.data('transaction-meta', () => {
         return {
-            accounts: data.accounts,
+            accounts: data.accounts.join(', '),
             start_date: data.startDate.toLocaleDateString(),
             end_date: data.endDate.toLocaleDateString(),
             transaction_count: data.transactions.length,

@@ -29,8 +29,8 @@ function groupBy(tbl, key)
     return grouped
 end
 
-local dummyAccount = { name = "Tagesgeld Test Bank", accountNumber = 1234, currency = currency }
-local transactions = {
+local accountOne = { name = "Tagesgeld Test Bank A", accountNumber = 1234, currency = currency }
+local transactionsAccountOne = {
     {name = "Gehalt", amount = 3487.65, currency = "EUR", category = "Einkommen", bookingDate = 1740787200},
     {name = "Bonuszahlung", amount = 512.30, currency = "EUR", category = "Einkommen", bookingDate = 1742083200},
     {name = "Freiberuflicher Auftrag", amount = 698.75, currency = "USD", category = "Selbstständigkeit", bookingDate = 1740700800},
@@ -45,7 +45,10 @@ local transactions = {
     {name = "Supermarkt", amount = -298.40, currency = "EUR", category = "Lebenshaltung\\Lebensmittel", bookingDate = 1740441600},
     {name = "Restaurant", amount = -72.10, currency = "EUR", category = "Lebenshaltung\\Freizeit\\Essen", bookingDate = 1740009600},
     {name = "ÖPNV-Ticket", amount = -58.95, currency = "CHF", category = "Transport\\ÖPNV", bookingDate = 1739836800},
-    {name = "Tankfüllung", amount = -92.65, currency = "EUR", category = "Transport\\Auto\\Benzin", bookingDate = 1739577600},
+    {name = "Tankfüllung", amount = -92.65, currency = "EUR", category = "Transport\\Auto\\Benzin", bookingDate = 1739577600}
+}
+local accountTwo = { name = "Tagesgeld Test Bank B", accountNumber = 987654321, currency = currency }
+local transactionsAccountTwo = {
     {name = "KFZ-Versicherung", amount = -398.25, currency = "EUR", category = "Transport\\Auto\\Versicherung", bookingDate = 1739145600},
     {name = "Fitnessstudio", amount = -38.80, currency = "EUR", category = "Gesundheit\\Sport", bookingDate = 1738713600},
     {name = "Arztbesuch", amount = -97.55, currency = "EUR", category = "Gesundheit\\Medizin", bookingDate = 1738368000},
@@ -57,11 +60,14 @@ local transactions = {
 
 local sankey_extension = require("dist/SankeyChart")
 
-WriteHeader (dummyAccount, os.time{year=2025, month=1, day=15, hour=0}, os.time{year=2025, month=3, day=16, hour=0}, #transactions)
-for bookingDate, transactionSet in pairs(groupBy(transactions, "bookingDate")) do
-    WriteTransactions (dummyAccount, transactionSet)
+WriteHeader (accountOne, os.time{year=2025, month=1, day=15, hour=0}, os.time{year=2025, month=3, day=16, hour=0}, #transactionsAccountOne)
+for bookingDate, transactionsAccountOne in pairs(groupBy(transactionsAccountOne, "bookingDate")) do
+    WriteTransactions (accountOne, transactionsAccountOne)
 end
-WriteTail (dummyAccount)
+for bookingDate, transactionsAccountTwo in pairs(groupBy(transactionsAccountTwo, "bookingDate")) do
+    WriteTransactions (accountTwo, transactionsAccountTwo)
+end
+WriteTail (accountOne)
 
 f:seek("set", 0) -- set file handle back to start
 s = f:read("*a")
