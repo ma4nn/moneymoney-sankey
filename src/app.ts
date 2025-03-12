@@ -6,6 +6,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import defaultConfig from "./config";
 import Tree from "./tree";
 import {Transaction, MoneyMoneyCategoryTree, TransactionsManager, Category} from "./transaction";
+import alertComponent from "./components/alert";
 import categoriesTableComponent from "./components/categories-table";
 import sankeyChartComponent from "./components/sankey-chart";
 import scalerComponent from "./components/scaler";
@@ -43,17 +44,6 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
         }
     });
 
-    Alpine.data('alert-component',  () => ({
-        get message(): string {
-            return Alpine.store('error').errorMessage;
-        },
-
-        reset(): void {
-            localStorage.clear();
-            window.location.reload();
-        }
-    }));
-
     const mainNodeId = 1;
     const data = new TransactionsManager(transactions);
 
@@ -86,6 +76,7 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
         Alpine.store('error').setMessage('Konfiguration kann nicht geladen werden.');
     }
 
+    Alpine.data('alert-component',  alertComponent);
     Alpine.data('sankey-chart-component', () => sankeyChartComponent(categories.tree));
     Alpine.data('transaction-meta', () => {
         return {
@@ -97,7 +88,7 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
     });
     Alpine.data('scaler-component', () => scalerComponent(data.calculateNumberOfMonths()));
     Alpine.data('threshold-slider-component', () => thresholdSliderComponent(categories.getOutgoingWeights()));
-    Alpine.data('categories-table-component', () => categoriesTableComponent());
+    Alpine.data('categories-table-component', categoriesTableComponent);
 
     window.Alpine = Alpine;
     Alpine.start();

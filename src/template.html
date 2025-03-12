@@ -56,7 +56,7 @@
 
     <main class="container-fluid my-3">
         <div x-data="alert-component">
-            <div x-show="message" class="alert alert-danger" role="alert" x-transition>
+            <div x-show="message" class="alert alert-danger" role="alert" x-transition x-cloak>
                 Leider ist ein <strong>schwerwiegender Fehler</strong> aufgetreten: <span x-text="message"></span>
                 <button type="button" @click="reset" class="btn btn-link p-0 pb-1">App zurücksetzen</button>
             </div>

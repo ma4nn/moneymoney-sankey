@@ -12,6 +12,7 @@ This is an extension for the great [MoneyMoney app](https://moneymoney-app.com/)
 - Hide categories by click
 - Add configurable budgets per each category
 - Add threshold value for chart paths
+- Automatically save configuration in browser
 
 ## Installing
 

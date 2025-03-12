@@ -2,6 +2,10 @@ body, .highcharts-container {
     font-family: system-ui
 }
 
+[x-cloak] {
+    display: none !important;
+}
+
 .small {
     font-size: 9px;
 }
