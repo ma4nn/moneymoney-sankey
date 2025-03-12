@@ -1,6 +1,6 @@
 # Interactive Sankey Charts for MoneyMoney
 
-![build status](https://github.com/ma4nn/moneymoney-sankey/actions/workflows/build-lua-script.yml/badge.svg)
+![Build Status](https://github.com/ma4nn/moneymoney-sankey/actions/workflows/build-lua-script.yml/badge.svg) [![Join My Discord](https://dev-investor.de/wp-content/uploads/join-discord.svg)](https://dev-investor.de/chat)
 
 This is an extension for the great [MoneyMoney app](https://moneymoney-app.com/) to export an interactive HTML [Sankey Chart](https://de.wikipedia.org/wiki/Sankey-Diagramm) from the transaction categories.  
 [Demo](https://ma4nn.github.io/moneymoney-sankey/)
@@ -42,7 +42,7 @@ The compiled MoneyMoney extension can then be found in `dist/SankeyChart.lua` an
 ## Compatibility
 
 - Tested with MoneyMoney 2.4.x
-- Modern browser is required
+- [Modern browser](https://www.w3schools.com/js/js_2017.asp) is required
 
 ### Known Limitations 🚧
 - Only 1 currency is supported (the currency of the account is taken, other currencies are ignored)

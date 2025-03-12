@@ -31,7 +31,7 @@ function createNonce() {
  * and tests will fail.
  */
 (async() => {
-    console.log(`Assembling ${process.env.npm_package_name} v${version}..`);
+    console.log(`Fabricating ${process.env.npm_package_name} v${version}..`);
 
     const result = await esbuild.build({
         entryPoints: ['src/app.ts'],

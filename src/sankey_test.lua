@@ -29,7 +29,7 @@ function groupBy(tbl, key)
     return grouped
 end
 
-local accountOne = { name = "Tagesgeld Test Bank A", accountNumber = 1234, currency = currency }
+local accountOne = { name = "Tagesgeld XYZ Bank", accountNumber = 1234, currency = currency }
 local transactionsAccountOne = {
     {name = "Gehalt", amount = 3487.65, currency = "EUR", category = "Einkommen", bookingDate = 1740787200},
     {name = "Bonuszahlung", amount = 512.30, currency = "EUR", category = "Einkommen", bookingDate = 1742083200},
@@ -47,7 +47,7 @@ local transactionsAccountOne = {
     {name = "ÖPNV-Ticket", amount = -58.95, currency = "CHF", category = "Transport\\ÖPNV", bookingDate = 1739836800},
     {name = "Tankfüllung", amount = -92.65, currency = "EUR", category = "Transport\\Auto\\Benzin", bookingDate = 1739577600}
 }
-local accountTwo = { name = "Tagesgeld Test Bank B", accountNumber = 987654321, currency = currency }
+local accountTwo = { name = "Kreditkarte XYZ Bank", accountNumber = 987654321, currency = currency }
 local transactionsAccountTwo = {
     {name = "KFZ-Versicherung", amount = -398.25, currency = "EUR", category = "Transport\\Auto\\Versicherung", bookingDate = 1739145600},
     {name = "Fitnessstudio", amount = -38.80, currency = "EUR", category = "Gesundheit\\Sport", bookingDate = 1738713600},
