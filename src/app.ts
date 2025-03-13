@@ -22,14 +22,6 @@ declare global {
   }
 }
 
-export function ready(fn: any): void {
-    if (document.readyState !== 'loading') {
-        fn();
-    } else {
-        document.addEventListener('DOMContentLoaded', fn);
-    }
-}
-
 export function initApp(transactions: Array<Transaction>, currency: string = 'EUR'): void {
     Alpine.plugin(persist);
 
