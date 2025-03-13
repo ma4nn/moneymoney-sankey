@@ -1,4 +1,5 @@
 import Alpine from '@alpinejs/csp';
+import {resetApp} from "../helper";
 
 export default () => ({
     get message(): string {
@@ -6,7 +7,6 @@ export default () => ({
     },
 
     reset(): void {
-        localStorage.clear();
-        window.location.reload();
+        resetApp();
     }
 });

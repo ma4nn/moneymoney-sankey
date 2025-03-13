@@ -55,5 +55,4 @@ At least open the [Developer Tools](https://developer.chrome.com/docs/devtools/o
 
 ## Licensing
 
-This repository is published under the [MIT license](./LICENSE).  
-This repository uses the great Highchart library, please obtain a valid license [on their website](https://shop.highcharts.com/).
+This repository is published under the [MIT license](./LICENSE). It uses the great Highcharts library, please obtain a valid license [on their website](https://shop.highcharts.com/).

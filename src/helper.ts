@@ -8,3 +8,8 @@ export function numberFormatColored(nb: number, currency: string = defaultConfig
     let color = (nb >= 0) ? '#14c57e' : '#ff6b4a';
     return '<strong style="color:' + color + '">' + numberFormat(nb, currency) + '</strong>';
 }
+
+export function resetApp(): void {
+    localStorage.clear();
+    window.location.reload();
+}

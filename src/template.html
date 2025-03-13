@@ -27,7 +27,7 @@
     </header>
 
     <nav class="navbar navbar-expand-lg bg-body-tertiary sticky-top">
-        <fieldset id="header-configuration" class="container-fluid" disabled>
+        <fieldset id="header-configuration" class="container-fluid py-1" disabled>
             <legend class="visually-hidden">Sankey-Chart Konfiguration</legend>
             <div class="d-flex flex-column flex-md-row w-100">
                 <div class="d-flex align-items-center">
@@ -43,9 +43,14 @@
                     </div>
                 </div>
                 <div class="d-flex align-items-center ms-md-auto mt-2 mt-md-0">
-                    <div x-data="threshold-slider-component">
-                        <label for="threshold" class="form-label visually-hidden">Detailgrad</label>
-                        <input type="range" class="form-range" id="threshold" :min="minValue" :max="maxValue" :value="currentValue" @change="zoom" title="Detailgrad">
+                    <input x-data="threshold-slider-component" type="range" class="form-range me-5" id="threshold" :min="minValue" :max="maxValue" :value="currentValue" @change="zoom" title="Detailgrad">
+                    <div class="nav-item dropdown me-3">
+                        <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Aktionen</button>
+                        <ul class="dropdown-menu dropdown-menu-end" x-data="more-actions-component">
+                            <li><a class="dropdown-item icon-link" href="#" :href="sankeymaticUrl" target="_blank" rel="external noopener" title="Öffnet das aktuelle Sankey-Diagram in SankeyMATIC.com. Die Daten werden dabei in das entsprechende Format konvertiert und an den externen Anbieter übertragen.">in SankeyMATIC öffnen<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><button class="dropdown-item" type="button" @click="reset">Chart zurücksetzen</button></li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -55,8 +60,10 @@
     <main class="container-fluid my-3">
         <div x-data="alert-component">
             <div x-show="message" class="alert alert-danger" role="alert" x-transition x-cloak>
-                Leider ist ein <strong>schwerwiegender Fehler</strong> aufgetreten: <span x-text="message"></span>
-                <button type="button" @click="reset" class="btn btn-link p-0 pb-1">App zurücksetzen</button>
+                <h4 class="alert-heading">Schwerer Fehler</h4>
+                <span x-text="message"></span>
+                <hr>
+                <button type="button" @click="reset" class="alert-link btn btn-link p-0 pb-1">Chart zurücksetzen</button>
             </div>
         </div>
 

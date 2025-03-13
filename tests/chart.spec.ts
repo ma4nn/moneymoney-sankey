@@ -68,6 +68,7 @@ test('has valid initial state', async ({ page }) => {
 
     await expect(page.getByRole('heading', { name: 'Cashflows' })).toBeVisible();
     await expect(page.locator('#transaction-count')).toHaveText('19 Transaktionen');
+    await expect(page.getByRole('alert')).toHaveCount(0);
 
     expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main);
 });

@@ -8,6 +8,7 @@ import Tree from "./tree";
 import {Transaction, MoneyMoneyCategoryTree, TransactionsManager, Category} from "./transaction";
 import alertComponent from "./components/alert";
 import categoriesTableComponent from "./components/categories-table";
+import moreActionsComponent from "./components/more-actions";
 import sankeyChartComponent from "./components/sankey-chart";
 import scalerComponent from "./components/scaler";
 import thresholdSliderComponent from "./components/threshold-slider";
@@ -89,6 +90,7 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
     Alpine.data('scaler-component', () => scalerComponent(data.calculateNumberOfMonths()));
     Alpine.data('threshold-slider-component', () => thresholdSliderComponent(categories.getOutgoingWeights()));
     Alpine.data('categories-table-component', categoriesTableComponent);
+    Alpine.data('more-actions-component', () => moreActionsComponent(categories.tree));
 
     window.Alpine = Alpine;
     Alpine.start();
