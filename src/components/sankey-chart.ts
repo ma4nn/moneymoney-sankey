@@ -31,9 +31,7 @@ export default (data: Tree) => ({
         return Alpine.store('config');
     },
 
-    update(): void {
-        console.debug('updating chart data..');
-
+    get nodes(): Array<TreeNode> {
         const treeNodes: Array<TreeNode> = [...this.categoryTree.postOrderTraversal()]
             .filter(x => Math.abs(x.value) >= this.threshold && this.categories.get(x.key)?.active);
 
@@ -43,6 +41,16 @@ export default (data: Tree) => ({
             const category = this.categories.get(b.key);
             return Math.abs(b.value) >= this.threshold && category.active ? a + b.value : a;
         }, 0));
+
+        this.config.chartData = treeNodes;
+
+        return treeNodes;
+    },
+
+    update(): void {
+        console.debug('updating chart data..');
+
+        const treeNodes = this.nodes;
 
         // build the data array for the Highchart
         // remarks:

@@ -58,6 +58,7 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
             currency: currency,
             _categories: Alpine.$persist([]) as Array<Category>, // Alpine.$persist does not work with Maps, so we save it as array internally and use an accessor
             mainNodeId: mainNodeId,
+            chartData: [],
 
             init(): void {
                 // merge transaction categories with persisted configuration
@@ -90,7 +91,7 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
     Alpine.data('scaler-component', () => scalerComponent(data.calculateNumberOfMonths()));
     Alpine.data('threshold-slider-component', () => thresholdSliderComponent(categories.getOutgoingWeights()));
     Alpine.data('categories-table-component', categoriesTableComponent);
-    Alpine.data('more-actions-component', () => moreActionsComponent(categories.tree));
+    Alpine.data('more-actions-component', moreActionsComponent);
 
     window.Alpine = Alpine;
     Alpine.start();

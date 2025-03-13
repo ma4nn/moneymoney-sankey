@@ -1,11 +1,11 @@
 import Alpine from '@alpinejs/csp';
 import LZString from 'lz-string';
-import Tree from '../tree';
+import {TreeNode} from '../tree';
 import {Category} from "../transaction";
 import {Config} from "../config";
 import {resetApp} from "../helper";
 
-export default (tree: Tree) => ({
+export default () => ({
     get categories(): Map<number,Category> {
         return this.config.categories;
     },
@@ -20,7 +20,7 @@ export default (tree: Tree) => ({
 
     get sankeymaticUrl(): string {
         // @see https://github.com/nowthis/sankeymatic/blob/c49af0fb377705c65d1b8be0c0f0ea79f07f195e/build/sankeymatic.js#L1878
-        let data = LZString.compressToEncodedURIComponent(this.buildData());
+        let data = LZString.compressToEncodedURIComponent(this.buildSankeymaticData());
         const urlInputsParam = 'i';
 
         return `https://sankeymatic.com/build/?${urlInputsParam}=${encodeURIComponent(data).replace(/-/g, '%2D')}`;
@@ -30,9 +30,10 @@ export default (tree: Tree) => ({
         resetApp();
     },
 
-    buildData(): string {
+    buildSankeymaticData(): string {
         let data: Array<string> = [];
-        [...tree.preOrderTraversal()].filter(node => node.parent).forEach(node => {
+
+        this.config.chartData.filter((node: TreeNode) => node.parent).forEach((node: TreeNode) => {
             const parentCategory: string = this.categories.get(node.parent.key)?.name;
             const nodeCategory: string = this.categories.get(node.key)?.name;
 
