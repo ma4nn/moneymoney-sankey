@@ -17,8 +17,10 @@ runs:
 
     - name: Install Playwright Browsers
       if: steps.playwright-cache.outputs.cache-hit != 'true'
+      shell: bash
       run: npx playwright install --with-deps --only-shell
 
     - name: Install Playwright's system dependencies
       if: steps.playwright-cache.outputs.cache-hit == 'true'
+      shell: bash
       run: npx playwright install-deps
