@@ -2,17 +2,19 @@
 
 ![Build Status](https://github.com/ma4nn/moneymoney-sankey/actions/workflows/build-lua-script.yml/badge.svg) [![Join My Discord](https://dev-investor.de/wp-content/uploads/join-discord.svg)](https://dev-investor.de/chat)
 
-This is an extension for the great [MoneyMoney app](https://moneymoney-app.com/) to export an interactive HTML [Sankey Chart](https://de.wikipedia.org/wiki/Sankey-Diagramm) from the transaction categories.  
+This is an extension for the great [MoneyMoney app](https://moneymoney-app.com/) to export an interactive HTML [Sankey Chart](https://de.wikipedia.org/wiki/Sankey-Diagramm) from the transaction categories.
+
 [Demo](https://ma4nn.github.io/moneymoney-sankey/)
 
 [![Sankey Sample Chart](https://ma4nn.github.io/moneymoney-sankey/sample.png)](https://ma4nn.github.io/moneymoney-sankey/)
 
-## Features
+## Highlights
 
 - Hide categories by click
 - Add configurable budgets per each category
 - Add threshold value for chart paths
 - Automatically save configuration in browser
+- Export chart data to [SankeyMATIC](https://sankeymatic.com)
 
 ## Installing
 

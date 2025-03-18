@@ -18,3 +18,4 @@ runs:
     - name: Install Playwright Browsers
       shell: bash
       run: npx playwright install --with-deps --only-shell
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
