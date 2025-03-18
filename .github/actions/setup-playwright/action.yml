@@ -16,6 +16,9 @@ runs:
         key: playwright-${{ runner.os }}-${{ env.PLAYWRIGHT_VERSION }}
 
     - name: Install Playwright Browsers
-      shell: bash
-      run: npx playwright install --with-deps --only-shell
       if: steps.playwright-cache.outputs.cache-hit != 'true'
+      run: npx playwright install --with-deps --only-shell
+
+    - name: Install Playwright's system dependencies
+      if: steps.playwright-cache.outputs.cache-hit == 'true'
+      run: npx playwright install-deps
