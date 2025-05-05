@@ -251,6 +251,7 @@ export default (data: Tree) => ({
                 nodes: this.buildNodesConfig()
             }],
             chart: {
+                animation: false,
                 height: 700,
                 styledMode: true,
                 numberFormatter: function () {
