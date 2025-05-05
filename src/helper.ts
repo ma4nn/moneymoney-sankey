@@ -13,3 +13,7 @@ export function resetApp(): void {
     localStorage.clear();
     window.location.reload();
 }
+
+export function getValueByPath(obj, path) {
+    return path.split('.').reduce((acc, key) => acc?.[key], obj);
+}

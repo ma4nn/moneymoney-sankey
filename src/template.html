@@ -41,6 +41,16 @@
                         <input class="form-check-input" type="checkbox" role="switch" id="is-show-monthly" :checked="isScaled" @change="toggle" :disabled="isDisabled" :title="tooltip">
                         <label class="form-check-label" for="is-show-monthly" :title="tooltip">Werte pro Monat anzeigen</label>
                     </div>
+                    <div class="nav-item dropdown me-3" x-data="sorter-component">
+                        <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Sortieren nach: <span x-text="label"></span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <template x-for="(label, sortKey) in sorts">
+                                <li><a class="dropdown-item" href="#" x-text="label" :data-sort-key="sortKey" @click.prevent="sort">&nbsp;</a></li>
+                            </template>
+                        </ul>
+                    </div>
                 </div>
                 <div class="d-flex align-items-center ms-md-auto mt-2 mt-md-0">
                     <input x-data="threshold-slider-component" type="range" class="form-range me-5" id="threshold" :min="minValue" :max="maxValue" :value="currentValue" @change="zoom" title="Detailgrad">

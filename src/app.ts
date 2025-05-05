@@ -10,6 +10,7 @@ import alertComponent from "./components/alert";
 import categoriesTableComponent from "./components/categories-table";
 import moreActionsComponent from "./components/more-actions";
 import sankeyChartComponent from "./components/sankey-chart";
+import sorterComponent from "./components/sorter";
 import scalerComponent from "./components/scaler";
 import thresholdSliderComponent from "./components/threshold-slider";
 import './style.css';
@@ -48,6 +49,7 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
             scalingFactor: Alpine.$persist(defaultConfig.scalingFactor) as number,
             threshold: Alpine.$persist(defaultConfig.threshold) as number,
             currency: currency,
+            sortKey: Alpine.$persist(defaultConfig.sortKey) as string,
             _categories: Alpine.$persist([]) as Array<Category>, // Alpine.$persist does not work with Maps, so we save it as array internally and use an accessor
             mainNodeId: mainNodeId,
             chartData: [],
@@ -84,6 +86,7 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
     Alpine.data('threshold-slider-component', () => thresholdSliderComponent(categories.getOutgoingWeights()));
     Alpine.data('categories-table-component', categoriesTableComponent);
     Alpine.data('more-actions-component', moreActionsComponent);
+    Alpine.data('sorter-component', sorterComponent);
 
     window.Alpine = Alpine;
     Alpine.start();

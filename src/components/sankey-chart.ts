@@ -7,7 +7,7 @@ import 'highcharts/css/highcharts.css';
 import Tree, { TreeNode } from "../tree";
 import { Config } from "../config";
 import { NodeValidator } from "../validators";
-import { numberFormat, numberFormatColored } from "../helper";
+import {getValueByPath, numberFormat, numberFormatColored} from "../helper";
 import {Category} from "../transaction";
 
 export default (data: Tree) => ({
@@ -21,6 +21,10 @@ export default (data: Tree) => ({
 
     get threshold(): number {
         return this.config.threshold;
+    },
+
+    get sorting(): number {
+        return this.config.sortKey;
     },
 
     get categories(): Map<number,Category> {
@@ -77,13 +81,33 @@ export default (data: Tree) => ({
         console.debug('chart data:');
         console.debug(chartData);
 
-        (this.chart.series[0] as Highcharts.Series).setData(chartData);
+        (this.chart.series[0] as Highcharts.Series).setData(this.sortNodes(chartData));
 
         if (chartData.length === 0) {
             document.getElementById('header-configuration').setAttribute('disabled', String(true));
         } else {
             document.getElementById('header-configuration').removeAttribute('disabled');
         }
+    },
+
+    sortNodes(nodes: Array<PointOptionsObject>): any {
+      return nodes.sort((a, b) => {
+          const valueA = getValueByPath(a, this.sorting);
+          const valueB = getValueByPath(b, this.sorting);
+
+          const isNumA = !isNaN(valueA);
+          const isNumB = !isNaN(valueB);
+
+          if (isNumA && isNumB) {
+              return Number(valueA) - Number(valueB);
+          }
+
+          if (!isNumA && !isNumB) {
+              return valueA.localeCompare(valueB);
+          }
+
+          return isNumA ? -1 : 1;
+      });
     },
 
     buildNodesConfig(): Array<SeriesSankeyNodesOptionsObject> {
