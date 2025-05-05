@@ -6,6 +6,7 @@ export type Category = {
     path: string;
     active: boolean;
     budget?: number;
+    color?: string;
 }
 
 export type Transaction = {
@@ -79,7 +80,7 @@ export class CategoryTree {
 
         this.tree.resetNodeValues();
 
-        console.debug('categories');
+        console.debug('categories:');
         console.debug(this.list);
     }
 

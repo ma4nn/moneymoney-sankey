@@ -31,6 +31,8 @@ variables = {
     ["today"] = os.date('%d.%m.%Y %H:%M:%S')
 }
 
+-- @see https://moneymoney.app/api/export/
+
 local function write_line(line)
    assert(io.write(line, "\n"))
 end

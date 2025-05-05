@@ -1,5 +1,5 @@
 import Alpine from '@alpinejs/csp';
-import {PointOptionsObject, SeriesSankeyNodesOptionsObject} from "highcharts/highcharts.src";
+import {SeriesSankeyNodesOptionsObject, SeriesSankeyPointOptionsObject} from "highcharts/highcharts.src";
 import Highcharts from "highcharts/es-modules/masters/highcharts.src";
 import 'highcharts/es-modules/masters/modules/sankey.src';
 import 'highcharts/css/highcharts.css';
@@ -7,8 +7,11 @@ import 'highcharts/css/highcharts.css';
 import Tree, { TreeNode } from "../tree";
 import { Config } from "../config";
 import { NodeValidator } from "../validators";
-import { numberFormat, numberFormatColored } from "../helper";
+import {getValueByPath, numberFormat, numberFormatColored} from "../helper";
 import {Category} from "../transaction";
+
+type SankeyLinkOptions = SeriesSankeyPointOptionsObject;
+type SankeyNodeOptions = SeriesSankeyNodesOptionsObject;
 
 export default (data: Tree) => ({
     categoryTree: data,
@@ -23,8 +26,16 @@ export default (data: Tree) => ({
         return this.config.threshold;
     },
 
+    get sorting(): number {
+        return this.config.sortKey;
+    },
+
     get categories(): Map<number,Category> {
         return this.config.categories;
+    },
+
+    get childCategories(): Map<number,Category> {
+        return new Map([...this.categories].filter(([categoryId, category]) => categoryId !== this.mainNodeId));
     },
 
     get config(): Config {
@@ -48,48 +59,42 @@ export default (data: Tree) => ({
     },
 
     update(): void {
-        console.debug('updating chart data..');
+        this.setColors();
 
-        const treeNodes = this.nodes;
+        const series = this.chart.series[0] as Highcharts.Series;
+        series.setData(this.buildLinksConfig());
 
-        // build the data array for the Highchart
-        // remarks:
-        //  - node ids need to be strings according to the Highcharts definitions
-        //  - weight has to be positive (thats why the signed value is saved in custom attributes)
-        //  - using category ids instead of names because these might be the same for income and expense
-        let chartData: Array<PointOptionsObject> = treeNodes.filter(x => x.value >= 0 && x.parent).map(x => {
-            return {
-                from: String(x.key),
-                to: String(x.parent.key),
-                weight: x.value,
-                custom: {real: x.value, category: this.categories.get(x.key)}
-            }
-        }).concat(treeNodes.filter(x => x.value < 0 && x.parent).map(x => {
-            return {
-                from: String(x.parent.key),
-                to: String(x.key),
-                weight: (-1) * x.value,
-                outgoing: !x.hasChildren,
-                custom: {real: x.value, category: this.categories.get(x.key)}
-            }
-        }));
-
-        console.debug('chart data:');
-        console.debug(chartData);
-
-        (this.chart.series[0] as Highcharts.Series).setData(chartData);
-
-        if (chartData.length === 0) {
+        if (series.data.length === 0) {
             document.getElementById('header-configuration').setAttribute('disabled', String(true));
         } else {
             document.getElementById('header-configuration').removeAttribute('disabled');
         }
     },
 
-    buildNodesConfig(): Array<SeriesSankeyNodesOptionsObject> {
+    sortLinks(links: Array<SankeyLinkOptions>): any {
+      return links.sort((a, b) => {
+          const valueA = getValueByPath(a, this.sorting);
+          const valueB = getValueByPath(b, this.sorting);
+
+          const isNumA = !isNaN(valueA);
+          const isNumB = !isNaN(valueB);
+
+          if (isNumA && isNumB) {
+              return Number(valueA) - Number(valueB);
+          }
+
+          if (!isNumA && !isNumB) {
+              return valueA.localeCompare(valueB);
+          }
+
+          return isNumA ? -1 : 1;
+      });
+    },
+
+    buildNodesConfig(): Array<SankeyNodeOptions> {
         const self = this;
 
-        let nodes: Array<SeriesSankeyNodesOptionsObject> = [];
+        let nodes: Array<SankeyNodeOptions> = [];
         nodes.push({
             id: String(this.mainNodeId),
             name: this.categories.get(this.mainNodeId)?.name,
@@ -103,18 +108,51 @@ export default (data: Tree) => ({
             },
         });
 
-        new Map([...self.categories].filter(([categoryId, category]) => categoryId !== this.mainNodeId))
-            .forEach((category: Category) => {
-                nodes.push({
-                    id: String(category.id), // Highcharts needs the id to be string
-                    name: category.name,
-                });
+        this.childCategories.forEach((category: Category) => {
+            nodes.push({
+                id: String(category.id), // Highcharts needs the id to be string
+                name: category.name,
+                colorIndex: category.id,
             });
+        });
 
-        console.debug('nodes data:');
+        console.debug('chart nodes:');
         console.debug(nodes);
 
         return nodes;
+    },
+
+    buildLinksConfig(): Array<SankeyLinkOptions> {
+        const treeNodes = this.nodes;
+
+        // build the data array for the Highchart
+        // remarks:
+        //  - node ids need to be strings according to the Highcharts definitions
+        //  - weight has to be positive (thats why the signed value is saved in custom attributes)
+        //  - using category ids instead of names because these might be the same for income and expense
+        let links: Array<SankeyLinkOptions> = treeNodes.filter((x: TreeNode) => x.value >= 0 && x.parent).map((x: TreeNode): SankeyLinkOptions => {
+            return {
+                from: String(x.key),
+                to: String(x.parent.key),
+                weight: x.value,
+                custom: {real: x.value, category: this.categories.get(x.key)},
+                colorIndex: x.key, // for incoming nodes the color is determined by the source node
+            }
+        }).concat(treeNodes.filter((x: TreeNode) => x.value < 0 && x.parent).map((x: TreeNode): SankeyLinkOptions => {
+            return {
+                from: String(x.parent.key),
+                to: String(x.key),
+                weight: (-1) * x.value,
+                outgoing: !x.hasChildren,
+                custom: {real: x.value, category: this.categories.get(x.key)},
+                colorIndex: x.key, // for outgoing nodes the color is determined by the target node
+            }
+        }));
+
+        console.debug('chart links:');
+        console.debug(links);
+
+        return this.sortLinks(links);
     },
 
     init(): void {
@@ -213,6 +251,7 @@ export default (data: Tree) => ({
                 nodes: this.buildNodesConfig()
             }],
             chart: {
+                animation: false,
                 height: 700,
                 styledMode: true,
                 numberFormatter: function () {
@@ -249,6 +288,14 @@ export default (data: Tree) => ({
 
         this.update();
     },
+
+    setColors(): void {
+        let style = document.getElementById('category-color-styles');
+        style.innerHTML = '';
+        this.childCategories.forEach((category: Category) =>
+            style.innerHTML += `.highcharts-color-${category.id} { fill: ${category.color ?? getDefaultColorValue(category.id)}; }\n`
+        );
+    }
 });
 
 export class SankeyNode { // @todo use accessors
@@ -298,11 +345,11 @@ export class SankeyNode { // @todo use accessors
         return (this.getValue() / parentNode.getTotalOutgoingWeight()) * 100;
     }
 
-    public getLinksFrom(): Array<PointOptionsObject> {
+    public getLinksFrom(): Array<SankeyLinkOptions> {
         return 'linksFrom' in this.node ? (this.node as any).linksFrom : [];
     }
 
-    public getLinksTo(): Array<PointOptionsObject> {
+    public getLinksTo(): Array<SankeyLinkOptions> {
         return 'linksTo' in this.node ? (this.node as any).linksTo : [];
     }
 
@@ -317,4 +364,9 @@ export class SankeyNode { // @todo use accessors
     private getTotalWeight(): number {
         return this.getTotalIncomingWeight() - this.getTotalOutgoingWeight();
     }
+}
+
+export function getDefaultColorValue(colorId: number) {
+    // map the big category ids to the set of predefined highchart colors
+    return getComputedStyle(document.documentElement).getPropertyValue(`--highcharts-color-${colorId % 10}`).trim();
 }
