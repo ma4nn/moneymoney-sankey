@@ -10,6 +10,9 @@ import { NodeValidator } from "../validators";
 import {getValueByPath, numberFormat, numberFormatColored} from "../helper";
 import {Category} from "../transaction";
 
+type SankeyLinkOptions = PointOptionsObject;
+type SankeyNodeOptions = SeriesSankeyNodesOptionsObject;
+
 export default (data: Tree) => ({
     categoryTree: data,
     chart: Highcharts.Chart = null,
@@ -52,8 +55,6 @@ export default (data: Tree) => ({
     },
 
     update(): void {
-        console.debug('updating chart data..');
-
         const treeNodes = this.nodes;
 
         // build the data array for the Highchart
@@ -61,7 +62,7 @@ export default (data: Tree) => ({
         //  - node ids need to be strings according to the Highcharts definitions
         //  - weight has to be positive (thats why the signed value is saved in custom attributes)
         //  - using category ids instead of names because these might be the same for income and expense
-        let chartData: Array<PointOptionsObject> = treeNodes.filter(x => x.value >= 0 && x.parent).map(x => {
+        let chartData: Array<SankeyLinkOptions> = treeNodes.filter(x => x.value >= 0 && x.parent).map(x => {
             return {
                 from: String(x.key),
                 to: String(x.parent.key),
@@ -78,10 +79,10 @@ export default (data: Tree) => ({
             }
         }));
 
-        console.debug('chart data:');
+        console.debug('chart links:');
         console.debug(chartData);
 
-        (this.chart.series[0] as Highcharts.Series).setData(this.sortNodes(chartData));
+        (this.chart.series[0] as Highcharts.Series).setData(this.sortLinks(chartData));
 
         if (chartData.length === 0) {
             document.getElementById('header-configuration').setAttribute('disabled', String(true));
@@ -90,8 +91,8 @@ export default (data: Tree) => ({
         }
     },
 
-    sortNodes(nodes: Array<PointOptionsObject>): any {
-      return nodes.sort((a, b) => {
+    sortLinks(links: Array<SankeyLinkOptions>): any {
+      return links.sort((a, b) => {
           const valueA = getValueByPath(a, this.sorting);
           const valueB = getValueByPath(b, this.sorting);
 
@@ -110,14 +111,15 @@ export default (data: Tree) => ({
       });
     },
 
-    buildNodesConfig(): Array<SeriesSankeyNodesOptionsObject> {
+    buildNodesConfig(): Array<SankeyNodeOptions> {
         const self = this;
 
-        let nodes: Array<SeriesSankeyNodesOptionsObject> = [];
+        let nodes: Array<SankeyNodeOptions> = [];
         nodes.push({
             id: String(this.mainNodeId),
             name: this.categories.get(this.mainNodeId)?.name,
-            colorIndex: 1,
+            //colorIndex: 1,
+            color: '#000',
             dataLabels: {
                 className: "main-node-label",
                 nodeFormatter: function (): string {
@@ -132,10 +134,11 @@ export default (data: Tree) => ({
                 nodes.push({
                     id: String(category.id), // Highcharts needs the id to be string
                     name: category.name,
+                    color: category.color ?? '#efefef',
                 });
             });
 
-        console.debug('nodes data:');
+        console.debug('chart nodes:');
         console.debug(nodes);
 
         return nodes;
@@ -322,11 +325,11 @@ export class SankeyNode { // @todo use accessors
         return (this.getValue() / parentNode.getTotalOutgoingWeight()) * 100;
     }
 
-    public getLinksFrom(): Array<PointOptionsObject> {
+    public getLinksFrom(): Array<SankeyLinkOptions> {
         return 'linksFrom' in this.node ? (this.node as any).linksFrom : [];
     }
 
-    public getLinksTo(): Array<PointOptionsObject> {
+    public getLinksTo(): Array<SankeyLinkOptions> {
         return 'linksTo' in this.node ? (this.node as any).linksTo : [];
     }
 
