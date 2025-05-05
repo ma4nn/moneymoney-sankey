@@ -28,3 +28,8 @@ text.highcharts-data-label {
 .highcharts-link {
     cursor: pointer;
 }
+
+/* main node color */
+.highcharts-color-1 {
+    fill: #4b4b4b;
+}

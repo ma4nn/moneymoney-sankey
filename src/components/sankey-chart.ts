@@ -1,5 +1,5 @@
 import Alpine from '@alpinejs/csp';
-import {PointOptionsObject, SeriesSankeyNodesOptionsObject} from "highcharts/highcharts.src";
+import {SeriesSankeyNodesOptionsObject, SeriesSankeyPointOptionsObject} from "highcharts/highcharts.src";
 import Highcharts from "highcharts/es-modules/masters/highcharts.src";
 import 'highcharts/es-modules/masters/modules/sankey.src';
 import 'highcharts/css/highcharts.css';
@@ -10,7 +10,7 @@ import { NodeValidator } from "../validators";
 import {getValueByPath, numberFormat, numberFormatColored} from "../helper";
 import {Category} from "../transaction";
 
-type SankeyLinkOptions = PointOptionsObject;
+type SankeyLinkOptions = SeriesSankeyPointOptionsObject;
 type SankeyNodeOptions = SeriesSankeyNodesOptionsObject;
 
 export default (data: Tree) => ({
@@ -32,6 +32,10 @@ export default (data: Tree) => ({
 
     get categories(): Map<number,Category> {
         return this.config.categories;
+    },
+
+    get childCategories(): Map<number,Category> {
+        return new Map([...this.categories].filter(([categoryId, category]) => categoryId !== this.mainNodeId));
     },
 
     get config(): Config {
@@ -104,14 +108,13 @@ export default (data: Tree) => ({
             },
         });
 
-        new Map([...self.categories].filter(([categoryId, category]) => categoryId !== this.mainNodeId))
-            .forEach((category: Category) => {
-                nodes.push({
-                    id: String(category.id), // Highcharts needs the id to be string
-                    name: category.name,
-                    colorIndex: category.id,
-                });
+        this.childCategories.forEach((category: Category) => {
+            nodes.push({
+                id: String(category.id), // Highcharts needs the id to be string
+                name: category.name,
+                colorIndex: category.id,
             });
+        });
 
         console.debug('chart nodes:');
         console.debug(nodes);
@@ -119,7 +122,7 @@ export default (data: Tree) => ({
         return nodes;
     },
 
-    buildLinksConfig() {
+    buildLinksConfig(): Array<SankeyLinkOptions> {
         const treeNodes = this.nodes;
 
         // build the data array for the Highchart
@@ -127,20 +130,22 @@ export default (data: Tree) => ({
         //  - node ids need to be strings according to the Highcharts definitions
         //  - weight has to be positive (thats why the signed value is saved in custom attributes)
         //  - using category ids instead of names because these might be the same for income and expense
-        let links: Array<SankeyLinkOptions> = treeNodes.filter(x => x.value >= 0 && x.parent).map(x => {
+        let links: Array<SankeyLinkOptions> = treeNodes.filter((x: TreeNode) => x.value >= 0 && x.parent).map((x: TreeNode): SankeyLinkOptions => {
             return {
                 from: String(x.key),
                 to: String(x.parent.key),
                 weight: x.value,
-                custom: {real: x.value, category: this.categories.get(x.key)}
+                custom: {real: x.value, category: this.categories.get(x.key)},
+                colorIndex: x.key, // for incoming nodes the color is determined by the source node
             }
-        }).concat(treeNodes.filter(x => x.value < 0 && x.parent).map(x => {
+        }).concat(treeNodes.filter((x: TreeNode) => x.value < 0 && x.parent).map((x: TreeNode): SankeyLinkOptions => {
             return {
                 from: String(x.parent.key),
                 to: String(x.key),
                 weight: (-1) * x.value,
                 outgoing: !x.hasChildren,
-                custom: {real: x.value, category: this.categories.get(x.key)}
+                custom: {real: x.value, category: this.categories.get(x.key)},
+                colorIndex: x.key, // for outgoing nodes the color is determined by the target node
             }
         }));
 
@@ -285,9 +290,10 @@ export default (data: Tree) => ({
 
     setColors(): void {
         let style = document.getElementById('category-color-styles');
-        this.categories.forEach((category: Category) => {
-            style.innerHTML += `.highcharts-color-${category.id} { fill: ${category.color ?? getDefaultColorValue(category.id)}; } `;
-        });
+        style.innerHTML = '';
+        this.childCategories.forEach((category: Category) =>
+            style.innerHTML += `.highcharts-color-${category.id} { fill: ${category.color ?? getDefaultColorValue(category.id)}; }\n`
+        );
     }
 });
 
