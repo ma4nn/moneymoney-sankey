@@ -1,6 +1,7 @@
 import Alpine from '@alpinejs/csp';
 import {Category} from "../transaction";
 import {Config} from "../config";
+import { getDefaultColorValue } from './sankey-chart';
 
 export default () => ({
     get categories(): Map<number,Category> {
@@ -13,7 +14,7 @@ export default () => ({
 
     get categoriesArray(): Array<Category> { // AlpineJs needs an array for x-for
         return [...this.categories.values()].filter((a: Category) => a.id !== this.config.mainNodeId)
-            .map((category: Category) => ({...category, budget: category.budget ?? ''} as Category))
+            .map((category: Category) => ({...category, budget: category.budget ?? '', color: category.color ?? getDefaultColorValue(category.id)} as Category))
             .sort((a, b) => a.path.localeCompare(b.path));
     },
 
@@ -39,6 +40,15 @@ export default () => ({
         const category = this.getCategoryFromElement(element);
 
         category.budget = element.valueAsNumber;
+
+        document.dispatchEvent(new CustomEvent('ChartInvalidated'));
+    },
+
+    setColor(event: Event): void {
+        const element = event.target as HTMLInputElement;
+        const category = this.getCategoryFromElement(element);
+
+        category.color = element.value;
 
         document.dispatchEvent(new CustomEvent('ChartInvalidated'));
     },

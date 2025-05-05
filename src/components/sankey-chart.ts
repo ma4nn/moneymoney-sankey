@@ -55,36 +55,12 @@ export default (data: Tree) => ({
     },
 
     update(): void {
-        const treeNodes = this.nodes;
+        this.setColors();
 
-        // build the data array for the Highchart
-        // remarks:
-        //  - node ids need to be strings according to the Highcharts definitions
-        //  - weight has to be positive (thats why the signed value is saved in custom attributes)
-        //  - using category ids instead of names because these might be the same for income and expense
-        let chartData: Array<SankeyLinkOptions> = treeNodes.filter(x => x.value >= 0 && x.parent).map(x => {
-            return {
-                from: String(x.key),
-                to: String(x.parent.key),
-                weight: x.value,
-                custom: {real: x.value, category: this.categories.get(x.key)}
-            }
-        }).concat(treeNodes.filter(x => x.value < 0 && x.parent).map(x => {
-            return {
-                from: String(x.parent.key),
-                to: String(x.key),
-                weight: (-1) * x.value,
-                outgoing: !x.hasChildren,
-                custom: {real: x.value, category: this.categories.get(x.key)}
-            }
-        }));
+        const series = this.chart.series[0] as Highcharts.Series;
+        series.setData(this.buildLinksConfig());
 
-        console.debug('chart links:');
-        console.debug(chartData);
-
-        (this.chart.series[0] as Highcharts.Series).setData(this.sortLinks(chartData));
-
-        if (chartData.length === 0) {
+        if (series.data.length === 0) {
             document.getElementById('header-configuration').setAttribute('disabled', String(true));
         } else {
             document.getElementById('header-configuration').removeAttribute('disabled');
@@ -143,13 +119,42 @@ export default (data: Tree) => ({
         return nodes;
     },
 
+    buildLinksConfig() {
+        const treeNodes = this.nodes;
+
+        // build the data array for the Highchart
+        // remarks:
+        //  - node ids need to be strings according to the Highcharts definitions
+        //  - weight has to be positive (thats why the signed value is saved in custom attributes)
+        //  - using category ids instead of names because these might be the same for income and expense
+        let links: Array<SankeyLinkOptions> = treeNodes.filter(x => x.value >= 0 && x.parent).map(x => {
+            return {
+                from: String(x.key),
+                to: String(x.parent.key),
+                weight: x.value,
+                custom: {real: x.value, category: this.categories.get(x.key)}
+            }
+        }).concat(treeNodes.filter(x => x.value < 0 && x.parent).map(x => {
+            return {
+                from: String(x.parent.key),
+                to: String(x.key),
+                weight: (-1) * x.value,
+                outgoing: !x.hasChildren,
+                custom: {real: x.value, category: this.categories.get(x.key)}
+            }
+        }));
+
+        console.debug('chart links:');
+        console.debug(links);
+
+        return this.sortLinks(links);
+    },
+
     init(): void {
         console.debug('tree data:');
         console.debug(this.categories);
 
         const self = this;
-
-        this.setColors();
 
         /** @see https://www.highcharts.com/docs/chart-and-series-types/sankey-diagram */
         this.chart = Highcharts.chart(this.el, {
@@ -281,9 +286,7 @@ export default (data: Tree) => ({
     setColors(): void {
         let style = document.getElementById('category-color-styles');
         this.categories.forEach((category: Category) => {
-            // map the big category ids to the set of predefined highchart colors
-            let defaultNodeColor = `var(--highcharts-color-${category.id % 10})`;
-            style.innerHTML += `.highcharts-color-${category.id} { fill: ${category.color ?? defaultNodeColor}; } `;
+            style.innerHTML += `.highcharts-color-${category.id} { fill: ${category.color ?? getDefaultColorValue(category.id)}; } `;
         });
     }
 });
@@ -354,4 +357,9 @@ export class SankeyNode { // @todo use accessors
     private getTotalWeight(): number {
         return this.getTotalIncomingWeight() - this.getTotalOutgoingWeight();
     }
+}
+
+export function getDefaultColorValue(colorId: number) {
+    // map the big category ids to the set of predefined highchart colors
+    return getComputedStyle(document.documentElement).getPropertyValue(`--highcharts-color-${colorId % 10}`).trim();
 }
