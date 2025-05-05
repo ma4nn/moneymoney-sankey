@@ -25,6 +25,10 @@ text.highcharts-data-label {
     }
 }
 
+#threshold {
+    direction: rtl;
+}
+
 .highcharts-link {
     cursor: pointer;
 }

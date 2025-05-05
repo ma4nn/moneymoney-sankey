@@ -54,6 +54,7 @@
                     </div>
                 </div>
                 <div class="d-flex align-items-center ms-md-auto mt-2 mt-md-0">
+                    <label for="threshold" class="me-2">Detailgrad:</label>
                     <input x-data="threshold-slider-component" type="range" class="form-range me-5" id="threshold" :min="minValue" :max="maxValue" :value="currentValue" @change="zoom" title="Detailgrad">
                     <div class="nav-item dropdown me-3">
                         <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Aktionen</button>
@@ -86,7 +87,7 @@
 
     <footer class="container-fluid text-center text-opacity-25 text-secondary p-3">
         <small>
-            Generiert am {{ today }} Uhr mit der MoneyMoney Extension
+            Generiert am <time>{{ today }}</time> Uhr mit der MoneyMoney Extension
             <a href="https://github.com/ma4nn/moneymoney-sankey" target="_blank" class="text-opacity-25 text-secondary">moneymoney-sankey</a> Version v{{ version }}.<br>
             &copy; 2024-25 <a class="text-opacity-25 text-secondary" href="https://dev-investor.de" rel="external noopener" target="_blank">dev-investor</a>.
             Die Extension wird kostenlos unter der MIT Lizenz zur Verfügung gestellt. Danke für
