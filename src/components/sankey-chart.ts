@@ -118,8 +118,7 @@ export default (data: Tree) => ({
         nodes.push({
             id: String(this.mainNodeId),
             name: this.categories.get(this.mainNodeId)?.name,
-            //colorIndex: 1,
-            color: '#000',
+            colorIndex: 1,
             dataLabels: {
                 className: "main-node-label",
                 nodeFormatter: function (): string {
@@ -134,7 +133,7 @@ export default (data: Tree) => ({
                 nodes.push({
                     id: String(category.id), // Highcharts needs the id to be string
                     name: category.name,
-                    color: category.color ?? '#efefef',
+                    colorIndex: category.id,
                 });
             });
 
@@ -149,6 +148,8 @@ export default (data: Tree) => ({
         console.debug(this.categories);
 
         const self = this;
+
+        this.setColors();
 
         /** @see https://www.highcharts.com/docs/chart-and-series-types/sankey-diagram */
         this.chart = Highcharts.chart(this.el, {
@@ -276,6 +277,15 @@ export default (data: Tree) => ({
 
         this.update();
     },
+
+    setColors(): void {
+        let style = document.getElementById('category-color-styles');
+        this.categories.forEach((category: Category) => {
+            // map the big category ids to the set of predefined highchart colors
+            let defaultNodeColor = `var(--highcharts-color-${category.id % 10})`;
+            style.innerHTML += `.highcharts-color-${category.id} { fill: ${category.color ?? defaultNodeColor}; } `;
+        });
+    }
 });
 
 export class SankeyNode { // @todo use accessors
