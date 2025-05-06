@@ -119,15 +119,21 @@
                         <button id="reset-settings-btn" type="button" class="btn" @click="reset">Zurücksetzen</button>
                     </div>
                 </div>
-                <div class="row g-3">
-                    <table id="category-config" class="table table-hover">
+                <div class="row">
+                    <table id="category-config" class="table table-hover align-middle">
                         <thead>
-                        <tr>
-                            <th scope="col">aktiv</th>
-                            <th scope="col"></th>
-                            <th scope="col">Kategorie</th>
-                            <th scope="col">Budget ({{ currency }})</th>
-                        </tr>
+                            <tr>
+                                <th scope="col">aktiv</th>
+                                <th scope="col" colspan="2">Kategorie</th>
+                                <th scope="col">Budget ({{ currency }})</th>
+                            </tr>
+                            <tr>
+                                <th scope="col"></th>
+                                <th scope="col" colspan="2">
+                                    <input id="category-search" type="search" placeholder="nach Name filtern.." @input="setPathFilter" class="form-control form-control-sm">
+                                </th>
+                                <th scope="col"></th>
+                            </tr>
                         </thead>
                         <tbody>
                             <template x-for="category in categoriesArray" :key="category.id">

@@ -15,6 +15,12 @@ select#categories {
     resize: vertical;
 }
 
+table#category-config {
+    td:nth-child(-n + 2) {
+        width: 50px;
+    }
+}
+
 .highcharts-data-label text,
 text.highcharts-data-label {
     font-size: 14px;

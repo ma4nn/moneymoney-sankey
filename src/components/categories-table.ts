@@ -4,6 +4,8 @@ import {Config} from "../config";
 import { getDefaultColorValue } from './sankey-chart';
 
 export default () => ({
+    pathFilter: '',
+
     get categories(): Map<number,Category> {
         return this.config.categories;
     },
@@ -13,7 +15,7 @@ export default () => ({
     },
 
     get categoriesArray(): Array<Category> { // AlpineJs needs an array for x-for
-        return [...this.categories.values()].filter((a: Category) => a.id !== this.config.mainNodeId)
+        return [...this.categories.values()].filter((a: Category) => a.id !== this.config.mainNodeId && a.path.toLowerCase().includes(this.pathFilter))
             .map((category: Category) => ({...category, budget: category.budget ?? '', color: category.color ?? getDefaultColorValue(category.id)} as Category))
             .sort((a, b) => a.path.localeCompare(b.path));
     },
@@ -51,6 +53,12 @@ export default () => ({
         category.color = element.value;
 
         document.dispatchEvent(new CustomEvent('ChartInvalidated'));
+    },
+
+    setPathFilter(event: Event): void {
+        const element = event.target as HTMLInputElement;
+
+        this.pathFilter = element.value.toLowerCase();
     },
 
     reset(): void {
