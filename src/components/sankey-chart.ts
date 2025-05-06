@@ -7,7 +7,7 @@ import 'highcharts/css/highcharts.css';
 import Tree, { TreeNode } from "../tree";
 import { Config } from "../config";
 import { NodeValidator } from "../validators";
-import {getValueByPath, numberFormat, numberFormatColored} from "../helper";
+import {getValueByPath, numberFormat, numberFormatColored, percentageFormat} from "../helper";
 import {Category} from "../transaction";
 
 type SankeyLinkOptions = SeriesSankeyPointOptionsObject;
@@ -214,7 +214,7 @@ export default (data: Tree) => ({
 
                         return link.fromNode.name + " → " + link.toNode.name + ": "
                             + numberFormat(link.weight / self.scaling)
-                            + (toNode.getPercentage() && toNode.getPercentage() < 100 ? " <span class='badge text-bg-secondary'>" + Math.round(toNode.getPercentage()) + "% </span>" : "")
+                            + ' ' + percentageFormat(toNode.getPercentage())
                             + "<br><br><span class='small'>(Klick entfernt die Kategorie aus dem Chart.)</span>";
                     },
                     // tooltip for node
@@ -225,7 +225,8 @@ export default (data: Tree) => ({
                         node.getLinksTo().filter(link => link.from !== String(self.mainNodeId) && link.weight > 0)
                             .sort((a, b) => b.weight - a.weight)
                             .forEach(function (link: any) {
-                                weightsDetailTooltip += '+ ' + numberFormat(link.weight / self.scaling) + ' (' + link.fromNode.name + ')<br>';
+                                let weight = link.weight / self.scaling;
+                                weightsDetailTooltip += '+ ' + link.fromNode.name + ': ' + numberFormat(weight) + ' ' + percentageFormat(weight/node.getTotalIncomingWeight()) + '<br>';
                             });
                         if (node.isMain) {
                             weightsDetailTooltip += '= ' + numberFormat(node.getTotalIncomingWeight()) + '<br><br>';
@@ -234,7 +235,8 @@ export default (data: Tree) => ({
                         node.getLinksFrom().filter(link => link.to !== String(self.mainNodeId) && link.weight > 0)
                             .sort((a, b) => b.weight - a.weight)
                             .forEach(function (link: any) {
-                                weightsDetailTooltip += '- ' + numberFormat(link.weight / self.scaling) + ' (' + link.toNode.name + ')<br>';
+                                let weight = link.weight / self.scaling;
+                                weightsDetailTooltip += '- ' + link.toNode.name + ': ' + numberFormat(weight) + ' ' + percentageFormat(weight/node.getTotalOutgoingWeight()) + '<br>';
                             });
                         if (node.isMain) {
                             weightsDetailTooltip += '= ' + numberFormat(node.getTotalOutgoingWeight()) + '<br>';
@@ -323,7 +325,7 @@ export class SankeyNode { // @todo use accessors
 
     public toString(): string {
         const format = this.isMain ? numberFormatColored : numberFormat;
-        return `${this.name}<br>${this.getValue() == 0 ? '' : format(this.getValue())}`;
+        return `${this.name}: ${this.getValue() == 0 ? '' : format(this.getValue())}`;
     }
 
     public getValue(): number {
@@ -342,7 +344,7 @@ export class SankeyNode { // @todo use accessors
 
         const parentNode = new SankeyNode((linksTo[0] as any).fromNode, this.mainNodeId, this.scaling);
 
-        return (this.getValue() / parentNode.getTotalOutgoingWeight()) * 100;
+        return (this.getValue() / parentNode.getTotalOutgoingWeight());
     }
 
     public getLinksFrom(): Array<SankeyLinkOptions> {

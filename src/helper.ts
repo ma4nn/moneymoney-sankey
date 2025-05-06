@@ -9,6 +9,10 @@ export function numberFormatColored(nb: number, currency: string = defaultConfig
     return '<strong style="color:' + color + '">' + numberFormat(nb, currency) + '</strong>';
 }
 
+export function percentageFormat(nb: number): string {
+    return nb && nb < 1 ? '<span class="badge text-bg-secondary">' + Math.round(nb * 100) + '% </span>' : '';
+}
+
 export function resetApp(): void {
     localStorage.clear();
     window.location.reload();
