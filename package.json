@@ -6,7 +6,7 @@
     "@alpinejs/csp": "^3.14.9",
     "@alpinejs/persist": "^3.14.9",
     "bootstrap": "^5.3.7",
-    "highcharts": "^12.2.0",
+    "highcharts": "^12.3.0",
     "lz-string": "^1.5.0"
   },
   "devDependencies": {
