@@ -40,7 +40,7 @@
                     </button>
                     <div class="form-check form-switch form-check-inline" x-data="scaler-component">
                         <input class="form-check-input" type="checkbox" role="switch" id="is-show-monthly" :checked="isScaled" @change="toggle" :disabled="isDisabled" :title="tooltip">
-                        <label class="form-check-label" for="is-show-monthly" :title="tooltip">Werte pro Monat anzeigen</label>
+                        <label class="form-check-label" for="is-show-monthly" :title="tooltip">pro Monat</label>
                     </div>
                     <div class="nav-item dropdown me-3" x-data="sorter-component">
                         <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -145,7 +145,12 @@
                                     </td>
                                     <td><input type="color" class="form-control form-control-color" name="category-color" :value="category.color" @change="setColor"></td>
                                     <td @click="toggleRow" x-text="category.path" class="category-name"></td>
-                                    <td><input type="number" class="form-control" name="budget" placeholder="(ohne)" min="0" step="0.01" :value="category.budget" @change="setBudget"></td>
+                                    <td>
+                                        <div class="row row-cols-lg-auto g-3 align-items-center">
+                                            <div class="col-12"><input type="number" class="form-control" name="budget" placeholder="-" min="0" step="0.01" :value="category.budget" @change="setBudget"></div>
+                                            <div class="col-12">/ <span x-text="category.path"></span></div>
+                                        </div>
+                                    </td>
                                 </tr>
                              </template>
                         </tbody>

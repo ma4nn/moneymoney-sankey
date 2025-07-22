@@ -6,6 +6,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  attestations: write
 
 # Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
 # However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
@@ -45,6 +46,11 @@ jobs:
       with:
         name: moneymoney-sankey
         path: dist/SankeyChart.lua
+
+    - name: Generate Artifact Attestation
+      uses: actions/attest-build-provenance@v2
+      with:
+        subject-path: 'dist/SankeyChart.lua'
 
     - name: Archive Sample Output
       uses: actions/upload-artifact@v4
