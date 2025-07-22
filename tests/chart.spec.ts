@@ -112,7 +112,7 @@ test('has configurable options', async ({ page }) => {
 });
 
 test('show monthly values', async ({ page }) => {
-    const showMonthlyInput = page.getByRole('switch', {name: 'Werte pro Monat anzeigen'});
+    const showMonthlyInput = page.getByRole('switch', {name: 'pro Monat'});
     const mainNode = page.getByTestId(`chart-node-${categoryIds.main}`);
     expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main);
 
