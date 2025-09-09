@@ -24,7 +24,7 @@
   "scripts": {
     "build": "tsc --noEmit && mkdir -p $npm_package_config_outputDir && cp src/sankey.lua $npm_package_config_outputDir/SankeyChart.lua && cp src/$npm_package_config_templateFile $npm_package_config_outputDir && node ./build.mjs",
     "test": "npm-run-all test:*",
-    "test:output": "mkdir -p $npm_package_config_testOutputDir && lua ./src/sankey_test.lua > $npm_package_config_testOutputDir/index.html && html-validate $npm_package_config_testOutputDir/index.html && bundlesize",
+    "test:output": "mkdir -p $npm_package_config_testOutputDir && lua ./src/sankey_test.lua > $npm_package_config_testOutputDir/index.html && html-validate $npm_package_config_testOutputDir/index.html && INTERNAL_SKIP_CACHE=true bundlesize --enable-github-checks",
     "test:e2e": "npx playwright test",
     "start": "http-server $npm_package_config_testOutputDir"
   },
