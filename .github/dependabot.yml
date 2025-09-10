@@ -11,3 +11,7 @@ updates:
       interval: "weekly"
     allow:
       - dependency-type: "production"
+    groups:
+      alpine:
+        patterns:
+          - "@alpinejs*"

@@ -72,7 +72,7 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
         Alpine.store('error').setMessage('Konfiguration kann nicht geladen werden.');
     }
 
-    Alpine.data('alert-component',  alertComponent);
+    Alpine.data('alert-component', alertComponent);
     Alpine.data('sankey-chart-component', () => sankeyChartComponent(categories.tree));
     Alpine.data('transaction-meta', () => {
         return {
