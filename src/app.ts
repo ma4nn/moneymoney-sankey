@@ -72,9 +72,9 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
         Alpine.store('error').setMessage('Konfiguration kann nicht geladen werden.');
     }
 
-    Alpine.data('alert-component', alertComponent);
-    Alpine.data('sankey-chart-component', () => sankeyChartComponent(categories.tree));
-    Alpine.data('transaction-meta', () => {
+    Alpine.data('alert', alertComponent);
+    Alpine.data('sankeychart', () => sankeyChartComponent(categories.tree));
+    Alpine.data('transactionmeta', () => {
         return {
             accounts: data.accounts.join(', '),
             start_date: data.startDate.toLocaleDateString(),
@@ -82,11 +82,11 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
             transaction_count: data.transactions.length,
         }
     });
-    Alpine.data('scaler-component', () => scalerComponent(data.calculateNumberOfMonths()));
-    Alpine.data('threshold-slider-component', () => thresholdSliderComponent(categories.getOutgoingWeights()));
-    Alpine.data('categories-table-component', categoriesTableComponent);
-    Alpine.data('more-actions-component', moreActionsComponent);
-    Alpine.data('sorter-component', sorterComponent);
+    Alpine.data('scaler', () => scalerComponent(data.calculateNumberOfMonths()));
+    Alpine.data('thresholdslider', () => thresholdSliderComponent(categories.getOutgoingWeights()));
+    Alpine.data('categoriestable', categoriesTableComponent);
+    Alpine.data('moreactions', moreActionsComponent);
+    Alpine.data('sorter', sorterComponent);
 
     window.Alpine = Alpine;
     Alpine.start();

@@ -58,6 +58,18 @@ test.beforeEach(async ({ page }) => {
     await page.goto('/');
 });
 
+test('no console errors during page load', async ({ page }) => {
+  const errors = [];
+
+  page.on('pageerror', error => {
+    errors.push(error.message);
+  });
+
+  await page.goto('/');
+
+  expect(errors).toEqual([]);
+});
+
 test('take screenshot', async ({ page }) => {
     await page.evaluate(() => document.querySelectorAll('header').forEach(header => header.remove()));
     await page.locator('#chart-container').screenshot({ path: 'tmp/sample.png' }); // take a screenshot for README file
