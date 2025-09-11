@@ -24,7 +24,7 @@
     <header class="container-fluid text-center" aria-label="primary">
         <h1 class="my-4">Cashflows</h1>
 
-        <p class="lead" x-data="transaction-meta"><span x-text="accounts"></span> &dash; <span x-text="start_date"></span> bis <span x-text="end_date"></span></p>
+        <p class="lead" x-data="transactionmeta"><span x-text="accounts"></span> &dash; <span x-text="start_date"></span> bis <span x-text="end_date"></span></p>
     </header>
 
     <nav class="navbar navbar-expand-lg bg-body-tertiary sticky-top">
@@ -38,11 +38,11 @@
                         </svg>
                         Kategorien anpassen
                     </button>
-                    <div class="form-check form-switch form-check-inline" x-data="scaler-component">
+                    <div class="form-check form-switch form-check-inline" x-data="scaler">
                         <input class="form-check-input" type="checkbox" role="switch" id="is-show-monthly" :checked="isScaled" @change="toggle" :disabled="isDisabled" :title="tooltip">
                         <label class="form-check-label" for="is-show-monthly" :title="tooltip">pro Monat</label>
                     </div>
-                    <div class="nav-item dropdown me-3" x-data="sorter-component">
+                    <div class="nav-item dropdown me-3" x-data="sorter">
                         <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Sortieren nach: <span x-text="label"></span>
                         </button>
@@ -55,10 +55,10 @@
                 </div>
                 <div class="d-flex align-items-center ms-md-auto mt-2 mt-md-0">
                     <label for="threshold" class="me-2">Detailgrad:</label>
-                    <input x-data="threshold-slider-component" type="range" class="form-range me-5" id="threshold" :min="minValue" :max="maxValue" :value="currentValue" @change="zoom" title="Detailgrad">
+                    <input x-data="thresholdslider" type="range" class="form-range me-5" id="threshold" :min="minValue" :max="maxValue" :value="currentValue" @change="zoom" title="Detailgrad">
                     <div class="nav-item dropdown me-3">
                         <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Aktionen</button>
-                        <ul class="dropdown-menu dropdown-menu-end" x-data="more-actions-component">
+                        <ul class="dropdown-menu dropdown-menu-end" x-data="moreactions">
                             <li><a class="dropdown-item icon-link" href="#" :href="sankeymaticUrl" target="_blank" rel="external noopener" title="Öffnet das aktuelle Sankey-Diagram in SankeyMATIC.com. Die Daten werden dabei in das entsprechende Format konvertiert und an den externen Anbieter übertragen.">in SankeyMATIC öffnen<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><button class="dropdown-item" type="button" @click="reset">Chart zurücksetzen</button></li>
@@ -70,7 +70,7 @@
     </nav>
 
     <main class="container-fluid my-3">
-        <div x-data="alert-component">
+        <div x-data="alert">
             <div x-show="message" class="alert alert-danger" role="alert" x-transition x-cloak>
                 <h4 class="alert-heading">Schwerer Fehler</h4>
                 <span x-text="message"></span>
@@ -81,7 +81,7 @@
 
         <section id="sankey" class="row">
             <h2 class="visually-hidden">Sankey Chart</h2>
-            <div id="chart-container" x-data="sankey-chart-component"></div>
+            <div id="chart-container" x-data="sankeychart"></div>
         </section>
     </main>
 
@@ -105,14 +105,14 @@
         </div>
         <div class="offcanvas-body pt-0">
             <p>
-                <small x-data="transaction-meta">
+                <small x-data="transactionmeta">
                     Das <a class="icon-link" href="https://de.wikipedia.org/wiki/Sankey-Diagramm" target="_blank" rel="external noopener">Sankey Chart<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a>
                     zeigt die aus <a class="icon-link" href="https://moneymoney-app.com/" target="_blank" rel="external noopener">MoneyMoney<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a> exportierten Cashflows der
                     Konten <strong x-text="accounts"></strong> für den Zeitraum <strong><span x-text="start_date"></span> bis <span x-text="end_date"></span></strong>.
                     Es wurde aus insgesamt <strong id="transaction-count"><span x-text="transaction_count"></span> Transaktionen</strong> generiert.
                 </small>
             </p>
-            <form x-data="categories-table-component">
+            <form x-data="categoriestable">
                 <div class="row sticky-top bg-white">
                     <div class="col-12 pb-4">
                         <button id="apply-settings-btn" type="submit" class="btn btn-primary" data-bs-dismiss="offcanvas">Anwenden</button>
