@@ -29,12 +29,13 @@
     "test": "npm-run-all test:*",
     "test:output": "html-validate $npm_package_config_testOutputFile && INTERNAL_SKIP_CACHE=true bundlesize --enable-github-checks",
     "test:e2e": "npx playwright test",
-    "start": "http-server"
+    "start": "http-server",
+    "clean": "rm -f $npm_package_config_outputDir/* && (rmdir $npm_package_config_outputDir || true) && rm -f $npm_package_config_testOutputFile"
   },
   "config": {
-    "templateFile": "src/template.html",
-    "outputDir": "dist/",
-    "testOutputFile": "index.html"
+    "templateFile": "./src/template.html",
+    "outputDir": "./dist/",
+    "testOutputFile": "./index.html"
   },
   "browserslist": [
     "last 2 versions, not dead"
