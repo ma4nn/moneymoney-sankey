@@ -113,7 +113,7 @@
                 </small>
             </p>
             <form x-data="categoriestable">
-                <div class="row sticky-top bg-white">
+                <div class="row sticky-top bg-body">
                     <div class="col-12 pb-4">
                         <button id="apply-settings-btn" type="submit" class="btn btn-primary" data-bs-dismiss="offcanvas">Anwenden</button>
                         <button id="reset-settings-btn" type="button" class="btn" @click="reset">Zurücksetzen</button>
@@ -129,7 +129,7 @@
                             </tr>
                             <tr>
                                 <th scope="col"></th>
-                                <th scope="col" colspan="2">
+                                <th scope="col" colspan="3">
                                     <input id="category-search" type="search" placeholder="nach Name filtern.." @input="setPathFilter" class="form-control form-control-sm">
                                 </th>
                                 <th scope="col"></th>
@@ -145,12 +145,7 @@
                                     </td>
                                     <td><input type="color" class="form-control form-control-color" name="category-color" :value="category.color" @change="setColor"></td>
                                     <td @click="toggleRow" x-text="category.path" class="category-name"></td>
-                                    <td>
-                                        <div class="row row-cols-lg-auto g-3 align-items-center">
-                                            <div class="col-12"><input type="number" class="form-control" name="budget" placeholder="-" min="0" step="0.01" :value="category.budget" @change="setBudget"></div>
-                                            <div class="col-12">/ <span x-text="category.path"></span></div>
-                                        </div>
-                                    </td>
+                                    <td><input type="number" class="form-control" name="budget" placeholder="-" min="0" step="0.01" :value="category.budget" @change="setBudget"></td>
                                 </tr>
                              </template>
                         </tbody>
@@ -167,7 +162,7 @@
     <script type="module" nonce="{{ nonce }}">
         {{ inline_js }}
 
-        initApp({{ transactions_json }}, '{{ currency }}');
+        viaSankey.initApp({{ transactions_json }}, '{{ currency }}');
     </script>
 </body>
 </html>

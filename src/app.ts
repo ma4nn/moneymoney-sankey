@@ -1,7 +1,6 @@
 import Alpine from '@alpinejs/csp';
 import persist from '@alpinejs/persist'
 import 'bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 import defaultConfig from "./config";
 import Tree from "./tree";
