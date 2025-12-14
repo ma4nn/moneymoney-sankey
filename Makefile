@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := dist
 INSTALL_DIR = ~/Library/Containers/com.moneymoney-app.retail/Data/Library/Application\ Support/MoneyMoney/Extensions
 OUTPUT_FILE = ./dist/SankeyChart.lua
-TMP_DIR = ./tmp/
+SAMPLE_FILE = ./sample.png
 
 .PHONY: dist
 dist: clean
@@ -21,5 +21,5 @@ uninstall:
 	rm $(INSTALL_DIR)/SankeyChart.lua
 
 clean:
-	rm -f $(TMP_DIR)/* && (rmdir $(TMP_DIR) || true)
+	rm -f $(SAMPLE_FILE)
 	npm run clean

@@ -23,7 +23,7 @@ jobs:
       with:
         fetch-depth: 0
 
-    - uses: actions/setup-node@v5
+    - uses: actions/setup-node@v6
       with:
         node-version: 20
         cache: 'npm'
@@ -42,7 +42,7 @@ jobs:
       run: make test
 
     - name: Archive Production Artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: moneymoney-sankey
         path: dist/SankeyChart.lua
@@ -53,13 +53,15 @@ jobs:
         subject-path: 'dist/SankeyChart.lua'
 
     - name: Archive Sample Output
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: sample-output
-        path: tmp/
+        path: |
+          sample.png
+          index.html
 
     - name: Archive Test Reports
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: always()
       with:
         name: playwright-report
@@ -75,7 +77,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v7
         with:
           name: sample-output
           path: ./dist
@@ -89,3 +91,12 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Verify Result
+        run: |
+          URL="${{ steps.deployment.outputs.page_url }}"
+          for i in {1..10}; do
+            curl --fail --head "$URL" && exit 0
+            sleep 10
+          done
+          exit 1

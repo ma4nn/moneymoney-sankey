@@ -1,6 +1,5 @@
 import {test, expect, Page, Locator} from '@playwright/test';
 import {NodeValidator} from "../src/validators";
-import {SankeyChart} from "../src/sankey";
 
 const categoryIds = {
     "main": 1,
@@ -18,12 +17,6 @@ const defaultNodeValue = {
     "healthSport": 38.80,
     "supplyInternet": 49.85
 };
-
-declare global {
-    interface Window {
-        chart: SankeyChart;
-    }
-}
 
 async function getNodeValue(node: Locator): Promise<number> {
     const value = await node.getAttribute('data-value');
@@ -72,7 +65,7 @@ test('no console errors during page load', async ({ page }) => {
 
 test('take screenshot', async ({ page }) => {
     await page.evaluate(() => document.querySelectorAll('header').forEach(header => header.remove()));
-    await page.locator('#chart-container').screenshot({ path: 'tmp/sample.png' }); // take a screenshot for README file
+    await page.locator('#chart-container').screenshot({ path: 'sample.png' }); // take a screenshot for README file
 });
 
 test('has valid initial state', async ({ page }) => {
