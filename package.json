@@ -13,7 +13,7 @@
     "@playwright/test": "^1.46.1",
     "bundlesize2": "^0.0.35",
     "concurrently": "^9.2.1",
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.27.0",
     "esbuild-plugin-copy": "^2.1.1",
     "html-validate": "^10.0.0",
     "http-server": "^14.1.1",
