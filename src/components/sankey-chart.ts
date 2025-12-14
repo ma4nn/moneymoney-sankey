@@ -162,7 +162,7 @@ export default (data: Tree) => ({
         const self = this;
 
         /** @see https://www.highcharts.com/docs/chart-and-series-types/sankey-diagram */
-        this.chart = Highcharts.chart(this.el, {
+        this.chart = Highcharts.chart(this.$el, {
             title: {
                 text: null
             },

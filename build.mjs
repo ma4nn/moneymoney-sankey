@@ -41,22 +41,28 @@ function injectPlaceholdersPlugin() {
       build.onEnd(async (result) => {
         if (!result.outputFiles) return;
 
-        const jsContents = result.outputFiles
-          .find(f => f.path.endsWith(".js"))
-          .text
-          .replace('&&$&&', '&& $ &&');
-
+        // Note: do NOT modify these contents as sourcemaps won't work then
+        const jsContents = result.outputFiles.find(f => f.path.endsWith(".js"))?.text ?? "";
         const cssContents = result.outputFiles.find(f => f.path.endsWith(".css"))?.text ?? "";
 
-        let templateContents = '';
+        const nonce = createNonce();
+        let htmlTemplateContents = '';
+
+        // using function-based replacements to avoid interpreting javascript texts like $&, $1, etc.
+        // @see https://www.npmjs.com/package/replace-in-file#using-callbacks-for-to
         const options = {
           files: pkg.config.templateFile,
           from: [/{{ nonce }}/g, /{{ version }}/g, '{{ inline_css }}', '{{ inline_js }}'],
-          to: [createNonce(), version, cssContents, jsContents],
+          to: [
+              () => nonce,
+              () => version,
+              () => cssContents,
+              () => jsContents,
+          ],
           countMatches: true,
           fs: {
               readFile: fs.promises.readFile,
-              writeFile: async (file, newContents, encoding) => templateContents = newContents,
+              writeFile: async (file, newContents, encoding) => htmlTemplateContents = newContents,
           },
         };
 
@@ -65,7 +71,7 @@ function injectPlaceholdersPlugin() {
         await replaceInFile({
           files: outputDir + "/*.lua",
           from: [/{{ version }}/g, '{{ html_template }}'],
-          to: [version, templateContents],
+          to: [() => version, () => htmlTemplateContents],
           countMatches: true,
         }).then(results => assertReplacedCount(results, 2));
 
@@ -101,7 +107,6 @@ const esbuildOptions = {
     tsconfig: path.resolve('./tsconfig.json'),
     loader: { '.css': 'css' },
     write: false, // required to access outputFiles
-    sourcemap: isDev ? 'inline' : false,
     plugins: [
         copy({
             resolveFrom: 'cwd',
