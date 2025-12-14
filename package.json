@@ -12,7 +12,9 @@
   "devDependencies": {
     "@playwright/test": "^1.46.1",
     "bundlesize2": "^0.0.35",
+    "concurrently": "^9.2.1",
     "esbuild": "^0.25.0",
+    "esbuild-plugin-copy": "^2.1.1",
     "html-validate": "^10.0.0",
     "http-server": "^14.1.1",
     "npm-run-all": "^4.1.5",
@@ -22,16 +24,17 @@
   "author": "Christoph Massmann <chris@dev-investor.de>",
   "license": "MIT",
   "scripts": {
-    "build": "tsc --noEmit && mkdir -p $npm_package_config_outputDir && cp src/sankey.lua $npm_package_config_outputDir/SankeyChart.lua && cp src/$npm_package_config_templateFile $npm_package_config_outputDir && node ./build.mjs",
+    "build": "tsc --noEmit && node ./build.mjs",
+    "dev": "concurrently \"tsc --watch --noEmit\" \"node ./build.mjs --dev\"",
     "test": "npm-run-all test:*",
-    "test:output": "mkdir -p $npm_package_config_testOutputDir && lua ./src/sankey_test.lua > $npm_package_config_testOutputDir/index.html && html-validate $npm_package_config_testOutputDir/index.html && INTERNAL_SKIP_CACHE=true bundlesize --enable-github-checks",
+    "test:output": "html-validate $npm_package_config_testOutputFile && INTERNAL_SKIP_CACHE=true bundlesize --enable-github-checks",
     "test:e2e": "npx playwright test",
-    "start": "http-server $npm_package_config_testOutputDir"
+    "start": "http-server"
   },
   "config": {
-    "templateFile": "template.html",
+    "templateFile": "src/template.html",
     "outputDir": "dist/",
-    "testOutputDir": "tmp/"
+    "testOutputFile": "index.html"
   },
   "browserslist": [
     "last 2 versions, not dead"

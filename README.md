@@ -10,11 +10,11 @@ This is an extension for the great [MoneyMoney app](https://moneymoney-app.com/)
 
 ## Highlights
 
-- Hide categories by click
+- Exclude categories by click
 - Add configurable budgets per each category
 - Add threshold value for chart paths
-- Automatically save configuration in browser
-- Export chart data to [SankeyMATIC](https://sankeymatic.com)
+- Automatically save configuration locally in browser so it is available when you open the file next time
+- Open chart in [SankeyMATIC](https://sankeymatic.com)
 
 ## Installing
 
@@ -31,16 +31,22 @@ For more information see also [my blog post](https://dev-investor.de/finanz-apps
 
 ## Privacy
 
-Everything runs in your browser, no internet connection is required.  
-The generated HTML file enforces a very strict Content-Security-Policy and does **not allow** to load any external scripts or resources.
+Everything runs in your browser - no internet connection is required.  
+The generated HTML file enforces a very strict [Content Security Policy (CSP)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CSP) 
+and does **not allow** to load any external scripts or resources.
 
 ## Developing ⚒️
 
+This extension is an [Alpine.Js](https://alpinejs.dev/) JavaScript application, using [Bootstrap](https://getbootstrap.com/), 
+[Highcharts](https://www.highcharts.com/) and [vianetz Theme Components](https://www.vianetz.com/en/theme-components).  
+The output is a single HTML file containing all JavaScript and CSS inline, it can be created with:
 ```
 make && make test
 ```
 
 The compiled MoneyMoney extension can then be found in `dist/SankeyChart.lua` and installed with `make install`.
+
+Local development is easy by starting a webserver with `npm run dev` and opening http://127.0.0.1:3000 in your browser.
 
 ## Compatibility
 
