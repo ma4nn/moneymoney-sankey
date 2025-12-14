@@ -81,7 +81,7 @@ function buildTestOutputPlugin() {
     setup(build) {
       build.onEnd(async () => {
         // test output is always (re)generated (in case of production build to validate html output)
-        execSync('lua ./src/sankey_test.lua > ' + pkg.config.testOutputFile);
+        execSync('lua ./tests/sankey_test.lua > ' + pkg.config.testOutputFile);
         console.log("▶️ Test HTML file created after build");
       });
     },
@@ -101,7 +101,7 @@ const esbuildOptions = {
     tsconfig: path.resolve('./tsconfig.json'),
     loader: { '.css': 'css' },
     write: false, // required to access outputFiles
-    sourcemap: isDev,
+    sourcemap: isDev ? 'inline' : false,
     plugins: [
         copy({
             resolveFrom: 'cwd',
