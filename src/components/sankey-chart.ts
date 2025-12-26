@@ -35,7 +35,7 @@ export default (data: Tree) => ({
     },
 
     get childCategories(): Map<number,Category> {
-        return new Map([...this.categories].filter(([categoryId, category]) => categoryId !== this.mainNodeId));
+        return new Map([...this.categories].filter(([categoryId, _category]) => categoryId !== this.mainNodeId));
     },
 
     get config(): Config {
@@ -92,9 +92,10 @@ export default (data: Tree) => ({
     },
 
     buildNodesConfig(): Array<SankeyNodeOptions> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
 
-        let nodes: Array<SankeyNodeOptions> = [];
+        const nodes: Array<SankeyNodeOptions> = [];
         nodes.push({
             id: String(this.mainNodeId),
             name: this.categories.get(this.mainNodeId)?.name,
@@ -130,7 +131,7 @@ export default (data: Tree) => ({
         //  - node ids need to be strings according to the Highcharts definitions
         //  - weight has to be positive (thats why the signed value is saved in custom attributes)
         //  - using category ids instead of names because these might be the same for income and expense
-        let links: Array<SankeyLinkOptions> = treeNodes.filter((x: TreeNode) => x.value >= 0 && x.parent).map((x: TreeNode): SankeyLinkOptions => {
+        const links: Array<SankeyLinkOptions> = treeNodes.filter((x: TreeNode) => x.value >= 0 && x.parent).map((x: TreeNode): SankeyLinkOptions => {
             return {
                 from: String(x.key),
                 to: String(x.parent.key),
@@ -159,6 +160,7 @@ export default (data: Tree) => ({
         console.debug('tree data:');
         console.debug(this.categories);
 
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
 
         /** @see https://www.highcharts.com/docs/chart-and-series-types/sankey-diagram */
@@ -225,7 +227,7 @@ export default (data: Tree) => ({
                         node.getLinksTo().filter(link => link.from !== String(self.mainNodeId) && link.weight > 0)
                             .sort((a, b) => b.weight - a.weight)
                             .forEach(function (link: any) {
-                                let weight = link.weight / self.scaling;
+                                const weight = link.weight / self.scaling;
                                 weightsDetailTooltip += '+ ' + link.fromNode.name + ': ' + numberFormat(weight) + ' ' + percentageFormat(weight/node.getTotalIncomingWeight()) + '<br>';
                             });
                         if (node.isMain) {
@@ -235,7 +237,7 @@ export default (data: Tree) => ({
                         node.getLinksFrom().filter(link => link.to !== String(self.mainNodeId) && link.weight > 0)
                             .sort((a, b) => b.weight - a.weight)
                             .forEach(function (link: any) {
-                                let weight = link.weight / self.scaling;
+                                const weight = link.weight / self.scaling;
                                 weightsDetailTooltip += '- ' + link.toNode.name + ': ' + numberFormat(weight) + ' ' + percentageFormat(weight/node.getTotalOutgoingWeight()) + '<br>';
                             });
                         if (node.isMain) {
@@ -256,17 +258,17 @@ export default (data: Tree) => ({
                 animation: false,
                 height: 700,
                 styledMode: true,
-                numberFormatter: function () {
-                    return numberFormat(arguments[0] / self.scaling);
+                numberFormatter: function (...args) {
+                    return numberFormat(args[0] / self.scaling);
                 },
                 events: {
                     render: function () {
                         // add ids for testing
-                        this.series[0].points.forEach((link: any, index) => {
+                        this.series[0].points.forEach((link: any, _index) => {
                             link.graphic?.element.setAttribute('data-testid', `chart-link-${link.custom?.category?.id}`);
                         });
 
-                        ((this.series[0] as any).nodes as Array<Highcharts.SankeyNodeObject>).forEach((point: any, index) => {
+                        ((this.series[0] as any).nodes as Array<Highcharts.SankeyNodeObject>).forEach((point: any, _index) => {
                             const node = new SankeyNode(point, self.mainNodeId, self.scaling);
                             point.graphic?.element.setAttribute('data-testid', `chart-node-${point.id}`);
                             point.graphic?.element.setAttribute('data-value', node.getValue());
@@ -292,7 +294,7 @@ export default (data: Tree) => ({
     },
 
     setColors(): void {
-        let style = document.getElementById('category-color-styles');
+        const style = document.getElementById('category-color-styles');
         style.innerHTML = '';
         this.childCategories.forEach((category: Category) =>
             style.innerHTML += `.highcharts-color-${category.id} { fill: ${category.color ?? getDefaultColorValue(category.id)}; }\n`
@@ -311,7 +313,7 @@ export class SankeyNode { // @todo use accessors
     constructor(node: Highcharts.SankeyNodeObject, mainNodeId: number, scaling: number) {
         this.node = node;
         this.name = node.name;
-        // @ts-ignore
+        // @ts-expect-error - dataLabels type definition incomplete
         this.label = node.dataLabels !== null && typeof node.dataLabels !== 'undefined' && node.dataLabels.length > 0 ? node.dataLabels[0].textStr : '';
         this.categoryId = parseInt((node as any).point.id);
 

@@ -20,7 +20,7 @@ export default () => ({
 
     get sankeymaticUrl(): string {
         // @see https://github.com/nowthis/sankeymatic/blob/c49af0fb377705c65d1b8be0c0f0ea79f07f195e/build/sankeymatic.js#L1878
-        let data = LZString.compressToEncodedURIComponent(this.buildSankeymaticData());
+        const data = LZString.compressToEncodedURIComponent(this.buildSankeymaticData());
         const urlInputsParam = 'i';
 
         return `https://sankeymatic.com/build/?${urlInputsParam}=${encodeURIComponent(data).replace(/-/g, '%2D')}`;
@@ -31,7 +31,7 @@ export default () => ({
     },
 
     buildSankeymaticData(): string {
-        let data: Array<string> = [];
+        const data: Array<string> = [];
 
         this.config.chartData.filter((node: TreeNode) => node.parent).forEach((node: TreeNode) => {
             const parentCategory: string = this.categories.get(node.parent.key)?.name;

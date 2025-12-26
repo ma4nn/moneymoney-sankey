@@ -1,5 +1,4 @@
 import {test, expect, Page, Locator} from '@playwright/test';
-import {NodeValidator} from "../src/validators";
 
 const categoryIds = {
     "main": 1,
@@ -111,7 +110,7 @@ test('has configurable options', async ({ page }) => {
     await applyButton.click();
     await expect(link).toBeHidden();
 
-    await expect(page.getByTestId(`chart-node-label-${categoryIds.living}`)).toContainText(NodeValidator.warningSign);
+    await expect(page.getByTestId(`chart-node-label-${categoryIds.living}`)).toContainText('⚠️');
 
     expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main + defaultNodeValue.healthSport + defaultNodeValue.leisureStreaming + defaultNodeValue.supplyInternet);
 });
