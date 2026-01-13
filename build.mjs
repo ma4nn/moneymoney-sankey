@@ -18,10 +18,10 @@ import path from 'path';
 import esbuild from 'esbuild';
 import { copy } from 'esbuild-plugin-copy';
 import crypto from 'crypto';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 
 const pkg = JSON.parse(await readFile(new URL('./package.json', import.meta.url)));
-const version = execSync('git describe --tags --abbrev=0').toString().trim().replace(/^v/, "").split('.').slice(0, -1).join('.'); // extract major.minor version;
+const version = execFileSync('git', ['describe', '--tags', '--abbrev=0'], { encoding: 'utf8' }).trim().replace(/^v/, "").split('.').slice(0, -1).join('.'); // extract major.minor version; // major.minor
 
 const assertReplacedCount = (results, expectedCount) => {
     results.every(result => (! result.hasChanged || result.numReplacements < expectedCount) && (() => {
@@ -87,8 +87,9 @@ function buildTestOutputPlugin() {
     setup(build) {
       build.onEnd(async () => {
         // test output is always (re)generated (in case of production build to validate html output)
-        execSync('lua ./tests/sankey_test.lua > ' + pkg.config.testOutputFile);
-        console.log("▶️ Test HTML file created after build");
+        const output = execFileSync('lua', ['./tests/sankey_test.lua'], { encoding: 'utf8' });
+        fs.writeFileSync(pkg.config.testOutputFile, output);
+        console.log("▶️ Test HTML file created after build: ", pkg.config.testOutputFile);
       });
     },
   };
