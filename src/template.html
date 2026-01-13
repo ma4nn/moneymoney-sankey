@@ -85,7 +85,7 @@
         </section>
     </main>
 
-    <footer class="container-fluid text-center text-opacity-25 text-secondary p-3">
+    <footer class="container-fluid text-center text-opacity-25 text-secondary p-3 lh-sm">
         <small>
             Generiert am <time>{{ today }}</time> Uhr mit der MoneyMoney Extension
             <a href="https://github.com/ma4nn/moneymoney-sankey" target="_blank" class="text-opacity-25 text-secondary">moneymoney-sankey</a> Version v{{ version }}.<br>
@@ -105,7 +105,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body pt-0">
-            <p>
+            <p class="lh-sm">
                 <small x-data="transactionmeta">
                     Das <a class="icon-link" href="https://de.wikipedia.org/wiki/Sankey-Diagramm" target="_blank" rel="external noopener">Sankey Chart<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a>
                     zeigt die aus <a class="icon-link" href="https://moneymoney-app.com/" target="_blank" rel="external noopener">MoneyMoney<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a> exportierten Cashflows der
@@ -117,7 +117,7 @@
                 <div class="row sticky-top bg-body">
                     <div class="col-12 pb-4">
                         <button id="apply-settings-btn" type="submit" class="btn btn-primary" data-bs-dismiss="offcanvas">Anwenden</button>
-                        <button id="reset-settings-btn" type="button" class="btn" @click="reset">Zurücksetzen</button>
+                        <button id="reset-settings-btn" type="button" class="btn btn-outline-secondary" @click="reset">Zurücksetzen</button>
                     </div>
                 </div>
                 <div class="row">
