@@ -63,12 +63,6 @@ export default (data: Tree) => ({
 
         const series = this.chart.series[0] as Highcharts.Series;
         series.setData(this.buildLinksConfig());
-
-        if (series.data.length === 0) {
-            document.getElementById('header-configuration').setAttribute('disabled', String(true));
-        } else {
-            document.getElementById('header-configuration').removeAttribute('disabled');
-        }
     },
 
     sortLinks(links: Array<SankeyLinkOptions>): any {
@@ -282,8 +276,9 @@ export default (data: Tree) => ({
         });
 
         this.update();
-
         document.addEventListener('ChartInvalidated', () => this.update());
+
+        document.getElementById('header-configuration').removeAttribute('disabled');
     },
 
     removeCategory(categoryId: number): void {

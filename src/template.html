@@ -59,7 +59,7 @@
                     <div class="nav-item dropdown me-3">
                         <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Aktionen</button>
                         <ul class="dropdown-menu dropdown-menu-end" x-data="moreactions">
-                            <li><a class="dropdown-item icon-link" href="#" :href="sankeymaticUrl" target="_blank" rel="external noopener" title="Öffnet das aktuelle Sankey-Diagram in SankeyMATIC.com. Die Daten werden dabei in das entsprechende Format konvertiert und an den externen Anbieter übertragen.">in SankeyMATIC öffnen<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a></li>
+                            <li><a class="dropdown-item icon-link" :class="{ 'disabled': !sankeymaticUrl }" href="#" :href="sankeymaticUrl" target="_blank" rel="external noopener" title="Öffnet das aktuelle Sankey-Diagram in SankeyMATIC.com. Die Daten werden dabei in das entsprechende Format konvertiert und an den externen Anbieter übertragen.">in SankeyMATIC öffnen<svg class="bi" aria-hidden="true"><use xlink:href="#arrow-up-right"></use></svg></a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><button class="dropdown-item" type="button" @click="reset">Chart zurücksetzen</button></li>
                         </ul>
