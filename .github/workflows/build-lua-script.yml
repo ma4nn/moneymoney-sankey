@@ -46,7 +46,7 @@ jobs:
         path: dist/SankeyChart.lua
 
     - name: Generate Artifact Attestation
-      uses: actions/attest-build-provenance@v3
+      uses: actions/attest-build-provenance@v4
       with:
         subject-path: 'dist/SankeyChart.lua'
 
