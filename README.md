@@ -60,7 +60,8 @@ Local development is easy by starting a webserver with `npm run dev` and opening
 
 ## Issues
 In case you are experiencing any issues please try to reproduce it with an MoneyMoney offline account and provide the exported (anonymized) HTML file.  
-At least open the [Developer Tools](https://developer.chrome.com/docs/devtools/open?hl=de) of your browser and provide the complete output of the console into the ticket description.
+At least open the [Developer Tools](https://developer.chrome.com/docs/devtools/open?hl=de) of your browser and provide the complete output of the console into the ticket description.  
+Also try to reset the chart (_Aktionen > Chart zurücksetzen_).
 
 ## Licensing
 
