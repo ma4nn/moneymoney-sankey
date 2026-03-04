@@ -40,18 +40,18 @@ jobs:
       run: make test
 
     - name: Archive Production Artifacts
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: moneymoney-sankey
         path: dist/SankeyChart.lua
 
     - name: Generate Artifact Attestation
-      uses: actions/attest-build-provenance@v3
+      uses: actions/attest-build-provenance@v4
       with:
         subject-path: 'dist/SankeyChart.lua'
 
     - name: Archive Sample Output
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: sample-output
         path: |
@@ -59,7 +59,7 @@ jobs:
           index.html
 
     - name: Archive Test Reports
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: always()
       with:
         name: playwright-report
@@ -78,7 +78,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: sample-output
           path: ./dist
