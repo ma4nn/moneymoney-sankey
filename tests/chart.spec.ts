@@ -6,7 +6,9 @@ const categoryIds = {
     "transportCar": 1475507816,
     "transportCarInsurance": 892808123,
     "living": 1698513113,
-    "supply": 1497325786
+    "supply": 1497325786,
+    "income": 161527383,
+    "refund": 224064077
 };
 const defaultNodeValue = {
     "main": 4127.71,
@@ -14,7 +16,9 @@ const defaultNodeValue = {
     "transportCarInsurance": 398.25,
     "leisureStreaming": 14.99,
     "healthSport": 38.80,
-    "supplyInternet": 49.85
+    "supplyInternet": 49.85,
+    "income": 3999.95,
+    "refund": 1198.45
 };
 
 async function getNodeValue(node: Locator): Promise<number> {
@@ -140,6 +144,30 @@ test('show monthly values', async ({ page }) => {
     await expect(showMonthlyInput).not.toBeChecked();
 
     expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main);
+});
+
+test('saldo becomes negative when expenses exceed income', async({ page }) => {
+    const mainNode = page.getByTestId(`chart-node-${categoryIds.main}`);
+    const mainNodeLabel = page.getByTestId(`chart-node-label-${categoryIds.main}`);
+    expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main);
+
+    // remove the two biggest income categories so that the remaining income no longer covers the expenses
+    const linkIncome = page.getByTestId(`chart-link-${categoryIds.income}`);
+    await linkIncome.click();
+    await expect(linkIncome).toBeHidden();
+    expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main - defaultNodeValue.income);
+
+    const linkRefund = page.getByTestId(`chart-link-${categoryIds.refund}`);
+    await linkRefund.click();
+    await expect(linkRefund).toBeHidden();
+
+    const saldo = await getNodeValue(mainNode);
+    expect(saldo).toBeCloseTo(defaultNodeValue.main - defaultNodeValue.income - defaultNodeValue.refund);
+    expect(saldo).toBeLessThan(0);
+
+    // the negative saldo is rendered as a negative amount in the warning color
+    await expect(mainNodeLabel).toContainText('-1.070,69');
+    await expect(mainNodeLabel.locator('tspan[style]').first()).toHaveCSS('fill', 'rgb(255, 107, 74)'); // #ff6b4a
 });
 
 test('hide and re-add category', async({ page }) => {
