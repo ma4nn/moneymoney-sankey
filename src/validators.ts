@@ -38,7 +38,7 @@ class BudgetValidator implements ValidatorInterface {
     }
 
     public valid(): boolean {
-        let budget = this.getBudget();
+        const budget = this.getBudget();
         return budget === null || isNaN(budget) || budget >= this.getValue();
     }
 

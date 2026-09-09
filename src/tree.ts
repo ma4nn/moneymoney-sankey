@@ -31,7 +31,7 @@ export default class Tree {
         yield node;
 
         if (node.hasChildren) {
-            for (let child of node.children) {
+            for (const child of node.children) {
                 yield* this.preOrderTraversal(child);
             }
         }
@@ -39,7 +39,7 @@ export default class Tree {
 
     * postOrderTraversal(node = this.root): Generator<TreeNode> {
         if (node.hasChildren) {
-            for (let child of node.children) {
+            for (const child of node.children) {
                 yield* this.postOrderTraversal(child);
             }
         }
@@ -48,7 +48,7 @@ export default class Tree {
     }
 
     insert(parentNodeKey: number, key: number, value = key): boolean {
-        for (let node of this.preOrderTraversal()) {
+        for (const node of this.preOrderTraversal()) {
             if (node.key === parentNodeKey) {
                 node.children.push(new TreeNode(key, value, node));
                 return true;
@@ -59,7 +59,7 @@ export default class Tree {
     }
 
     remove(key: number): boolean {
-        for (let node of this.preOrderTraversal()) {
+        for (const node of this.preOrderTraversal()) {
             const filtered = node.children.filter(c => c.key !== key);
             if (filtered.length !== node.children.length) {
                 node.children = filtered;
@@ -72,7 +72,7 @@ export default class Tree {
     }
 
     find(key: number): TreeNode|null {
-        for (let node of this.preOrderTraversal()) {
+        for (const node of this.preOrderTraversal()) {
             if (node.key === key) {
               return node;
             }

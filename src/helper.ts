@@ -5,7 +5,7 @@ export function numberFormat(nb: number, currency: string = defaultConfig.curren
 }
 
 export function numberFormatColored(nb: number, currency: string = defaultConfig.currency) {
-    let color = (nb >= 0) ? '#14c57e' : '#ff6b4a';
+    const color = (nb >= 0) ? '#14c57e' : '#ff6b4a';
     return '<strong style="color:' + color + '">' + numberFormat(nb, currency) + '</strong>';
 }
 

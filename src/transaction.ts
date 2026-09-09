@@ -63,10 +63,10 @@ export class CategoryTree {
                 categoryName = categoryName || this.categoryEmptyName;
 
                 path.push(categoryName);
-                let categorySubPath = path.join(this.categoryPathSeparator);
+                const categorySubPath = path.join(this.categoryPathSeparator);
 
-                let categoryId = generateCategoryIdFromPath(categorySubPath);
-                let existingNode: TreeNode = this.tree.find(categoryId);
+                const categoryId = generateCategoryIdFromPath(categorySubPath);
+                const existingNode: TreeNode = this.tree.find(categoryId);
                 if (existingNode === null) {
                     this.tree.insert(parentCategoryId, categoryId, transaction.amount);
                     this.list.set(categoryId, {id: categoryId, name: categoryName, path: path.join(' » '), active: true});
