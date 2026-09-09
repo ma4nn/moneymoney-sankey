@@ -34,8 +34,8 @@
     "test": "npm-run-all lint test:*",
     "test:output": "html-validate $npm_package_config_testOutputFile && INTERNAL_SKIP_CACHE=true bundlesize --enable-github-checks",
     "test:e2e": "npx playwright test",
-    "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix",
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix",
     "prepare": "husky",
     "start": "http-server",
     "clean": "rm -f $npm_package_config_outputDir/* && (rmdir $npm_package_config_outputDir || true) && rm -f $npm_package_config_testOutputFile"
