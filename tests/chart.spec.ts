@@ -8,17 +8,19 @@ const categoryIds = {
     "living": 1698513113,
     "supply": 1497325786,
     "income": 161527383,
-    "refund": 224064077
+    "refund": 224064077,
+    "onlinehandel": 1908223369
 };
 const defaultNodeValue = {
-    "main": 4127.71,
+    "main": 4327.71,
     "transport": 490.90,
     "transportCarInsurance": 398.25,
     "leisureStreaming": 14.99,
     "healthSport": 38.80,
     "supplyInternet": 49.85,
     "income": 3999.95,
-    "refund": 1198.45
+    "refund": 1198.45,
+    "onlinehandel": 200.00
 };
 
 async function getNodeValue(node: Locator): Promise<number> {
@@ -75,7 +77,7 @@ test('has valid initial state', async ({ page }) => {
     const mainNode = page.getByTestId(`chart-node-${categoryIds.main}`);
 
     await expect(page.getByRole('heading', { name: 'Cashflows' })).toBeVisible();
-    await expect(page.locator('#transaction-count')).toHaveText('19 Transaktionen');
+    await expect(page.locator('#transaction-count')).toHaveText('21 Transaktionen');
     await expect(page.getByRole('alert')).toHaveCount(0);
 
     expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main);
@@ -152,22 +154,32 @@ test('saldo becomes negative when expenses exceed income', async({ page }) => {
     expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main);
 
     // remove the two biggest income categories so that the remaining income no longer covers the expenses
-    const linkIncome = page.getByTestId(`chart-link-${categoryIds.income}`);
-    await linkIncome.click();
-    await expect(linkIncome).toBeHidden();
-    expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main - defaultNodeValue.income);
-
     const linkRefund = page.getByTestId(`chart-link-${categoryIds.refund}`);
     await linkRefund.click();
     await expect(linkRefund).toBeHidden();
+    expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main - defaultNodeValue.refund);
+
+    const linkIncome = page.getByTestId(`chart-link-${categoryIds.income}`);
+    await linkIncome.click();
+    await expect(linkIncome).toBeHidden();
 
     const saldo = await getNodeValue(mainNode);
     expect(saldo).toBeCloseTo(defaultNodeValue.main - defaultNodeValue.income - defaultNodeValue.refund);
     expect(saldo).toBeLessThan(0);
 
     // the negative saldo is rendered as a negative amount in the warning color
-    await expect(mainNodeLabel).toContainText('-1.070,69');
+    await expect(mainNodeLabel).toContainText('-870,69');
     await expect(mainNodeLabel.locator('tspan[style]').first()).toHaveCSS('fill', 'rgb(255, 107, 74)'); // #ff6b4a
+});
+
+test('sums income and expense transactions within the same category', async({ page }) => {
+    // the Onlinehandel category contains a +320.00 income and a -120.00 expense transaction
+    const node = page.getByTestId(`chart-node-${categoryIds.onlinehandel}`);
+    expect(await getNodeValue(node)).toBeCloseTo(defaultNodeValue.onlinehandel);
+
+    // the netted positive value is rendered on the income side of the chart
+    await page.getByTestId(`chart-link-${categoryIds.onlinehandel}`).hover();
+    await expect(page.locator('.highcharts-tooltip')).toContainText('Onlinehandel → Saldo');
 });
 
 test('hide and re-add category', async({ page }) => {

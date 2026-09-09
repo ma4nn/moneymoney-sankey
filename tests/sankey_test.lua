@@ -40,6 +40,8 @@ local transactionsAccountOne = {
     {name = "Mieteinnahmen", amount = 805.60, currency = "EUR", category = "Vermietung", bookingDate = 1739577600},
     {name = "Zinsen Sparbuch", amount = 52.85, currency = "EUR", category = "Zinsen", bookingDate = 1739145600},
     {name = "Nebenjob", amount = 403.20, currency = "EUR", category = "Nebeneinkommen", bookingDate = 1738713600},
+    {name = "Verkauf Marktplatz", amount = 320.00, currency = "EUR", category = "Onlinehandel", bookingDate = 1739750400},
+    {name = "Einkauf Marktplatz", amount = -120.00, currency = "EUR", category = "Onlinehandel", bookingDate = 1740096000},
     {name = "Miete", amount = -1498.70, currency = "EUR", category = "Wohnen\\Miete", bookingDate = 1740787200},
     {name = "Stromrechnung", amount = -102.35, currency = "EUR", category = "Wohnen\\Strom", bookingDate = 1740700800},
     {name = "Supermarkt", amount = -298.40, currency = "EUR", category = "Lebenshaltung\\Lebensmittel", bookingDate = 1740441600},

@@ -43,7 +43,7 @@ test('should recalculate parent totals after exclusion', async ({ page }) => {
 
     const newValue = await getNodeValue(mainNode);
     expect(newValue).not.toEqual(initialValue);
-    expect(newValue).toBeCloseTo(4127.71 + 490.90);
+    expect(newValue).toBeCloseTo(4327.71 + 490.90);
 });
 
 test('should handle deep category nesting (3+ levels)', async ({ page }) => {
