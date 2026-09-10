@@ -34,6 +34,12 @@ export default () => ({
         resetApp();
     },
 
+    confirmSankeymaticExport(event: Event): void {
+        if (! window.confirm('Beim Öffnen in SankeyMATIC werden die Diagrammdaten an den externen Anbieter (sankeymatic.com) übertragen.\n\nFortfahren?')) {
+            event.preventDefault();
+        }
+    },
+
     buildSankeymaticData(): string {
         const data: Array<string> = [];
 
