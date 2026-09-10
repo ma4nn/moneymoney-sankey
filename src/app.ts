@@ -23,6 +23,8 @@ declare global {
 }
 
 export function initApp(transactions: Array<Transaction>, currency: string = 'EUR'): void {
+    defaultConfig.currency = currency; // helpers like numberFormat() default to this shared config, so it must reflect the account currency
+
     Alpine.plugin(persist);
 
     Alpine.store('error', {

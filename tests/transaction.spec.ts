@@ -66,6 +66,16 @@ test('should parse multi-level categories with \\\\ separator', async ({ page })
     expect(pathText).toContain('»');
 });
 
+test('should preserve percent signs in category names', async ({ page }) => {
+    await page.getByRole('button', { name: 'Kategorien anpassen' }).click();
+
+    const tableText = await page.locator('table#category-config').textContent();
+
+    // % is a magic character in the Lua template replacement and must reach the browser unaltered
+    expect(tableText).toContain('Zinsen 3,5%');
+    expect(tableText).toContain('Investitionen 60%40');
+});
+
 test('should generate consistent category IDs', async ({ page }) => {
     await page.getByRole('button', { name: 'Kategorien anpassen' }).click();
 

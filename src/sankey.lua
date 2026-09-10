@@ -79,7 +79,8 @@ end
 
 local function replace_placeholders(template, data)
     for key, value in pairs(data) do
-        template = template:gsub("{{ " .. key .. " }}", value)
+        -- function replacement so that magic characters like % in the value are inserted literally
+        template = template:gsub("{{ " .. key .. " }}", function() return value end)
     end
     return template
 end

@@ -3,7 +3,7 @@
 f = assert (io.tmpfile())
 io.output(f) -- suppress output
 version = 1
-currency = "EUR"
+currency = os.getenv("SANKEY_TEST_CURRENCY") or "EUR" -- allows tests to verify non-EUR exports
 
 -- print is used for logging in MoneyMoney extensions, so we redirect it here
 local print_stdout = print
@@ -36,9 +36,9 @@ local transactionsAccountOne = {
     {name = "Freiberuflicher Auftrag", amount = 698.75, currency = "USD", category = "Selbstständigkeit", bookingDate = 1740700800},
     {name = "Verkauf Gebrauchtwaren", amount = 147.90, currency = "EUR", category = "Verkäufe", bookingDate = 1740441600},
     {name = "Steuerrückzahlung", amount = 1198.45, currency = "EUR", category = "Rückerstattung", bookingDate = 1740009600},
-    {name = "Dividenden", amount = 302.15, currency = "EUR", category = "Investitionen", bookingDate = 1739836800},
+    {name = "Dividenden", amount = 302.15, currency = "EUR", category = "Investitionen 60%40", bookingDate = 1739836800}, -- percent sign before a digit must not be treated as a gsub capture reference
     {name = "Mieteinnahmen", amount = 805.60, currency = "EUR", category = "Vermietung", bookingDate = 1739577600},
-    {name = "Zinsen Sparbuch", amount = 52.85, currency = "EUR", category = "Zinsen", bookingDate = 1739145600},
+    {name = "Zinsen Sparbuch", amount = 52.85, currency = "EUR", category = "Zinsen 3,5%", bookingDate = 1739145600}, -- trailing percent sign must not be swallowed by gsub
     {name = "Nebenjob", amount = 403.20, currency = "EUR", category = "Nebeneinkommen", bookingDate = 1738713600},
     {name = "Verkauf Marktplatz", amount = 320.00, currency = "EUR", category = "Onlinehandel", bookingDate = 1739750400},
     {name = "Einkauf Marktplatz", amount = -120.00, currency = "EUR", category = "Onlinehandel", bookingDate = 1740096000},
