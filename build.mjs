@@ -7,8 +7,8 @@
  * 2. Inject assets into html template file
  * 3. Inject html template into lua script
  *
- * Variable format {{ x }} has been chosen, so that a JavaScript error is thrown in case that variable has not been replaced
- * and tests will fail.
+ * Twig-style variable format {{ x }} has been chosen, so that a JavaScript error is thrown in case that variable has not been replaced
+ * and tests will fail and also to have proper IDE support.
  */
 
 import { replaceInFile } from 'replace-in-file'
@@ -87,7 +87,7 @@ function buildTestOutputPlugin() {
     setup(build) {
       build.onEnd(async () => {
         // test output is always (re)generated (in case of production build to validate html output)
-        const output = execFileSync('lua', ['./tests/sankey_test.lua'], { encoding: 'utf8' });
+        const output = execFileSync('lua', ['./tests/sankey_test.lua'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }); // default 1 MiB buffer is too small for dev builds with inline sourcemaps
         fs.writeFileSync(pkg.config.testOutputFile, output);
         console.log("▶️ Test HTML file created after build: ", pkg.config.testOutputFile);
       });
@@ -102,6 +102,7 @@ const esbuildOptions = {
     minifyWhitespace: true,
     minifySyntax: true,
     minifyIdentifiers: false,
+    sourcemap: isDev ? 'inline' : false, // must be inline as the assets are injected into the self-contained html file
     outdir: outputDir, /** @see https://github.com/evanw/esbuild/issues/2890 */
     format: 'iife', /** = immediately-invoked function expression, @see https://esbuild.github.io/api/#format */
     globalName: 'viaSankey',
