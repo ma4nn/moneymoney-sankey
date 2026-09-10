@@ -12,6 +12,7 @@ import sankeyChartComponent from "./components/sankey-chart";
 import sorterComponent from "./components/sorter";
 import scalerComponent from "./components/scaler";
 import thresholdSliderComponent from "./components/threshold-slider";
+import themeToggleComponent from "./components/theme-toggle";
 import './style.css';
 
 export { Tree }
@@ -88,6 +89,7 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
     Alpine.data('categoriestable', categoriesTableComponent);
     Alpine.data('moreactions', moreActionsComponent);
     Alpine.data('sorter', sorterComponent);
+    Alpine.data('themetoggle', themeToggleComponent);
 
     window.Alpine = Alpine;
     Alpine.start();

@@ -41,7 +41,43 @@ text.highcharts-data-label {
     cursor: pointer;
 }
 
+/* the chart must follow the selected theme instead of the OS preference (Highcharts defaults to color-scheme: light dark) */
+[data-bs-theme="light"] .highcharts-container {
+    color-scheme: light;
+}
+
+[data-bs-theme="dark"] .highcharts-container {
+    color-scheme: dark;
+}
+
+/* blend the chart canvas into the page (Highcharts' own dark background differs from Bootstrap's) */
+.highcharts-background {
+    fill: var(--bs-body-bg);
+}
+
 /* main node color */
 .highcharts-color-1 {
     fill: #4b4b4b;
+}
+
+[data-bs-theme="dark"] .highcharts-color-1 {
+    fill: #b3b3b3;
+}
+
+.theme-toggle {
+    /* own centered line in the footer, but hover reacts only on the shrink-wrapped content */
+    width: fit-content;
+    margin-inline: auto;
+
+    .svg-icon {
+        width: 1em;
+        height: 1em;
+        vertical-align: -.125em;
+        fill: currentColor;
+    }
+
+    /* show only the selected scheme until the group is hovered or focused */
+    &:not(:hover, :focus-within) input:not(:checked) + label {
+        display: none;
+    }
 }

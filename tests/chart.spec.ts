@@ -254,3 +254,14 @@ test('sankeymatic export requires confirmation of external data transfer', async
     await sankeymaticLink.click();
     await (await popupPromise).waitForURL(/^https:\/\/sankeymatic\.com\/build\//);
 });
+
+test('category color swatches show the default chart colors', async({ page }) => {
+    await page.getByRole('button', { name: 'Kategorien anpassen' }).click();
+
+    const colorValues = await page.locator('table#category-config input[name="category-color"]')
+        .evaluateAll((inputs: Array<HTMLInputElement>) => inputs.map(input => input.value));
+
+    expect(colorValues.length).toBeGreaterThan(0);
+    colorValues.forEach(value => expect(value).toMatch(/^#[0-9a-f]{6}$/));
+    expect(colorValues).not.toContain('#000000'); // black indicates a value the color input could not parse (e.g. an unresolved light-dark() expression)
+});

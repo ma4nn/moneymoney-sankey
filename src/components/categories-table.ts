@@ -2,6 +2,7 @@ import Alpine from '@alpinejs/csp';
 import {Category} from "../transaction";
 import {Config} from "../config";
 import { getDefaultColorValue } from './sankey-chart';
+import { cssColorToHex } from '../helper';
 
 export default () => ({
     pathFilter: '',
@@ -16,7 +17,7 @@ export default () => ({
 
     get categoriesArray(): Array<Category> { // AlpineJs needs an array for x-for
         return [...this.categories.values()].filter((a: Category) => a.id !== this.config.mainNodeId && a.path.toLowerCase().includes(this.pathFilter))
-            .map((category: Category) => ({...category, budget: category.budget ?? '', color: category.color ?? getDefaultColorValue(category.id)} as Category))
+            .map((category: Category) => ({...category, budget: category.budget ?? '', color: category.color ?? cssColorToHex(getDefaultColorValue(category.id))} as Category))
             .sort((a, b) => a.path.localeCompare(b.path));
     },
 
