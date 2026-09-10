@@ -1,5 +1,6 @@
 import {test, expect} from '@playwright/test';
 import {NodeValidator} from "../src/validators";
+import {chartSelectors} from './selectors';
 
 const categoryIds = {
     living: 1698513113,
@@ -25,9 +26,9 @@ test('should display budget warning in German', async ({ page }) => {
 
     const livingNode = page.getByTestId(`chart-node-${categoryIds.living}`);
     await livingNode.hover();
-    await page.waitForSelector('.highcharts-tooltip');
+    await page.waitForSelector(chartSelectors.tooltip);
 
-    const tooltip = await page.locator('.highcharts-tooltip').innerHTML();
+    const tooltip = await page.locator(chartSelectors.tooltip).innerHTML();
     expect(tooltip).toContain('Budget');
     expect(tooltip).toContain('überschritten');
     expect(tooltip).toContain(NodeValidator.warningSign);
@@ -36,9 +37,9 @@ test('should display budget warning in German', async ({ page }) => {
 test('should not show warnings without budgets', async ({ page }) => {
     const transportNode = page.getByTestId(`chart-node-${categoryIds.transport}`);
     await transportNode.hover();
-    await page.waitForSelector('.highcharts-tooltip');
+    await page.waitForSelector(chartSelectors.tooltip);
 
-    const tooltip = await page.locator('.highcharts-tooltip').innerHTML();
+    const tooltip = await page.locator(chartSelectors.tooltip).innerHTML();
     expect(tooltip).not.toContain(NodeValidator.warningSign);
     expect(tooltip).not.toContain('überschritten');
 });
@@ -50,9 +51,9 @@ test('should show correct overage amount', async ({ page }) => {
 
     const livingNode = page.getByTestId(`chart-node-${categoryIds.living}`);
     await livingNode.hover();
-    await page.waitForSelector('.highcharts-tooltip');
+    await page.waitForSelector(chartSelectors.tooltip);
 
-    const tooltip = await page.locator('.highcharts-tooltip').textContent();
+    const tooltip = await page.locator(chartSelectors.tooltip).textContent();
     expect(tooltip).toMatch(/Budget um.*überschritten/);
     expect(tooltip).toMatch(/\d+[,.]?\d*/);
 });

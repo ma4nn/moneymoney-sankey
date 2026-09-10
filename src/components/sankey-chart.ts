@@ -1,24 +1,20 @@
 import Alpine from '@alpinejs/csp';
-import {SeriesSankeyNodesOptionsObject, SeriesSankeyPointOptionsObject} from "highcharts/highcharts.src";
-import Highcharts from "highcharts/es-modules/masters/highcharts.src";
-import 'highcharts/es-modules/masters/modules/sankey.src';
-import 'highcharts/css/highcharts.css';
 
 import Tree, { TreeNode, TreeNodeWithParent } from "../tree";
 import { Config } from "../config";
 import { NodeValidator } from "../validators";
-import {getValueByPath, numberFormat, numberFormatColored, percentageFormat} from "../helper";
+import {getValueByPath, numberFormat, percentageFormat} from "../helper";
 import {Category} from "../transaction";
 import component from "./component";
-
-type SankeyLinkOptions = SeriesSankeyPointOptionsObject;
-type SankeyNodeOptions = SeriesSankeyNodesOptionsObject;
-/** A link as attached to a rendered node, where the weight is always resolved. */
-type SankeyLink = SankeyLinkOptions & { weight: number };
+import {SankeyChartData, SankeyChartLink, SankeyChartNode, SankeyChartRenderer} from "../chart/types";
+import {NodeModelContext, SankeyNodeModel} from "../chart/node-model";
+import {getDefaultColorValue} from "../chart/colors";
+import {createSankeyRenderer} from "../chart";
 
 export default (data: Tree) => component({
     categoryTree: data,
-    chart: null as Highcharts.Chart|null,
+    renderer: null as SankeyChartRenderer|null,
+    currentLinks: [] as Array<SankeyChartLink>,
     mainNodeId: data.root.key,
 
     get scaling(): number {
@@ -65,16 +61,18 @@ export default (data: Tree) => component({
     },
 
     update(): void {
-        this.setColors();
-
-        if (this.chart === null) {
-            return;
-        }
-
-        this.chart.series[0].setData(this.buildLinksConfig() as Array<Highcharts.PointOptionsType>);
+        this.renderer?.render(this.buildChartData());
     },
 
-    sortLinks(links: Array<SankeyLinkOptions>): any {
+    buildChartData(): SankeyChartData {
+        return {
+            nodes: this.buildNodesConfig(),
+            links: this.buildLinksConfig(),
+            colors: this.buildColorsConfig(),
+        };
+    },
+
+    sortLinks(links: Array<SankeyChartLink>): any {
       return links.sort((a, b) => {
           const valueA = getValueByPath(a, this.sorting);
           const valueB = getValueByPath(b, this.sorting);
@@ -94,29 +92,19 @@ export default (data: Tree) => component({
       });
     },
 
-    buildNodesConfig(): Array<SankeyNodeOptions> {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const self = this;
-
-        const nodes: Array<SankeyNodeOptions> = [];
+    buildNodesConfig(): Array<SankeyChartNode> {
+        const nodes: Array<SankeyChartNode> = [];
         nodes.push({
             id: String(this.mainNodeId),
-            name: this.categories.get(this.mainNodeId)?.name,
-            colorIndex: 1,
-            dataLabels: {
-                className: "main-node-label",
-                nodeFormatter: function (): string {
-                    const node = new SankeyNode(this as Highcharts.SankeyNodeObject, self.mainNodeId, self.scaling);
-                    return node.toString();
-                }
-            },
+            name: this.categories.get(this.mainNodeId)?.name ?? '',
+            isMain: true,
         });
 
         this.childCategories.forEach((category: Category) => {
             nodes.push({
-                id: String(category.id), // Highcharts needs the id to be string
+                id: String(category.id),
                 name: category.name,
-                colorIndex: category.id,
+                isMain: false,
             });
         });
 
@@ -126,165 +114,137 @@ export default (data: Tree) => component({
         return nodes;
     },
 
-    buildLinksConfig(): Array<SankeyLinkOptions> {
+    buildLinksConfig(): Array<SankeyChartLink> {
         const treeNodes = this.nodes;
 
-        // build the data array for the Highchart
-        // remarks:
-        //  - node ids need to be strings according to the Highcharts definitions
-        //  - weight has to be positive (thats why the signed value is saved in custom attributes)
-        //  - using category ids instead of names because these might be the same for income and expense
-        const links: Array<SankeyLinkOptions> = treeNodes.filter((x: TreeNode): x is TreeNodeWithParent => x.value >= 0 && x.parent !== null).map((x: TreeNodeWithParent): SankeyLinkOptions => {
+        // node ids must be strings; weight must be positive (signed value kept in custom.real);
+        // category ids instead of names because income and expense names may collide
+        const links: Array<SankeyChartLink> = treeNodes.filter((x: TreeNode): x is TreeNodeWithParent => x.value >= 0 && x.parent !== null).map((x: TreeNodeWithParent): SankeyChartLink => {
             return {
                 from: String(x.key),
                 to: String(x.parent.key),
                 weight: x.value,
+                categoryId: x.key,
                 custom: {real: x.value, category: this.categories.get(x.key)},
-                colorIndex: x.key, // for incoming nodes the color is determined by the source node
             }
-        }).concat(treeNodes.filter((x: TreeNode): x is TreeNodeWithParent => x.value < 0 && x.parent !== null).map((x: TreeNodeWithParent): SankeyLinkOptions => {
+        }).concat(treeNodes.filter((x: TreeNode): x is TreeNodeWithParent => x.value < 0 && x.parent !== null).map((x: TreeNodeWithParent): SankeyChartLink => {
             return {
                 from: String(x.parent.key),
                 to: String(x.key),
                 weight: (-1) * x.value,
                 outgoing: !x.hasChildren,
+                categoryId: x.key,
                 custom: {real: x.value, category: this.categories.get(x.key)},
-                colorIndex: x.key, // for outgoing nodes the color is determined by the target node
             }
         }));
 
         console.debug('chart links:');
         console.debug(links);
 
-        return this.sortLinks(links);
+        this.currentLinks = this.sortLinks(links);
+
+        return this.currentLinks;
+    },
+
+    buildColorsConfig(): Map<string, string> {
+        const colors = new Map<string, string>();
+        this.childCategories.forEach((category: Category) =>
+            colors.set(String(category.id), category.color ?? getDefaultColorValue(category.id))
+        );
+
+        return colors;
+    },
+
+    nodeModel(nodeId: string): SankeyNodeModel {
+        const context: NodeModelContext = {
+            links: this.currentLinks,
+            mainNodeId: this.mainNodeId,
+            scaling: this.scaling,
+            nameOf: (id: string): string => this.categories.get(parseInt(id))?.name ?? id,
+        };
+
+        return new SankeyNodeModel(nodeId, context);
     },
 
     init(): void {
         console.debug('tree data:');
         console.debug(this.categories);
 
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const self = this;
+        const renderer = createSankeyRenderer();
+        this.renderer = renderer;
 
-        /** @see https://www.highcharts.com/docs/chart-and-series-types/sankey-diagram */
-        this.chart = Highcharts.chart(this.$el, {
-            title: {
-                text: undefined // disables the default chart title
-            },
-            accessibility: {
-                point: {
-                    valueDescriptionFormat: '{index}. {point.from} to {point.to}, {point.weight}.'
+        const chartData = this.buildChartData();
+        renderer.mount(this.$el, chartData, {
+            onLinkClick: (link: SankeyChartLink): void => {
+                let categoryId: number;
+                if (link.to !== String(this.mainNodeId) && link.custom.real < 0) {
+                    categoryId = parseInt(link.to);
+                } else if (link.from !== String(this.mainNodeId) && link.custom.real >= 0) {
+                    categoryId = parseInt(link.from);
+                } else {
+                    return;
                 }
+
+                this.removeCategory(categoryId);
             },
-            series: [{
-                animation: false,
-                cursor: 'pointer',
-                events: {
-                    click: function (event: any) {
-                        if (!('custom' in event.point) || !('real' in event.point.custom)) {
-                            return;
-                        }
 
-                        let categoryId: number;
-                        if (event.point.to !== self.mainNodeId && event.point.custom.real < 0) {
-                            categoryId = parseInt(event.point.to);
-                        } else if (event.point.from !== self.mainNodeId && event.point.custom.real >= 0) {
-                            categoryId = parseInt(event.point.from);
-                        } else {
-                            return;
-                        }
-
-                        self.removeCategory(categoryId);
-                    }
-                },
-                keys: ['from', 'to', 'weight'],
-                data: [],
-                type: 'sankey',
-                name: 'Cashflow',
-                dataLabels: {
-                    align: 'right',
-                    padding: 30,
-                    nodeFormatter: function (): string {
-                        const node = new SankeyNode(this as Highcharts.SankeyNodeObject, self.mainNodeId, self.scaling);
-
-                        return '<small>' + node.name + '</small><br>' + (new NodeValidator(node, self.config).validate() ? '' : NodeValidator.warningSign)
-                            + numberFormat(node.getValue());
-                    }
-                },
-                tooltip: {
-                    // tooltip for link
-                    pointFormatter: function (): string {
-                        const link = this as any;
-                        const toNode = new SankeyNode(link.toNode, self.mainNodeId, self.scaling);
-
-                        return link.fromNode.name + " → " + link.toNode.name + ": "
-                            + numberFormat(link.weight / self.scaling)
-                            + ' ' + percentageFormat(toNode.getPercentage())
-                            + "<br><br><span class='small'>(Klick entfernt die Kategorie aus dem Chart.)</span>";
-                    },
-                    // tooltip for node
-                    nodeFormatter: function (): string {
-                        const node = new SankeyNode(this as Highcharts.SankeyNodeObject, self.mainNodeId, self.scaling);
-
-                        let weightsDetailTooltip = '';
-                        node.getLinksTo().filter(link => link.from !== String(self.mainNodeId) && link.weight > 0)
-                            .sort((a, b) => b.weight - a.weight)
-                            .forEach(function (link: any) {
-                                const weight = link.weight / self.scaling;
-                                weightsDetailTooltip += '+ ' + link.fromNode.name + ': ' + numberFormat(weight) + ' ' + percentageFormat(weight/node.getTotalIncomingWeight()) + '<br>';
-                            });
-                        if (node.isMain) {
-                            weightsDetailTooltip += '= ' + numberFormat(node.getTotalIncomingWeight()) + '<br><br>';
-                        }
-
-                        node.getLinksFrom().filter(link => link.to !== String(self.mainNodeId) && link.weight > 0)
-                            .sort((a, b) => b.weight - a.weight)
-                            .forEach(function (link: any) {
-                                const weight = link.weight / self.scaling;
-                                weightsDetailTooltip += '- ' + link.toNode.name + ': ' + numberFormat(weight) + ' ' + percentageFormat(weight/node.getTotalOutgoingWeight()) + '<br>';
-                            });
-                        if (node.isMain) {
-                            weightsDetailTooltip += '= ' + numberFormat(node.getTotalOutgoingWeight()) + '<br>';
-                        }
-
-                        const validator = new NodeValidator(node, self.config);
-                        validator.validate();
-
-                        return node.toString() + '<br>'
-                            + weightsDetailTooltip + '<br>'
-                            + validator.messages;
-                    }
-                },
-                nodes: this.buildNodesConfig()
-            }],
-            chart: {
-                animation: false,
-                height: 700,
-                styledMode: true,
-                numberFormatter: function (...args) {
-                    return numberFormat(args[0] / self.scaling);
-                },
-                events: {
-                    render: function () {
-                        // add ids for testing
-                        this.series[0].points.forEach((link: any, _index) => {
-                            link.graphic?.element.setAttribute('data-testid', `chart-link-${link.custom?.category?.id}`);
-                        });
-
-                        ((this.series[0] as any).nodes as Array<Highcharts.SankeyNodeObject>).forEach((point: any, _index) => {
-                            const node = new SankeyNode(point, self.mainNodeId, self.scaling);
-                            point.graphic?.element.setAttribute('data-testid', `chart-node-${point.id}`);
-                            point.graphic?.element.setAttribute('data-value', node.getValue());
-                            if (point.dataLabel && point.dataLabel.element) {
-                                point.dataLabel.element.setAttribute('data-testid', `chart-node-label-${point.id}`);
-                            }
-                        });
-                    }
+            nodeLabel: (nodeId: string): string => {
+                const node = this.nodeModel(nodeId);
+                if (node.isMain) {
+                    return node.toString();
                 }
+
+                return '<small>' + node.name + '</small><br>' + (new NodeValidator(node, this.config).validate() ? '' : NodeValidator.warningSign)
+                    + numberFormat(node.getValue());
             },
+
+            nodeTooltip: (nodeId: string): string => {
+                const node = this.nodeModel(nodeId);
+
+                let weightsDetailTooltip = '';
+                node.getLinksTo().filter(link => link.from !== String(this.mainNodeId) && link.weight > 0)
+                    .sort((a, b) => b.weight - a.weight)
+                    .forEach((link: SankeyChartLink) => {
+                        const weight = link.weight / this.scaling;
+                        weightsDetailTooltip += '+ ' + this.nodeModel(link.from).name + ': ' + numberFormat(weight) + ' ' + percentageFormat(weight/node.getTotalIncomingWeight()) + '<br>';
+                    });
+                if (node.isMain) {
+                    weightsDetailTooltip += '= ' + numberFormat(node.getTotalIncomingWeight()) + '<br><br>';
+                }
+
+                node.getLinksFrom().filter(link => link.to !== String(this.mainNodeId) && link.weight > 0)
+                    .sort((a, b) => b.weight - a.weight)
+                    .forEach((link: SankeyChartLink) => {
+                        const weight = link.weight / this.scaling;
+                        weightsDetailTooltip += '- ' + this.nodeModel(link.to).name + ': ' + numberFormat(weight) + ' ' + percentageFormat(weight/node.getTotalOutgoingWeight()) + '<br>';
+                    });
+                if (node.isMain) {
+                    weightsDetailTooltip += '= ' + numberFormat(node.getTotalOutgoingWeight()) + '<br>';
+                }
+
+                const validator = new NodeValidator(node, this.config);
+                validator.validate();
+
+                return node.toString() + '<br>'
+                    + weightsDetailTooltip + '<br>'
+                    + validator.messages;
+            },
+
+            linkTooltip: (link: SankeyChartLink): string => {
+                const toNode = this.nodeModel(link.to);
+
+                return this.nodeModel(link.from).name + " → " + toNode.name + ": "
+                    + numberFormat(link.weight / this.scaling)
+                    + ' ' + percentageFormat(toNode.getPercentage())
+                    + "<br><br><span class='small'>(Klick entfernt die Kategorie aus dem Chart.)</span>";
+            },
+
+            nodeValue: (nodeId: string): number => this.nodeModel(nodeId).getValue(),
+
+            formatValue: (value: number): string => numberFormat(value / this.scaling),
         });
 
-        this.update();
+        this.renderer.render(chartData);
         document.addEventListener('ChartInvalidated', () => this.update());
 
         document.getElementById('header-configuration')?.removeAttribute('disabled');
@@ -304,90 +264,6 @@ export default (data: Tree) => component({
         });
 
         this.update();
-    },
-
-    setColors(): void {
-        const style = document.getElementById('category-color-styles');
-        if (style === null) {
-            return;
-        }
-
-        style.innerHTML = '';
-        this.childCategories.forEach((category: Category) =>
-            style.innerHTML += `.highcharts-color-${category.id} { fill: ${category.color ?? getDefaultColorValue(category.id)}; }\n`
-        );
     }
 });
 
-export class SankeyNode { // @todo use accessors
-    public name: string = '';
-    public categoryId: number;
-    public label: string = '';
-    public mainNodeId: number;
-    private readonly node: Highcharts.SankeyNodeObject;
-    private readonly scaling: number;
-
-    constructor(node: Highcharts.SankeyNodeObject, mainNodeId: number, scaling: number) {
-        this.node = node;
-        this.name = node.name;
-        // @ts-expect-error - dataLabels type definition incomplete
-        this.label = node.dataLabels !== null && typeof node.dataLabels !== 'undefined' && node.dataLabels.length > 0 ? node.dataLabels[0].textStr : '';
-        this.categoryId = parseInt((node as any).point.id);
-
-        this.mainNodeId = mainNodeId;
-        this.scaling = scaling;
-    }
-
-    get isMain(): boolean {
-        return Number(this.node.id) === this.mainNodeId;
-    }
-
-    public toString(): string {
-        const format = this.isMain ? numberFormatColored : numberFormat;
-        return `${this.name}: ${this.getValue() == 0 ? '' : format(this.getValue())}`;
-    }
-
-    public getValue(): number {
-        return this.isMain ? this.getTotalWeight() : this.getSum();
-    }
-
-    public getSum(): number {
-         return 'getSum' in this.node ? (this.node as any).getSum() / this.scaling : 0;
-    }
-
-    public getPercentage(): number|null {
-        const linksTo = this.getLinksTo();
-        if (linksTo.length === 0) {
-            return null;
-        }
-
-        const parentNode = new SankeyNode((linksTo[0] as any).fromNode, this.mainNodeId, this.scaling);
-
-        return (this.getValue() / parentNode.getTotalOutgoingWeight());
-    }
-
-    public getLinksFrom(): Array<SankeyLink> {
-        return 'linksFrom' in this.node ? (this.node as any).linksFrom : [];
-    }
-
-    public getLinksTo(): Array<SankeyLink> {
-        return 'linksTo' in this.node ? (this.node as any).linksTo : [];
-    }
-
-    public getTotalIncomingWeight(): number {
-        return this.getLinksTo().map(point => point.weight).reduce((pv, cv) => pv + cv, 0) / this.scaling;
-    }
-
-    public getTotalOutgoingWeight(): number {
-        return this.getLinksFrom().map(point => point.weight).reduce((pv, cv) => pv + cv, 0) / this.scaling;
-    }
-
-    private getTotalWeight(): number {
-        return this.getTotalIncomingWeight() - this.getTotalOutgoingWeight();
-    }
-}
-
-export function getDefaultColorValue(colorId: number) {
-    // map the big category ids to the set of predefined highchart colors
-    return getComputedStyle(document.documentElement).getPropertyValue(`--highcharts-color-${colorId % 10}`).trim();
-}

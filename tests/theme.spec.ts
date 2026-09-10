@@ -1,4 +1,5 @@
 import {test, expect} from '@playwright/test';
+import {chartSelectors} from './selectors';
 
 test.beforeEach(async ({ page }) => {
     await page.goto('/');
@@ -19,7 +20,7 @@ test('theme can be toggled and is persisted', async({ page }) => {
     await page.locator('label[for="theme-dark"]').click();
 
     await expect(html).toHaveAttribute('data-bs-theme', 'dark');
-    await expect(page.locator('#chart-container .highcharts-container')).toHaveCSS('color-scheme', 'dark'); // chart must follow the selected theme
+    await expect(page.locator(`#chart-container ${chartSelectors.container}`)).toHaveCSS('color-scheme', 'dark'); // chart must follow the selected theme
     await expect(page.getByTestId('chart-node-1')).toHaveCSS('fill', 'rgb(179, 179, 179)'); // main node uses its dark color variant
     expect(await page.evaluate(() => localStorage.getItem('theme'))).toBe('dark');
 

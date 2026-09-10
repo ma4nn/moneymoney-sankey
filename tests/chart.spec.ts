@@ -1,4 +1,5 @@
 import {test, expect, Page, Locator} from '@playwright/test';
+import {chartSelectors} from './selectors';
 
 const categoryIds = {
     "main": 1,
@@ -47,7 +48,7 @@ async function setSliderValue(selector: string, value: number, page: Page): Prom
 
 async function showChartTooltip(nodeId: number, page: Page): Promise<string> {
     page.getByTestId(`chart-link-${nodeId}`).hover();
-    const tooltip = await page.waitForSelector('.highcharts-tooltip .badge');
+    const tooltip = await page.waitForSelector(`${chartSelectors.tooltip} .badge`);
 
     return tooltip.textContent();
 }
@@ -192,7 +193,7 @@ test('sums income and expense transactions within the same category', async({ pa
 
     // the netted positive value is rendered on the income side of the chart
     await page.getByTestId(`chart-link-${categoryIds.onlinehandel}`).hover();
-    await expect(page.locator('.highcharts-tooltip')).toContainText('Onlinehandel → Saldo');
+    await expect(page.locator(chartSelectors.tooltip)).toContainText('Onlinehandel → Saldo');
 });
 
 test('hide and re-add category', async({ page }) => {

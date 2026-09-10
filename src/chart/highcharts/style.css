@@ -1,0 +1,56 @@
+/* all .highcharts-* styling lives with the renderer so the chart library can be swapped */
+
+:root {
+    /* expose the palette under the library-agnostic names used by the app */
+    --chart-color-0: var(--highcharts-color-0);
+    --chart-color-1: var(--highcharts-color-1);
+    --chart-color-2: var(--highcharts-color-2);
+    --chart-color-3: var(--highcharts-color-3);
+    --chart-color-4: var(--highcharts-color-4);
+    --chart-color-5: var(--highcharts-color-5);
+    --chart-color-6: var(--highcharts-color-6);
+    --chart-color-7: var(--highcharts-color-7);
+    --chart-color-8: var(--highcharts-color-8);
+    --chart-color-9: var(--highcharts-color-9);
+}
+
+.highcharts-container {
+    font-family: system-ui
+}
+
+.highcharts-data-label text,
+text.highcharts-data-label {
+    font-size: 14px;
+    font-weight: 200;
+
+    .highcharts-strong {
+        font-size: 1.3em;
+    }
+}
+
+.highcharts-link {
+    cursor: pointer;
+}
+
+/* follow the selected theme, not the OS preference (Highcharts defaults to color-scheme: light dark) */
+[data-bs-theme="light"] .highcharts-container {
+    color-scheme: light;
+}
+
+[data-bs-theme="dark"] .highcharts-container {
+    color-scheme: dark;
+}
+
+/* blend the chart canvas into the page (Highcharts' dark background differs from Bootstrap's) */
+.highcharts-background {
+    fill: var(--bs-body-bg);
+}
+
+/* main node color */
+.highcharts-color-1 {
+    fill: #4b4b4b;
+}
+
+[data-bs-theme="dark"] .highcharts-color-1 {
+    fill: #b3b3b3;
+}

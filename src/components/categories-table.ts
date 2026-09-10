@@ -1,7 +1,7 @@
 import Alpine from '@alpinejs/csp';
 import {Category} from "../transaction";
 import {Config} from "../config";
-import { getDefaultColorValue } from './sankey-chart';
+import { getDefaultColorValue } from '../chart/colors';
 import { cssColorToHex } from '../helper';
 
 export default () => ({

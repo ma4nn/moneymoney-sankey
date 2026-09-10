@@ -1,7 +1,7 @@
 import { Category } from "./transaction";
 import { Config } from "./config";
 import { numberFormat } from "./helper";
-import {SankeyNode} from "./components/sankey-chart";
+import {SankeyNodeModel} from "./chart/node-model";
 
 interface ValidatorInterface {
     message(): string;
@@ -13,7 +13,7 @@ export class NodeValidator {
     private validators: Array<ValidatorInterface>;
     static warningSign = '⚠️ ';
 
-    constructor(node: SankeyNode, config: Config) {
+    constructor(node: SankeyNodeModel, config: Config) {
         this.validators = [
             new BudgetValidator(node, config)
         ];
@@ -30,9 +30,9 @@ export class NodeValidator {
 
 class BudgetValidator implements ValidatorInterface {
     private readonly category: Category|undefined;
-    private readonly node: SankeyNode;
+    private readonly node: SankeyNodeModel;
 
-    constructor(node: SankeyNode, config: Config) {
+    constructor(node: SankeyNodeModel, config: Config) {
         this.node = node;
         this.category = config.categories.get(node.categoryId);
     }
