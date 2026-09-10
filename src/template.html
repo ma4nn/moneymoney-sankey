@@ -55,7 +55,10 @@
                 </div>
                 <div class="d-flex align-items-center ms-md-auto mt-2 mt-md-0">
                     <label for="threshold" class="me-2">Detailgrad:</label>
-                    <input x-data="thresholdslider" type="range" class="form-range me-5" id="threshold" :min="minValue" :max="maxValue" :value="currentValue" @change="zoom" title="Detailgrad">
+                    <div x-data="thresholdslider" class="d-flex align-items-center me-5">
+                        <input type="range" class="form-range" id="threshold" step="any" :min="minValue" :max="maxValue" :value="sliderValue" :aria-valuetext="currentValueFormatted" @input="update" @change="zoom" title="Detailgrad">
+                        <output for="threshold" class="ms-2 text-nowrap text-secondary small" x-show="isFiltering" x-text="currentValueFormatted" x-cloak></output>
+                    </div>
                     <div class="nav-item dropdown me-3">
                         <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Aktionen</button>
                         <ul class="dropdown-menu dropdown-menu-end" x-data="moreactions">

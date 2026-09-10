@@ -110,8 +110,14 @@ test('has configurable options', async ({ page }) => {
 
     const link = page.getByTestId(`chart-link-${categoryIds.supply}`); // Versorgung
     await expect(link).toBeVisible();
+
+    const thresholdOutput = page.locator('output[for="threshold"]');
+    await expect(thresholdOutput).toBeHidden(); // no cutoff active by default
+
     await configButton.click();
-    await setSliderValue('input#threshold', 50, page);
+    // the slider is inverted (right = more detail), so position min + max - 50 equals a threshold of 50
+    await setSliderValue('input#threshold', defaultNodeValue.leisureStreaming + defaultNodeValue.transport - 50, page);
+    await expect(thresholdOutput).toHaveText(/≥ 50\s€/);
     await page.locator('table#category-config [data-category-id="' + categoryIds.living + '"] input[name="budget"]').fill('100');
     await applyButton.click();
     await expect(link).toBeHidden();
@@ -146,6 +152,13 @@ test('show monthly values', async ({ page }) => {
     await expect(showMonthlyInput).not.toBeChecked();
 
     expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main);
+
+    // the displayed threshold cutoff follows the scaling toggle (50 € / 2.03333 months ≈ 25 €)
+    const thresholdOutput = page.locator('output[for="threshold"]');
+    await setSliderValue('input#threshold', defaultNodeValue.leisureStreaming + defaultNodeValue.transport - 50, page);
+    await expect(thresholdOutput).toHaveText(/≥ 50\s€/);
+    await showMonthlyInput.check();
+    await expect(thresholdOutput).toHaveText(/≥ 25\s€/);
 });
 
 test('saldo becomes negative when expenses exceed income', async({ page }) => {
