@@ -29,7 +29,9 @@ test('theme can be toggled and is persisted', async({ page }) => {
     // the persisted scheme must be reflected by the radio group, collapsed to only the active icon
     await page.mouse.move(0, 0); // move away from the toggle so it collapses
     await expect(page.locator('#theme-dark')).toBeChecked();
-    await expect(page.locator('label[for="theme-dark"]')).toBeVisible();
+    // asserted via the computed style instead of toBeVisible(): playwright's webkit build keeps a stale zero-size
+    // layout box for the label alpine reveals after load and reports it as hidden (real safari lays it out correctly)
+    await expect(page.locator('label[for="theme-dark"]')).toHaveCSS('display', 'inline-block');
     await expect(page.locator('label[for="theme-light"]')).toBeHidden();
 
     // an explicitly selected theme must not be overwritten by system preference changes

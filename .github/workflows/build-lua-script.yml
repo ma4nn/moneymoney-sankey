@@ -23,7 +23,7 @@ jobs:
 
     - uses: actions/setup-node@v7
       with:
-        node-version: 20
+        node-version: 24
         cache: 'npm'
 
     - uses: leafo/gh-actions-lua@6919171ccf181b826f44b9bca76307b577217377 # v13.0.0
