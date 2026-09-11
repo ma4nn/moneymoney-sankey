@@ -23,16 +23,16 @@ export default () => ({
 
     toggleRow(event: Event): void {
         const element = event.target as HTMLTableCellElement;
-        const checkbox = element.closest('tr').querySelector<HTMLInputElement>('input[name="category-is-active"]');
+        const checkbox = element.closest('tr')?.querySelector<HTMLInputElement>('input[name="category-is-active"]');
 
-        checkbox.click();
+        checkbox?.click();
     },
 
     toggleStatus(event: Event): void {
         const element = event.target as HTMLInputElement;
         const category = this.getCategoryFromElement(element);
 
-        if (category.id !== this.config.mainNodeId) {
+        if (category && category.id !== this.config.mainNodeId) {
             category.active = element.checked;
             document.dispatchEvent(new CustomEvent('ChartInvalidated'));
         }
@@ -41,6 +41,9 @@ export default () => ({
     setBudget(event: Event): void {
         const element = event.target as HTMLInputElement;
         const category = this.getCategoryFromElement(element);
+        if (! category) {
+            return;
+        }
 
         category.budget = element.valueAsNumber;
 
@@ -50,6 +53,9 @@ export default () => ({
     setColor(event: Event): void {
         const element = event.target as HTMLInputElement;
         const category = this.getCategoryFromElement(element);
+        if (! category) {
+            return;
+        }
 
         category.color = element.value;
 
@@ -67,9 +73,9 @@ export default () => ({
         document.dispatchEvent(new CustomEvent('ChartInvalidated'));
     },
 
-    getCategoryFromElement(element: HTMLElement): Category {
-        const categoryId = Number(element.closest('tr').dataset.categoryId);
+    getCategoryFromElement(element: HTMLElement): Category|undefined {
+        const row = element.closest('tr');
 
-        return this.categories.get(categoryId);
+        return row === null ? undefined : this.categories.get(Number(row.dataset.categoryId));
     },
 });

@@ -13,7 +13,7 @@ export class NodeValidator {
     private validators: Array<ValidatorInterface>;
     static warningSign = '⚠️ ';
 
-    constructor(node: any, config: Config) {
+    constructor(node: SankeyNode, config: Config) {
         this.validators = [
             new BudgetValidator(node, config)
         ];
@@ -29,8 +29,8 @@ export class NodeValidator {
 }
 
 class BudgetValidator implements ValidatorInterface {
-    private readonly category: Category;
-    private readonly node: any;
+    private readonly category: Category|undefined;
+    private readonly node: SankeyNode;
 
     constructor(node: SankeyNode, config: Config) {
         this.node = node;
@@ -42,8 +42,8 @@ class BudgetValidator implements ValidatorInterface {
         return budget === null || isNaN(budget) || budget >= this.getValue();
     }
 
-    public message(): string {
-        return 'Budget um ' + numberFormat(this.getValue() - this.getBudget()) + ' überschritten';
+    public message(): string { // only reachable for an exceeded (and therefore existing) budget
+        return 'Budget um ' + numberFormat(this.getValue() - (this.getBudget() ?? 0)) + ' überschritten';
     }
 
     private getValue(): number {
@@ -51,10 +51,6 @@ class BudgetValidator implements ValidatorInterface {
     }
 
     private getBudget(): number|null {
-        if (typeof this.category == 'undefined' || typeof this.category?.budget == 'undefined' || this.category?.budget === null) {
-            return null;
-        }
-
-        return this.category.budget;
+        return this.category?.budget ?? null;
     }
 }

@@ -2,7 +2,7 @@ import Alpine from '@alpinejs/csp';
 import persist from '@alpinejs/persist'
 import 'bootstrap';
 
-import defaultConfig from "./config";
+import defaultConfig, {ConfigStore, ErrorStore} from "./config";
 import Tree from "./tree";
 import {Transaction, MoneyMoneyCategoryTree, TransactionsManager, Category} from "./transaction";
 import alertComponent from "./components/alert";
@@ -19,7 +19,7 @@ export { Tree }
 
 declare global {
   interface Window {
-    Alpine: Alpine;
+    Alpine: typeof Alpine;
   }
 }
 
@@ -28,7 +28,7 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
 
     Alpine.plugin(persist);
 
-    Alpine.store('error', {
+    Alpine.store<ErrorStore>('error', {
         errorMessage: null,
 
         setMessage(message: string) {
@@ -47,18 +47,18 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
     categories.fromTransactions(data.transactions);
 
     try {
-        Alpine.store('config', {
-            scalingFactor: Alpine.$persist(defaultConfig.scalingFactor) as number,
-            threshold: Alpine.$persist(defaultConfig.threshold) as number,
+        Alpine.store<ConfigStore>('config', {
+            scalingFactor: Alpine.$persist(defaultConfig.scalingFactor),
+            threshold: Alpine.$persist(defaultConfig.threshold),
             currency: currency,
-            sortKey: Alpine.$persist(defaultConfig.sortKey) as string,
-            _categories: Alpine.$persist([]) as Array<Category>, // Alpine.$persist does not work with Maps, so we save it as array internally and use an accessor
+            sortKey: Alpine.$persist(defaultConfig.sortKey),
+            _categories: Alpine.$persist<Array<Category>>([]),
             mainNodeId: mainNodeId,
             chartData: [],
 
             init(): void {
                 // merge transaction categories with persisted configuration
-                this._categories = [...categories.list].map(([key, value]) => this.categories.has(key) ? this.categories.get(key) : value);
+                this._categories = [...categories.list].map(([key, value]) => this.categories.get(key) ?? value);
             },
 
             get categories(): Map<number, Category> {
@@ -71,7 +71,7 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
         });
     } catch (e) {
         console.error('error loading persisted config from storage: ' + e);
-        Alpine.store('error').setMessage('Konfiguration kann nicht geladen werden.');
+        Alpine.store<ErrorStore>('error').setMessage('Konfiguration kann nicht geladen werden.');
     }
 
     Alpine.data('alert', alertComponent);

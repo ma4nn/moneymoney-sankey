@@ -5,7 +5,7 @@ export type Category = {
     name: string;
     path: string;
     active: boolean;
-    budget?: number;
+    budget?: number|null; // NaN while the input is cleared, null after a reset or a persist round trip
     color?: string;
 }
 
@@ -58,7 +58,7 @@ export class CategoryTree {
     fromTransactions(transactions: Array<Transaction>): void {
         transactions.forEach(transaction => {
             let parentCategoryId = this.tree.root.key;
-            const path = [];
+            const path: Array<string> = [];
             transaction.category.split(this.categoryPathSeparator).forEach(categoryName => {
                 categoryName = categoryName || this.categoryEmptyName;
 
@@ -66,7 +66,7 @@ export class CategoryTree {
                 const categorySubPath = path.join(this.categoryPathSeparator);
 
                 const categoryId = generateCategoryIdFromPath(categorySubPath);
-                const existingNode: TreeNode = this.tree.find(categoryId);
+                const existingNode: TreeNode|null = this.tree.find(categoryId);
                 if (existingNode === null) {
                     this.tree.insert(parentCategoryId, categoryId, transaction.amount);
                     this.list.set(categoryId, {id: categoryId, name: categoryName, path: path.join(' » '), active: true});

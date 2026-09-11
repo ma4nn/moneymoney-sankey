@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
-    // TypeScript >= 6 enables "strict" by default; the sources are not strict-clean yet
-    "strict": false,
+    "strict": true,
     // CSS imports are resolved and bundled by esbuild, not by tsc (TS >= 6 would reject them as TS2882)
     "noUncheckedSideEffectImports": false,
     "outDir": "./dist",

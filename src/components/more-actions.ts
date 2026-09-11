@@ -1,6 +1,6 @@
 import Alpine from '@alpinejs/csp';
 import LZString from 'lz-string';
-import {TreeNode} from '../tree';
+import {TreeNode, TreeNodeWithParent} from '../tree';
 import {Category} from "../transaction";
 import {Config} from "../config";
 import {resetApp} from "../helper";
@@ -43,9 +43,9 @@ export default () => ({
     buildSankeymaticData(): string {
         const data: Array<string> = [];
 
-        this.config.chartData.filter((node: TreeNode) => node.parent).forEach((node: TreeNode) => {
-            const parentCategory: string = this.categories.get(node.parent.key)?.name;
-            const nodeCategory: string = this.categories.get(node.key)?.name;
+        this.config.chartData.filter((node: TreeNode): node is TreeNodeWithParent => node.parent !== null).forEach((node: TreeNodeWithParent) => {
+            const parentCategory = this.categories.get(node.parent.key)?.name ?? '';
+            const nodeCategory = this.categories.get(node.key)?.name ?? '';
 
             const node1 = node.value < 0 ? parentCategory : nodeCategory;
             const node2 = node.value < 0 ? nodeCategory : parentCategory;

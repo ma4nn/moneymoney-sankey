@@ -1,23 +1,34 @@
 import Alpine from '@alpinejs/csp';
 import {Config} from "../config";
 
+const sorts = {
+    'custom.category.path': 'Name',
+    'custom.real': 'Betrag'
+};
+
+type SortKey = keyof typeof sorts;
+
+// the sort key comes from persisted config or a data attribute, so it is not necessarily one we know
+function isSortKey(key: string|undefined): key is SortKey {
+    return key !== undefined && key in sorts;
+}
+
 export default () => ({
-    sorts: {
-        'custom.category.path': 'Name',
-        'custom.real': 'Betrag'
-    },
+    sorts,
 
     get value(): string {
         return this.config.sortKey;
     },
 
     get label(): string {
-        return this.sorts[this.value];
+        const value = this.value;
+
+        return isSortKey(value) ? this.sorts[value] : '';
     },
 
     sort(event: Event) {
         const sortKey = (event.target as HTMLLinkElement).dataset.sortKey;
-        if (! (sortKey in this.sorts)) {
+        if (! isSortKey(sortKey)) {
             return;
         }
 

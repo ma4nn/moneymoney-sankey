@@ -1,10 +1,10 @@
-import Alpine from '@alpinejs/csp';
+import Alpine, {AlpineMagics} from '@alpinejs/csp';
 import {SeriesSankeyNodesOptionsObject, SeriesSankeyPointOptionsObject} from "highcharts/highcharts.src";
 import Highcharts from "highcharts/es-modules/masters/highcharts.src";
 import 'highcharts/es-modules/masters/modules/sankey.src';
 import 'highcharts/css/highcharts.css';
 
-import Tree, { TreeNode } from "../tree";
+import Tree, { TreeNode, TreeNodeWithParent } from "../tree";
 import { Config } from "../config";
 import { NodeValidator } from "../validators";
 import {getValueByPath, numberFormat, numberFormatColored, percentageFormat} from "../helper";
@@ -12,10 +12,12 @@ import {Category} from "../transaction";
 
 type SankeyLinkOptions = SeriesSankeyPointOptionsObject;
 type SankeyNodeOptions = SeriesSankeyNodesOptionsObject;
+/** A link as attached to a rendered node, where the weight is always resolved. */
+type SankeyLink = SankeyLinkOptions & { weight: number };
 
 export default (data: Tree) => ({
     categoryTree: data,
-    chart: Highcharts.Chart = null,
+    chart: null as Highcharts.Chart|null,
     mainNodeId: data.root.key,
 
     get scaling(): number {
@@ -26,7 +28,7 @@ export default (data: Tree) => ({
         return this.config.threshold;
     },
 
-    get sorting(): number {
+    get sorting(): string {
         return this.config.sortKey;
     },
 
@@ -53,7 +55,7 @@ export default (data: Tree) => ({
         // recalculate weight values for each parent node
         treeNodes.filter(x => x.hasChildren).map(x => x.value = x.children.reduce((a, b): number => {
             const category = this.categories.get(b.key);
-            return Math.abs(b.value) >= this.threshold && category.active ? a + b.value : a;
+            return Math.abs(b.value) >= this.threshold && category?.active ? a + b.value : a;
         }, 0));
 
         this.config.chartData = treeNodes;
@@ -64,8 +66,11 @@ export default (data: Tree) => ({
     update(): void {
         this.setColors();
 
-        const series = this.chart.series[0] as Highcharts.Series;
-        series.setData(this.buildLinksConfig());
+        if (this.chart === null) {
+            return;
+        }
+
+        this.chart.series[0].setData(this.buildLinksConfig() as Array<Highcharts.PointOptionsType>);
     },
 
     sortLinks(links: Array<SankeyLinkOptions>): any {
@@ -128,7 +133,7 @@ export default (data: Tree) => ({
         //  - node ids need to be strings according to the Highcharts definitions
         //  - weight has to be positive (thats why the signed value is saved in custom attributes)
         //  - using category ids instead of names because these might be the same for income and expense
-        const links: Array<SankeyLinkOptions> = treeNodes.filter((x: TreeNode) => x.value >= 0 && x.parent).map((x: TreeNode): SankeyLinkOptions => {
+        const links: Array<SankeyLinkOptions> = treeNodes.filter((x: TreeNode): x is TreeNodeWithParent => x.value >= 0 && x.parent !== null).map((x: TreeNodeWithParent): SankeyLinkOptions => {
             return {
                 from: String(x.key),
                 to: String(x.parent.key),
@@ -136,7 +141,7 @@ export default (data: Tree) => ({
                 custom: {real: x.value, category: this.categories.get(x.key)},
                 colorIndex: x.key, // for incoming nodes the color is determined by the source node
             }
-        }).concat(treeNodes.filter((x: TreeNode) => x.value < 0 && x.parent).map((x: TreeNode): SankeyLinkOptions => {
+        }).concat(treeNodes.filter((x: TreeNode): x is TreeNodeWithParent => x.value < 0 && x.parent !== null).map((x: TreeNodeWithParent): SankeyLinkOptions => {
             return {
                 from: String(x.parent.key),
                 to: String(x.key),
@@ -161,9 +166,9 @@ export default (data: Tree) => ({
         const self = this;
 
         /** @see https://www.highcharts.com/docs/chart-and-series-types/sankey-diagram */
-        this.chart = Highcharts.chart(this.$el, {
+        this.chart = Highcharts.chart((this as unknown as AlpineMagics).$el, {
             title: {
-                text: null
+                text: undefined // disables the default chart title
             },
             accessibility: {
                 point: {
@@ -281,18 +286,31 @@ export default (data: Tree) => ({
         this.update();
         document.addEventListener('ChartInvalidated', () => this.update());
 
-        document.getElementById('header-configuration').removeAttribute('disabled');
+        document.getElementById('header-configuration')?.removeAttribute('disabled');
     },
 
     removeCategory(categoryId: number): void {
-       [...this.categoryTree.postOrderTraversal(this.categoryTree.find(categoryId))].map(x => x.key)
-           .forEach((categoryId: number) => this.categories.get(categoryId).active = false);
+        const node = this.categoryTree.find(categoryId);
+        if (node === null) {
+            return;
+        }
+
+        [...this.categoryTree.postOrderTraversal(node)].forEach((child: TreeNode) => {
+            const category = this.categories.get(child.key);
+            if (category) {
+                category.active = false;
+            }
+        });
 
         this.update();
     },
 
     setColors(): void {
         const style = document.getElementById('category-color-styles');
+        if (style === null) {
+            return;
+        }
+
         style.innerHTML = '';
         this.childCategories.forEach((category: Category) =>
             style.innerHTML += `.highcharts-color-${category.id} { fill: ${category.color ?? getDefaultColorValue(category.id)}; }\n`
@@ -332,7 +350,7 @@ export class SankeyNode { // @todo use accessors
         return this.isMain ? this.getTotalWeight() : this.getSum();
     }
 
-    private getSum(): number {
+    public getSum(): number {
          return 'getSum' in this.node ? (this.node as any).getSum() / this.scaling : 0;
     }
 
@@ -347,11 +365,11 @@ export class SankeyNode { // @todo use accessors
         return (this.getValue() / parentNode.getTotalOutgoingWeight());
     }
 
-    public getLinksFrom(): Array<SankeyLinkOptions> {
+    public getLinksFrom(): Array<SankeyLink> {
         return 'linksFrom' in this.node ? (this.node as any).linksFrom : [];
     }
 
-    public getLinksTo(): Array<SankeyLinkOptions> {
+    public getLinksTo(): Array<SankeyLink> {
         return 'linksTo' in this.node ? (this.node as any).linksTo : [];
     }
 

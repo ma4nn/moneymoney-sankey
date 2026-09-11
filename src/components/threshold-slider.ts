@@ -60,7 +60,7 @@ function getSliderRange(data: Array<number>) {
     }
 
     // Helper function to compute percentile
-    function percentile(arr, p) {
+    function percentile(arr: Array<number>, p: number): number {
         const index = (arr.length - 1) * p;
         const lower = Math.floor(index);
         const upper = Math.ceil(index);

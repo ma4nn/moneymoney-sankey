@@ -9,7 +9,7 @@ export function numberFormatColored(nb: number, currency: string = defaultConfig
     return '<strong style="color:' + color + '">' + numberFormat(nb, currency) + '</strong>';
 }
 
-export function percentageFormat(nb: number): string {
+export function percentageFormat(nb: number|null): string {
     return nb && nb < 1 ? '<span class="badge text-bg-secondary">' + Math.round(nb * 100) + '% </span>' : '';
 }
 
@@ -20,16 +20,20 @@ export function cssColorToHex(color: string): string {
     // default colors may be dynamic expressions like light-dark() (Highcharts >= 13 palette)
     const cacheKey = document.documentElement.getAttribute('data-bs-theme') + '|' + color;
 
-    if (! hexColorCache.has(cacheKey)) {
-        const probe = document.body.appendChild(document.createElement('span'));
-        probe.style.color = color; // CSSOM assignment is allowed by the strict CSP (unlike style attributes)
-        const rgb = getComputedStyle(probe).color.match(/\d+/g);
-        probe.remove();
-
-        hexColorCache.set(cacheKey, rgb === null ? color : '#' + rgb.slice(0, 3).map((value: string) => Number(value).toString(16).padStart(2, '0')).join(''));
+    const cached = hexColorCache.get(cacheKey);
+    if (cached !== undefined) {
+        return cached;
     }
 
-    return hexColorCache.get(cacheKey);
+    const probe = document.body.appendChild(document.createElement('span'));
+    probe.style.color = color; // CSSOM assignment is allowed by the strict CSP (unlike style attributes)
+    const rgb = getComputedStyle(probe).color.match(/\d+/g);
+    probe.remove();
+
+    const hex = rgb === null ? color : '#' + rgb.slice(0, 3).map((value: string) => Number(value).toString(16).padStart(2, '0')).join('');
+    hexColorCache.set(cacheKey, hex);
+
+    return hex;
 }
 
 export function resetApp(): void {
@@ -37,6 +41,8 @@ export function resetApp(): void {
     window.location.reload();
 }
 
-export function getValueByPath(obj, path) {
-    return path.split('.').reduce((acc, key) => acc?.[key], obj);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- the resolved value is only known to the caller
+export function getValueByPath(obj: unknown, path: string): any {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return path.split('.').reduce<any>((acc, key) => acc?.[key], obj);
 }

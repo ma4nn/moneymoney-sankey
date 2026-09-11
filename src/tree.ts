@@ -1,10 +1,10 @@
 export class TreeNode {
     key: number;
-    value: any;
-    parent: TreeNode;
+    value: number;
+    parent: TreeNode|null;
     children: Array<TreeNode>;
 
-    constructor(key: number, value = key, parent = null) {
+    constructor(key: number, value: number = key, parent: TreeNode|null = null) {
         this.key = key;
         this.value = value;
         this.parent = parent;
@@ -19,6 +19,9 @@ export class TreeNode {
         return !this.isLeaf;
     }
 }
+
+/** A node that is known to have a parent, i.e. any node except the root. */
+export type TreeNodeWithParent = TreeNode & { parent: TreeNode };
 
 export default class Tree {
     root: TreeNode;
