@@ -43,11 +43,14 @@ export default (data: Tree) => ({
     },
 
     get nodes(): Array<TreeNode> {
+        // restore the full parent sums first: the recalculation below overwrites them,
+        // so filtering on the previous update's values would drop nodes permanently
+        this.categoryTree.resetNodeValues();
+
         const treeNodes: Array<TreeNode> = [...this.categoryTree.postOrderTraversal()]
             .filter(x => Math.abs(x.value) >= this.threshold && this.categories.get(x.key)?.active);
 
         // recalculate weight values for each parent node
-        // @todo merge with this.categoryTree.resetNodeValues()?
         treeNodes.filter(x => x.hasChildren).map(x => x.value = x.children.reduce((a, b): number => {
             const category = this.categories.get(b.key);
             return Math.abs(b.value) >= this.threshold && category.active ? a + b.value : a;

@@ -227,6 +227,22 @@ test('hide and re-add category', async({ page }) => {
     expect(await getNodeValue(mainNode)).toBeCloseTo(defaultNodeValue.main + defaultNodeValue.transport - defaultNodeValue.transportCarInsurance);
 });
 
+test('threshold round trip restores all categories in place', async({ page }) => {
+    const autoNode = page.getByTestId(`chart-node-${categoryIds.transportCar}`);
+    const autoLink = page.getByTestId(`chart-link-${categoryIds.transportCar}`);
+    expect(await getNodeValue(autoNode)).toBeCloseTo(defaultNodeValue.transport);
+
+    // raise the threshold so that the Auto sub categories fall out, then restore full detail
+    await setSliderValue('input#threshold', defaultNodeValue.leisureStreaming + defaultNodeValue.transport - 450, page);
+    await expect(autoLink).toBeHidden();
+    await setSliderValue('input#threshold', defaultNodeValue.leisureStreaming + defaultNodeValue.transport, page);
+
+    // Auto must be reconnected between Transport and its children instead of floating as an island
+    await expect(autoLink).toBeVisible();
+    expect(await getNodeValue(autoNode)).toBeCloseTo(defaultNodeValue.transport);
+    expect(await getNodeValue(page.getByTestId(`chart-node-${categoryIds.transportCarInsurance}`))).toBeCloseTo(defaultNodeValue.transportCarInsurance);
+});
+
 test('category color swatches show the default chart colors', async({ page }) => {
     await page.getByRole('button', { name: 'Kategorien anpassen' }).click();
 
