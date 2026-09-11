@@ -1,4 +1,4 @@
-import Alpine, {AlpineMagics} from '@alpinejs/csp';
+import Alpine from '@alpinejs/csp';
 import {SeriesSankeyNodesOptionsObject, SeriesSankeyPointOptionsObject} from "highcharts/highcharts.src";
 import Highcharts from "highcharts/es-modules/masters/highcharts.src";
 import 'highcharts/es-modules/masters/modules/sankey.src';
@@ -9,13 +9,14 @@ import { Config } from "../config";
 import { NodeValidator } from "../validators";
 import {getValueByPath, numberFormat, numberFormatColored, percentageFormat} from "../helper";
 import {Category} from "../transaction";
+import component from "./component";
 
 type SankeyLinkOptions = SeriesSankeyPointOptionsObject;
 type SankeyNodeOptions = SeriesSankeyNodesOptionsObject;
 /** A link as attached to a rendered node, where the weight is always resolved. */
 type SankeyLink = SankeyLinkOptions & { weight: number };
 
-export default (data: Tree) => ({
+export default (data: Tree) => component({
     categoryTree: data,
     chart: null as Highcharts.Chart|null,
     mainNodeId: data.root.key,
@@ -166,7 +167,7 @@ export default (data: Tree) => ({
         const self = this;
 
         /** @see https://www.highcharts.com/docs/chart-and-series-types/sankey-diagram */
-        this.chart = Highcharts.chart((this as unknown as AlpineMagics).$el, {
+        this.chart = Highcharts.chart(this.$el, {
             title: {
                 text: undefined // disables the default chart title
             },

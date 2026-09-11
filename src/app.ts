@@ -2,7 +2,7 @@ import Alpine from '@alpinejs/csp';
 import persist from '@alpinejs/persist'
 import 'bootstrap';
 
-import defaultConfig, {ConfigStore, ErrorStore} from "./config";
+import defaultConfig from "./config";
 import Tree from "./tree";
 import {Transaction, MoneyMoneyCategoryTree, TransactionsManager, Category} from "./transaction";
 import alertComponent from "./components/alert";
@@ -28,7 +28,7 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
 
     Alpine.plugin(persist);
 
-    Alpine.store<ErrorStore>('error', {
+    Alpine.store('error', {
         errorMessage: null,
 
         setMessage(message: string) {
@@ -47,7 +47,7 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
     categories.fromTransactions(data.transactions);
 
     try {
-        Alpine.store<ConfigStore>('config', {
+        Alpine.store('config', {
             scalingFactor: Alpine.$persist(defaultConfig.scalingFactor),
             threshold: Alpine.$persist(defaultConfig.threshold),
             currency: currency,
@@ -71,7 +71,7 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
         });
     } catch (e) {
         console.error('error loading persisted config from storage: ' + e);
-        Alpine.store<ErrorStore>('error').setMessage('Konfiguration kann nicht geladen werden.');
+        Alpine.store('error').setMessage('Konfiguration kann nicht geladen werden.');
     }
 
     Alpine.data('alert', alertComponent);
