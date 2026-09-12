@@ -11,9 +11,10 @@ transaction categories for a quick one-time analysis.
 
 ## Highlights
 
-- Exclude categories by click
-- Add configurable budgets per each category
+- Exclude categories by click and reposition chart nodes by drag'n'drop
+- Add configurable budget and color per each category
 - Add threshold value for chart paths
+- Dark Mode
 - Automatically save configuration locally in browser so it is available when you open the file next time
 - Open chart in [SankeyMATIC](https://sankeymatic.com)
 

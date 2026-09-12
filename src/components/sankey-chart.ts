@@ -3,7 +3,7 @@ import Alpine from '@alpinejs/csp';
 import Tree, { TreeNode, TreeNodeWithParent } from "../tree";
 import { Config } from "../config";
 import { NodeValidator } from "../validators";
-import {getValueByPath, numberFormat, percentageFormat} from "../helper";
+import {getValueByPath, numberFormat, numberFormatColored, percentageFormat} from "../helper";
 import {Category} from "../transaction";
 import component from "./component";
 import {SankeyChartData, SankeyChartLink, SankeyChartNode, SankeyChartRenderer} from "../chart/types";
@@ -220,12 +220,11 @@ export default (data: Tree) => component({
 
             nodeLabel: (nodeId: string): string => {
                 const node = this.nodeModel(nodeId);
-                if (node.isMain) {
-                    return node.toString();
-                }
+                const value = node.isMain
+                    ? (node.getValue() === 0 ? '' : numberFormatColored(node.getValue()))
+                    : (new NodeValidator(node, this.config).validate() ? '' : NodeValidator.warningSign) + numberFormat(node.getValue());
 
-                return '<small>' + node.name + '</small><br>' + (new NodeValidator(node, this.config).validate() ? '' : NodeValidator.warningSign)
-                    + numberFormat(node.getValue());
+                return '<small>' + node.name + '</small><br>' + value;
             },
 
             nodeTooltip: (nodeId: string): string => {
