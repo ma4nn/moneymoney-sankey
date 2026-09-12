@@ -54,3 +54,8 @@ text.highcharts-data-label {
 [data-bs-theme="dark"] .highcharts-color-1 {
     fill: #b3b3b3;
 }
+
+[data-testid^="chart-node-"] {
+    cursor: grab;
+    touch-action: none; /* the drag must not be swallowed by scrolling */
+}

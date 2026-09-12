@@ -70,6 +70,7 @@ export default () => ({
 
     reset(): void {
         this.config.categories.forEach((category: Category) => (category.active = true, category.budget = null));
+        this.config.nodePositions = {}; // dragged nodes are part of the chart configuration as well
         document.dispatchEvent(new CustomEvent('ChartInvalidated'));
     },
 

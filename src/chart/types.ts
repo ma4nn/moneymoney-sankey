@@ -6,6 +6,8 @@ export interface SankeyChartNode {
     id: string; // category id as string
     name: string;
     isMain: boolean;
+    // dragged position as a fraction (0..1) of the chart height, undefined leaves it to the layout
+    position?: number;
 }
 
 export interface SankeyChartLink {
@@ -30,6 +32,8 @@ export interface SankeyChartData {
 // callbacks for the renderer to delegate content and interactions back to the app; returned strings are plain HTML
 export interface SankeyChartHooks {
     onLinkClick(link: SankeyChartLink): void;
+    // a node was dragged, null resets it to the automatic layout
+    onNodeDrag(nodeId: string, position: number|null): void;
     nodeLabel(nodeId: string): string;
     nodeTooltip(nodeId: string): string;
     linkTooltip(link: SankeyChartLink): string;

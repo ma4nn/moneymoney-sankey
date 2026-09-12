@@ -52,6 +52,7 @@ export function initApp(transactions: Array<Transaction>, currency: string = 'EU
             threshold: Alpine.$persist(defaultConfig.threshold),
             currency: currency,
             sortKey: Alpine.$persist(defaultConfig.sortKey),
+            nodePositions: Alpine.$persist<Record<string,number>>({}),
             _categories: Alpine.$persist<Array<Category>>([]),
             mainNodeId: mainNodeId,
             chartData: [],

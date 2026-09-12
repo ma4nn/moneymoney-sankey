@@ -37,6 +37,13 @@ export default (data: Tree) => component({
         return new Map([...this.categories].filter(([categoryId, _category]) => categoryId !== this.mainNodeId));
     },
 
+    get nodePositions(): Record<string,number> {
+        const positions = this.config.nodePositions;
+
+        // local storage is user editable, and an array would pass the typeof check as category ids
+        return positions !== null && typeof positions === 'object' && ! Array.isArray(positions) ? positions : {};
+    },
+
     get config(): Config {
         return Alpine.store('config');
     },
@@ -98,6 +105,7 @@ export default (data: Tree) => component({
             id: String(this.mainNodeId),
             name: this.categories.get(this.mainNodeId)?.name ?? '',
             isMain: true,
+            position: this.nodePosition(this.mainNodeId),
         });
 
         this.childCategories.forEach((category: Category) => {
@@ -105,6 +113,7 @@ export default (data: Tree) => component({
                 id: String(category.id),
                 name: category.name,
                 isMain: false,
+                position: this.nodePosition(category.id),
             });
         });
 
@@ -155,6 +164,25 @@ export default (data: Tree) => component({
         return colors;
     },
 
+    nodePosition(categoryId: number): number|undefined {
+        const position = this.nodePositions[String(categoryId)];
+
+        // an out of range value would push the node off the chart, and local storage is user editable
+        return typeof position === 'number' && position >= 0 && position <= 1 ? position : undefined;
+    },
+
+    storeNodePosition(nodeId: string, position: number|null): void {
+        // replaced instead of mutated so that the persisting store notices the change
+        const positions = {...this.nodePositions};
+        if (position === null) {
+            delete positions[nodeId];
+        } else {
+            positions[nodeId] = position;
+        }
+
+        this.config.nodePositions = positions;
+    },
+
     nodeModel(nodeId: string): SankeyNodeModel {
         const context: NodeModelContext = {
             links: this.currentLinks,
@@ -187,6 +215,8 @@ export default (data: Tree) => component({
 
                 this.removeCategory(categoryId);
             },
+
+            onNodeDrag: (nodeId: string, position: number|null): void => this.storeNodePosition(nodeId, position),
 
             nodeLabel: (nodeId: string): string => {
                 const node = this.nodeModel(nodeId);

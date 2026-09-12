@@ -8,6 +8,7 @@ export type Config = {
     sortKey: string;
     mainNodeId: number;
     categories: Map<number,Category>;
+    nodePositions: Record<string,number>; // category id => dragged chart position, see SankeyChartNode.position
     chartData: Array<TreeNode>;
 }
 
@@ -23,5 +24,5 @@ export type ErrorStore = {
     clear(): void;
 }
 
-const defaultConfig: Config = {scalingFactor: 1, threshold: 0, currency: 'EUR', sortKey: 'custom.category.path', mainNodeId: 1, categories: new Map(), chartData: []};
+const defaultConfig: Config = {scalingFactor: 1, threshold: 0, currency: 'EUR', sortKey: 'custom.category.path', mainNodeId: 1, categories: new Map(), nodePositions: {}, chartData: []};
 export default defaultConfig;
