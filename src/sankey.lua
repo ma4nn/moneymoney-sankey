@@ -1,7 +1,7 @@
 #!/usr/bin/env lua
 -- The MIT License (MIT)
 --
--- Copyright (c) 2022-25 Christoph Massmann <chris@dev-investor.de>
+-- Copyright (c) 2022-26 Christoph Massmann <chris@dev-investor.de>
 --
 -- Permission is hereby granted, free of charge, to any person obtaining a copy
 -- of this software and associated documentation files (the "Software"), to deal
