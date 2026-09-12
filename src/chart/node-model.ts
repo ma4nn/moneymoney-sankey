@@ -1,5 +1,5 @@
 import { SankeyChartLink } from "./types";
-import { numberFormat, numberFormatColored } from "../helper";
+import { escapeHtml, numberFormat, numberFormatColored } from "../helper";
 
 export interface NodeModelContext {
     links: Array<SankeyChartLink>;
@@ -29,7 +29,7 @@ export class SankeyNodeModel { // @todo use accessors
 
     public toString(): string {
         const format = this.isMain ? numberFormatColored : numberFormat;
-        return `${this.name}: ${this.getValue() == 0 ? '' : format(this.getValue())}`;
+        return `${escapeHtml(this.name)}: ${this.getValue() == 0 ? '' : format(this.getValue())}`;
     }
 
     public getValue(): number {

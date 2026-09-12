@@ -39,7 +39,7 @@ local transactionsAccountOne = {
     {name = "Dividenden", amount = 302.15, currency = "EUR", category = "Investitionen 60%40", bookingDate = 1739836800}, -- percent sign before a digit must not be treated as a gsub capture reference
     {name = "Mieteinnahmen", amount = 805.60, currency = "EUR", category = "Vermietung", bookingDate = 1739577600},
     {name = "Zinsen Sparbuch", amount = 52.85, currency = "EUR", category = "Zinsen 3,5%", bookingDate = 1739145600}, -- trailing percent sign must not be swallowed by gsub
-    {name = "Nebenjob", amount = 403.20, currency = "EUR", category = "Nebeneinkommen", bookingDate = 1738713600},
+    {name = "Nebenjob", amount = 403.20, currency = "EUR", category = "Nebeneinkommen </script>", bookingDate = 1738713600}, -- must neither terminate the inlined script block nor be parsed as markup in labels
     {name = "Verkauf Marktplatz", amount = 320.00, currency = "EUR", category = "Onlinehandel", bookingDate = 1739750400},
     {name = "Einkauf Marktplatz", amount = -120.00, currency = "EUR", category = "Onlinehandel", bookingDate = 1740096000},
     {name = "Miete", amount = -1498.70, currency = "EUR", category = "Wohnen\\Miete", bookingDate = 1740787200},

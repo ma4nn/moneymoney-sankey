@@ -29,7 +29,8 @@ const assertReplacedCount = (results, expectedCount) => {
     })())
 }
 
-const createNonce = () => crypto.randomBytes(16).toString('base64');
+// keep identical sources producing identical files (reproducible builds)
+const createNonce = (...parts) => crypto.createHash('sha256').update(parts.join('\0')).digest('base64').slice(0, 24);
 
 const isDev = process.argv.includes("--dev");
 const outputDir = pkg.config.outputDir;
@@ -45,7 +46,7 @@ function injectPlaceholdersPlugin() {
         const jsContents = result.outputFiles.find(f => f.path.endsWith(".js"))?.text ?? "";
         const cssContents = result.outputFiles.find(f => f.path.endsWith(".css"))?.text ?? "";
 
-        const nonce = createNonce();
+        const nonce = createNonce(version, cssContents, jsContents);
         let htmlTemplateContents = '';
 
         // using function-based replacements to avoid interpreting javascript texts like $&, $1, etc.

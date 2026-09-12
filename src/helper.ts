@@ -9,6 +9,13 @@ export function numberFormatColored(nb: number, currency: string = defaultConfig
     return '<strong style="color:' + color + '">' + numberFormat(nb, currency) + '</strong>';
 }
 
+const htmlEntities: Record<string, string> = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'};
+
+// category and account names are user data, so they must be escaped wherever they are concatenated into html (labels, tooltips)
+export function escapeHtml(text: string): string {
+    return text.replace(/[&<>"]/g, char => htmlEntities[char]);
+}
+
 export function percentageFormat(nb: number|null): string {
     return nb && nb < 1 ? '<span class="badge text-bg-secondary">' + Math.round(nb * 100) + '% </span>' : '';
 }

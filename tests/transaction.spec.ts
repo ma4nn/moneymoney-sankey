@@ -1,9 +1,11 @@
 import {test, expect, Locator} from '@playwright/test';
+import {chartSelectors} from './selectors';
 
 const categoryIds = {
     main: 1,
     transport: 1238034679,
     transportCarInsurance: 892808123,
+    sideIncome: 1128088515,
 };
 
 async function getNodeValue(node: Locator): Promise<number> {
@@ -74,6 +76,19 @@ test('should preserve percent signs in category names', async ({ page }) => {
     // % is a magic character in the Lua template replacement and must reach the browser unaltered
     expect(tableText).toContain('Zinsen 3,5%');
     expect(tableText).toContain('Investitionen 60%40');
+});
+
+test('should preserve angle brackets in category names', async ({ page }) => {
+    const categoryName = 'Nebeneinkommen </script>';
+
+    // escaped in the exported json (must not terminate the inline script block) and again in label and tooltip (must not be parsed as a tag)
+    await expect(page.getByTestId(`chart-node-label-${categoryIds.sideIncome}`)).toContainText(categoryName);
+
+    await page.getByTestId(`chart-node-${categoryIds.sideIncome}`).hover();
+    await expect(page.locator(chartSelectors.tooltip)).toContainText(categoryName);
+
+    await page.getByRole('button', { name: 'Kategorien anpassen' }).click();
+    expect(await page.locator('table#category-config').textContent()).toContain(categoryName);
 });
 
 test('should generate consistent category IDs', async ({ page }) => {

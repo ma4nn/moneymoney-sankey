@@ -3,7 +3,7 @@ import Alpine from '@alpinejs/csp';
 import Tree, { TreeNode, TreeNodeWithParent } from "../tree";
 import { Config } from "../config";
 import { NodeValidator } from "../validators";
-import {getValueByPath, numberFormat, numberFormatColored, percentageFormat} from "../helper";
+import {escapeHtml, getValueByPath, numberFormat, numberFormatColored, percentageFormat} from "../helper";
 import {Category} from "../transaction";
 import component from "./component";
 import {SankeyChartData, SankeyChartLink, SankeyChartNode, SankeyChartRenderer} from "../chart/types";
@@ -224,7 +224,7 @@ export default (data: Tree) => component({
                     ? (node.getValue() === 0 ? '' : numberFormatColored(node.getValue()))
                     : (new NodeValidator(node, this.config).validate() ? '' : NodeValidator.warningSign) + numberFormat(node.getValue());
 
-                return '<small>' + node.name + '</small><br>' + value;
+                return '<small>' + escapeHtml(node.name) + '</small><br>' + value;
             },
 
             nodeTooltip: (nodeId: string): string => {
@@ -235,7 +235,7 @@ export default (data: Tree) => component({
                     .sort((a, b) => b.weight - a.weight)
                     .forEach((link: SankeyChartLink) => {
                         const weight = link.weight / this.scaling;
-                        weightsDetailTooltip += '+ ' + this.nodeModel(link.from).name + ': ' + numberFormat(weight) + ' ' + percentageFormat(weight/node.getTotalIncomingWeight()) + '<br>';
+                        weightsDetailTooltip += '+ ' + escapeHtml(this.nodeModel(link.from).name) + ': ' + numberFormat(weight) + ' ' + percentageFormat(weight/node.getTotalIncomingWeight()) + '<br>';
                     });
                 if (node.isMain) {
                     weightsDetailTooltip += '= ' + numberFormat(node.getTotalIncomingWeight()) + '<br><br>';
@@ -245,7 +245,7 @@ export default (data: Tree) => component({
                     .sort((a, b) => b.weight - a.weight)
                     .forEach((link: SankeyChartLink) => {
                         const weight = link.weight / this.scaling;
-                        weightsDetailTooltip += '- ' + this.nodeModel(link.to).name + ': ' + numberFormat(weight) + ' ' + percentageFormat(weight/node.getTotalOutgoingWeight()) + '<br>';
+                        weightsDetailTooltip += '- ' + escapeHtml(this.nodeModel(link.to).name) + ': ' + numberFormat(weight) + ' ' + percentageFormat(weight/node.getTotalOutgoingWeight()) + '<br>';
                     });
                 if (node.isMain) {
                     weightsDetailTooltip += '= ' + numberFormat(node.getTotalOutgoingWeight()) + '<br>';
@@ -262,7 +262,7 @@ export default (data: Tree) => component({
             linkTooltip: (link: SankeyChartLink): string => {
                 const toNode = this.nodeModel(link.to);
 
-                return this.nodeModel(link.from).name + " → " + toNode.name + ": "
+                return escapeHtml(this.nodeModel(link.from).name) + " → " + escapeHtml(toNode.name) + ": "
                     + numberFormat(link.weight / this.scaling)
                     + ' ' + percentageFormat(toNode.getPercentage())
                     + "<br><br><span class='small'>(Klick entfernt die Kategorie aus dem Chart.)</span>";

@@ -42,7 +42,8 @@ local function table2Json(tbl)
         if type(o) == "number" or type(o) == "boolean" then
             return tostring(o)
         elseif type(o) == "string" then
-            return string.format("%q", o:gsub("\\", "\\\\"))
+            -- escape "<" after %q (which would escape the backslash again) so that no name can terminate the inlined script block
+            return (string.format("%q", o:gsub("\\", "\\\\")):gsub("<", "\\u003C"))
         elseif type(o) == "table" then
             local isArray = true
             local index = 1
@@ -87,7 +88,7 @@ end
 
 -- called once at the beginning of the export
 function WriteHeader (account, startDate, endDate, transactionCount)
-    variables["currency"] = account.currency
+    variables["currency"] = account.currency:gsub("%W", "") -- only alphanumerics are kept
     filtered_transactions = {}
 end
 
