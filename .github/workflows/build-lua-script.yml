@@ -26,7 +26,7 @@ jobs:
         node-version: 24
         cache: 'npm'
 
-    - uses: leafo/gh-actions-lua@6919171ccf181b826f44b9bca76307b577217377 # v13.0.0
+    - uses: leafo/gh-actions-lua@32909a2dea0a48c433aec79e7fcd31b4cd55800f # v13.1.0
       with:
         luaVersion: "5.4"
 
